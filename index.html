@@ -31,426 +31,303 @@
   --sans:    'Syne', sans-serif;
 }
 
-html, body {
-  min-height: 100dvh;
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--sans);
-}
+html, body { min-height: 100dvh; background: var(--bg); color: var(--text); font-family: var(--sans); }
 
-/* ══ TOPBAR ══════════════════════════════════════ */
+/* ── Topbar ─────────────────────────────────────── */
 .topbar {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 0 24px;
-  height: 58px;
+  display: flex; align-items: center; gap: 14px;
+  padding: 0 24px; height: 56px;
   border-bottom: 1px solid var(--border);
   background: var(--bg);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  position: sticky; top: 0; z-index: 100;
 }
-
 .logo {
-  width: 32px; height: 32px;
-  background: var(--accent);
-  border-radius: 9px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
+  width: 32px; height: 32px; background: var(--accent);
+  border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .logo svg { width: 16px; height: 16px; }
-
-.brand {
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: -.03em;
-}
-
-.topbar-right {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
+.brand { font-size: 16px; font-weight: 800; letter-spacing: -.03em; }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
 .status-pill {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  background: var(--bg3);
-  border: 1px solid var(--border2);
-  border-radius: 20px;
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--muted2);
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 12px; background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 20px; font-family: var(--mono); font-size: 11px; color: var(--muted2);
 }
-
-.dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: var(--muted);
-  flex-shrink: 0;
-  transition: background .3s;
+.sdot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--muted); flex-shrink: 0; transition: background .3s;
 }
-.dot.connecting { background: var(--warn); animation: blink 1s ease-in-out infinite; }
-.dot.ready      { background: var(--accent); animation: blink 2s ease-in-out infinite; }
-.dot.paired     { background: var(--blue); box-shadow: 0 0 6px var(--blue); }
-.dot.error      { background: var(--danger); }
-
+.sdot.init        { background: var(--muted); }
+.sdot.connecting  { background: var(--warn);   animation: blink 1s ease-in-out infinite; }
+.sdot.ready       { background: var(--accent); animation: blink 2s ease-in-out infinite; }
+.sdot.paired      { background: var(--blue);   box-shadow: 0 0 5px var(--blue); }
+.sdot.error       { background: var(--danger); }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
 
-/* ══ MAIN LAYOUT ══════════════════════════════════ */
-/* Desktop: sidebar + main. Mobile: single column */
-.layout {
+/* ── Screens ────────────────────────────────────── */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ── Welcome ────────────────────────────────────── */
+#screen-welcome {
+  min-height: calc(100dvh - 56px);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px 24px; gap: 14px; text-align: center;
+}
+#screen-welcome.active { display: flex; }
+
+.welcome-title { font-size: 34px; font-weight: 800; letter-spacing: -.04em; line-height: 1.1; }
+.welcome-sub {
+  font-size: 13px; color: var(--muted2); font-family: var(--mono);
+  line-height: 1.7; margin-bottom: 8px;
+}
+
+.choice-row { display: flex; gap: 14px; width: 100%; max-width: 420px; }
+@media (max-width: 460px) { .choice-row { flex-direction: column; } .welcome-title { font-size: 26px; } }
+
+.choice-btn {
+  flex: 1; padding: 22px 16px;
+  border: 1.5px solid var(--border2); border-radius: 14px;
+  background: var(--bg3); cursor: pointer;
+  transition: border-color .2s, background .2s, transform .12s; text-align: center;
+}
+.choice-btn:hover { background: var(--bg4); }
+.choice-btn:active { transform: scale(.97); }
+.choice-btn.send-btn:hover { border-color: var(--accent); }
+.choice-btn.recv-btn:hover { border-color: var(--blue); }
+.choice-icon  { font-size: 30px; margin-bottom: 10px; }
+.choice-label { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.choice-desc  { font-size: 11px; color: var(--muted2); font-family: var(--mono); line-height: 1.5; }
+
+/* ── Room screen (shared layout for hub+peer) ───── */
+#screen-room {
+  min-height: calc(100dvh - 56px);
   display: grid;
-  grid-template-columns: 280px 1fr;
-  min-height: calc(100dvh - 58px);
+  grid-template-columns: 270px 1fr;
 }
-
+#screen-room.active { display: grid; }
 @media (max-width: 720px) {
-  .layout { grid-template-columns: 1fr; }
-  .topbar { padding: 0 16px; }
-  .brand-sub { display: none; }
+  #screen-room { grid-template-columns: 1fr; }
 }
 
-/* ══ SIDEBAR ══════════════════════════════════════ */
+/* ── Sidebar ────────────────────────────────────── */
 .sidebar {
-  background: var(--bg2);
-  border-right: 1px solid var(--border);
-  padding: 22px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  background: var(--bg2); border-right: 1px solid var(--border);
+  padding: 20px 18px; display: flex; flex-direction: column; gap: 18px;
+  overflow-y: auto;
 }
-
 @media (max-width: 720px) {
-  .sidebar {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-    padding: 16px;
-  }
+  .sidebar { border-right: none; border-bottom: 1px solid var(--border); padding: 14px 16px; }
 }
 
-/* ══ QR SECTION ═══════════════════════════════════ */
-.qr-card {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 18px;
-  text-align: center;
+.back-btn {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; font-family: var(--mono); color: var(--muted);
+  background: none; border: none; cursor: pointer; padding: 0; transition: color .2s;
 }
+.back-btn:hover { color: var(--text); }
 
-.qr-label {
-  font-size: 10px;
-  font-family: var(--mono);
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  margin-bottom: 14px;
+/* code display (hub) */
+.code-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px; text-align: center;
 }
+.code-card-label {
+  font-size: 10px; font-family: var(--mono); color: var(--muted);
+  text-transform: uppercase; letter-spacing: .08em; margin-bottom: 12px;
+}
+.code-big {
+  font-size: 50px; font-weight: 800; letter-spacing: .2em;
+  color: var(--accent); font-family: var(--mono); line-height: 1;
+  margin-bottom: 8px;
+}
+.code-hint { font-size: 11px; color: var(--muted2); font-family: var(--mono); line-height: 1.6; margin-bottom: 12px; }
+.regen-btn {
+  font-size: 11px; font-family: var(--mono); color: var(--muted);
+  background: none; border: 1px solid var(--border2); border-radius: 6px;
+  padding: 5px 10px; cursor: pointer; transition: color .2s, border-color .2s;
+}
+.regen-btn:hover { color: var(--accent); border-color: var(--accent); }
 
+/* qr */
+.qr-block { text-align: center; }
+.qr-block-label {
+  font-size: 10px; font-family: var(--mono); color: var(--muted);
+  text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px;
+}
 #qr-canvas {
-  width: 188px !important;
-  height: 188px !important;
-  border-radius: 10px;
-  display: block;
-  margin: 0 auto;
-  background: #fff;
-  padding: 7px;
+  width: 148px !important; height: 148px !important;
+  border-radius: 9px; display: block; margin: 0 auto;
+  background: #fff; padding: 5px;
 }
+.qr-note { margin-top: 7px; font-size: 10px; color: var(--muted); font-family: var(--mono); line-height: 1.5; }
 
-/* Mobile: show QR smaller and inline */
-@media (max-width: 720px) {
-  .qr-card { display: flex; align-items: center; gap: 16px; text-align: left; }
-  .qr-label { margin-bottom: 6px; }
-  #qr-canvas { width: 100px !important; height: 100px !important; flex-shrink: 0; }
-  .qr-text { flex: 1; }
+/* peer (receiver) role badge */
+.role-badge {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 16px;
+  display: flex; align-items: center; gap: 10px;
 }
+.role-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); flex-shrink: 0; }
+.role-info { flex: 1; min-width: 0; }
+.role-name { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 2px; }
+.role-sub  { font-size: 10px; color: var(--muted); font-family: var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.role-leave {
+  background: none; border: 1px solid var(--border2); border-radius: 5px;
+  padding: 3px 8px; font-size: 10px; font-family: var(--mono); color: var(--muted2);
+  cursor: pointer; transition: color .2s, border-color .2s;
+}
+.role-leave:hover { color: var(--danger); border-color: var(--danger); }
 
-.qr-hint {
-  margin-top: 12px;
-  font-size: 11px;
-  color: var(--muted2);
-  font-family: var(--mono);
-  line-height: 1.6;
+/* peers list (hub sees connected receivers) */
+.peers-section {}
+.peers-label {
+  font-size: 10px; font-family: var(--mono); color: var(--muted);
+  text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 6px;
 }
+.peer-count {
+  background: var(--accentd); color: var(--accent);
+  border-radius: 10px; padding: 1px 7px; font-size: 10px;
+}
+.peers-list { display: flex; flex-direction: column; gap: 5px; }
+.peer-item {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.peer-item-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.peer-item-name { font-size: 12px; font-family: var(--mono); color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.peer-item-kick { background: none; border: none; font-size: 11px; color: var(--muted); cursor: pointer; padding: 0 2px; transition: color .2s; }
+.peer-item-kick:hover { color: var(--danger); }
+.peers-empty { font-size: 11px; color: var(--muted); font-family: var(--mono); }
 
-@media (max-width: 720px) {
-  .qr-hint { margin-top: 4px; }
-}
-
-.copy-link {
-  display: inline-block;
-  margin-top: 8px;
-  font-size: 10px;
-  color: var(--accent);
-  font-family: var(--mono);
-  cursor: pointer;
-  padding: 4px 8px;
-  background: var(--bg4);
-  border-radius: 5px;
-  border: 1px solid var(--border);
-  transition: border-color .2s;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-.copy-link:hover { border-color: var(--accent); }
-
-/* ══ CONNECTED CARD ═══════════════════════════════ */
-.conn-card {
-  display: none;
-  background: rgba(106,180,245,.07);
-  border: 1px solid rgba(106,180,245,.22);
-  border-radius: 12px;
-  padding: 14px 16px;
-  gap: 10px;
-  align-items: flex-start;
-  flex-direction: column;
-}
-.conn-card.visible { display: flex; }
-
-.conn-top {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-}
-.dot-blue { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); flex-shrink: 0; }
-.conn-top h4 { font-size: 13px; font-weight: 700; color: var(--blue); flex: 1; }
-
-.disc-btn {
-  background: none;
-  border: 1px solid rgba(106,180,245,.3);
-  border-radius: 5px;
-  padding: 3px 8px;
-  font-size: 10px;
-  font-family: var(--mono);
-  color: var(--muted2);
-  cursor: pointer;
-  transition: color .2s, border-color .2s;
-}
-.disc-btn:hover { color: var(--danger); border-color: var(--danger); }
-
-.conn-id {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--muted);
-  word-break: break-all;
-  line-height: 1.5;
-}
-
-/* ══ STATS ════════════════════════════════════════ */
-.stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-@media (max-width: 720px) {
-  .stats { grid-template-columns: repeat(4, 1fr); }
-}
-
-.stat {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 12px;
-}
+/* stats */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+@media (max-width: 720px) { .stats-grid { grid-template-columns: repeat(4,1fr); } }
+.stat { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 9px 11px; }
 .stat .sl { font-size: 9px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 4px; }
-.stat .sv { font-size: 18px; font-weight: 700; line-height: 1; }
-.sv.green { color: var(--accent); }
+.stat .sv { font-size: 17px; font-weight: 700; line-height: 1; }
+.sv.g { color: var(--accent); }
 
-@media (max-width: 720px) {
-  .stat .sv { font-size: 15px; }
+.sidebar-foot {
+  margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border);
+  font-size: 10px; color: var(--muted); font-family: var(--mono); line-height: 1.7;
 }
 
-/* ══ MAIN CONTENT ═════════════════════════════════ */
-.main {
-  display: flex;
-  flex-direction: column;
-}
+/* ── Main area ──────────────────────────────────── */
+.room-main { display: flex; flex-direction: column; }
 
-/* ══ DROP ZONE ════════════════════════════════════ */
 .drop-zone {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin: 24px;
-  border: 2px dashed var(--border2);
-  border-radius: 20px;
-  cursor: pointer;
-  transition: border-color .25s, background .25s;
-  position: relative;
-  min-height: 220px;
-  text-align: center;
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  margin: 22px; border: 2px dashed var(--border2);
+  border-radius: 20px; cursor: pointer;
+  transition: border-color .2s, background .2s;
+  position: relative; min-height: 200px; text-align: center;
 }
-.drop-zone.over     { border-color: var(--accent); background: rgba(126,232,162,.04); }
-.drop-zone.disabled { cursor: default; opacity: .45; }
-
-@media (max-width: 720px) {
-  .drop-zone { margin: 14px; border-radius: 14px; min-height: 160px; }
-}
+.drop-zone.over { border-color: var(--accent); background: rgba(126,232,162,.04); }
+.drop-zone.disabled { cursor: default; opacity: .4; }
+@media (max-width: 720px) { .drop-zone { margin: 12px; border-radius: 14px; min-height: 140px; } }
 
 .drop-inner { pointer-events: none; }
-
 .drop-icon {
-  width: 60px; height: 60px;
-  margin: 0 auto 16px;
-  border-radius: 16px;
-  background: var(--bg3);
-  border: 1px solid var(--border2);
-  display: flex; align-items: center; justify-content: center;
-  transition: transform .2s;
+  width: 58px; height: 58px; margin: 0 auto 16px;
+  border-radius: 16px; background: var(--bg3); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center; transition: transform .2s;
 }
 .drop-zone.over .drop-icon { transform: scale(1.08); }
 .drop-icon svg { width: 26px; height: 26px; }
-
-.drop-title {
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -.02em;
-  margin-bottom: 6px;
-}
-.drop-sub { font-size: 13px; color: var(--muted2); font-family: var(--mono); }
-.drop-hint { margin-top: 10px; font-size: 11px; color: var(--muted); font-family: var(--mono); }
+.drop-title { font-size: 20px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 6px; }
+.drop-sub   { font-size: 13px; color: var(--muted2); font-family: var(--mono); }
+.drop-hint  { margin-top: 10px; font-size: 11px; color: var(--muted); font-family: var(--mono); }
 .file-input { display: none; }
+@media (max-width: 720px) { .drop-title { font-size: 16px; } .drop-icon { width: 46px; height: 46px; margin-bottom: 12px; } }
 
-@media (max-width: 720px) {
-  .drop-title { font-size: 16px; }
-  .drop-icon { width: 48px; height: 48px; margin-bottom: 12px; }
+.no-peer-banner {
+  margin-top: 16px; padding: 9px 18px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 8px; font-size: 12px; font-family: var(--mono); color: var(--warn);
+  display: flex; align-items: center; gap: 7px; pointer-events: none;
 }
 
-.warn-banner {
-  margin-top: 18px;
-  padding: 9px 18px;
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 12px;
-  font-family: var(--mono);
-  color: var(--warn);
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  pointer-events: none;
-}
-
-/* ══ GUEST CONNECTING OVERLAY ═════════════════════ */
-/* Shown when guest first opens the page */
-.guest-overlay {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  gap: 16px;
-  padding: 40px;
-  text-align: center;
-}
-.guest-overlay.visible { display: flex; }
-
-.spinner {
-  width: 44px; height: 44px;
-  border: 3px solid var(--border2);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin .8s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.guest-title { font-size: 20px; font-weight: 700; letter-spacing: -.02em; }
-.guest-sub   { font-size: 13px; color: var(--muted2); font-family: var(--mono); line-height: 1.6; }
-
-/* ══ TRANSFERS ════════════════════════════════════ */
-.tf-section {
-  border-top: 1px solid var(--border);
-  max-height: 320px;
-  overflow-y: auto;
-}
-
-.tf-header {
-  display: flex;
-  align-items: center;
-  padding: 14px 24px 10px;
-  gap: 10px;
-}
+/* ── Transfers ──────────────────────────────────── */
+.tf-section { border-top: 1px solid var(--border); max-height: 320px; overflow-y: auto; }
+.tf-header { display: flex; align-items: center; padding: 13px 22px 9px; gap: 10px; }
 .tf-header h3 { font-size: 13px; font-weight: 600; flex: 1; }
-
-.clear-btn {
-  font-size: 11px;
-  font-family: var(--mono);
-  color: var(--muted);
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: color .2s;
-}
+.clear-btn { font-size: 11px; font-family: var(--mono); color: var(--muted); background: none; border: none; cursor: pointer; transition: color .2s; }
 .clear-btn:hover { color: var(--danger); }
+.tf-list { padding: 0 22px 14px; display: flex; flex-direction: column; gap: 7px; }
+@media (max-width: 720px) { .tf-header { padding: 11px 12px 8px; } .tf-list { padding: 0 12px 12px; } }
 
-.tf-list {
-  padding: 0 24px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-@media (max-width: 720px) {
-  .tf-header { padding: 12px 14px 8px; }
-  .tf-list   { padding: 0 14px 14px; }
-}
-
-.tf-item {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 11px 14px;
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  animation: slideIn .2s ease;
-}
-@keyframes slideIn { from { opacity:0; transform: translateY(-6px); } to { opacity:1; transform: translateY(0); } }
-
+.tf-item { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 10px 13px; display: flex; align-items: center; gap: 11px; animation: fadeUp .2s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:translateY(0); } }
 .tf-icon { width: 34px; height: 34px; border-radius: 8px; background: var(--bg4); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
 .tf-info { flex: 1; min-width: 0; }
 .tf-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
 .tf-meta { font-size: 11px; color: var(--muted2); font-family: var(--mono); display: flex; gap: 8px; align-items: center; }
 .tf-bar-wrap { height: 3px; background: var(--bg4); border-radius: 2px; margin-top: 6px; overflow: hidden; }
 .tf-bar { height: 100%; background: var(--accent); border-radius: 2px; transition: width .15s; }
-.tf-status { flex-shrink: 0; font-size: 10px; font-family: var(--mono); padding: 3px 8px; border-radius: 4px; }
-.ts-send { background: rgba(106,180,245,.12); color: var(--blue); }
-.ts-recv { background: rgba(126,232,162,.1);  color: var(--accent); }
-.ts-done { background: rgba(126,232,162,.12); color: var(--accent2); }
-.ts-err  { background: rgba(224,90,90,.12);   color: var(--danger); }
-.dl-btn  { padding: 4px 9px; background: var(--bg4); border: 1px solid var(--border2); border-radius: 5px; font-size: 11px; font-family: var(--mono); color: var(--accent); text-decoration: none; display: inline-block; transition: background .15s; }
+.tf-tag { flex-shrink: 0; font-size: 10px; font-family: var(--mono); padding: 3px 8px; border-radius: 4px; }
+.tt-send { background: rgba(106,180,245,.12); color: var(--blue); }
+.tt-recv { background: rgba(126,232,162,.1);  color: var(--accent); }
+.tt-done { background: rgba(126,232,162,.12); color: var(--accent2); }
+.tt-err  { background: rgba(224,90,90,.12);   color: var(--danger); }
+.dl-btn  { padding: 4px 8px; background: var(--bg4); border: 1px solid var(--border2); border-radius: 5px; font-size: 11px; font-family: var(--mono); color: var(--accent); text-decoration: none; display: inline-block; transition: background .15s; white-space: nowrap; }
 .dl-btn:hover { background: var(--accentd); }
 
-/* ══ TOAST ════════════════════════════════════════ */
-.toast {
-  position: fixed;
-  bottom: 20px; left: 50%;
-  transform: translateX(-50%) translateY(16px);
-  background: var(--bg3);
-  border: 1px solid var(--border2);
-  border-radius: 8px;
-  padding: 9px 18px;
-  font-size: 12px;
-  font-family: var(--mono);
-  opacity: 0;
-  transition: opacity .22s, transform .22s;
-  pointer-events: none;
-  z-index: 9999;
-  white-space: nowrap;
+/* ── Receive: enter code view ───────────────────── */
+#screen-join {
+  min-height: calc(100dvh - 56px);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px 24px; gap: 16px;
 }
+#screen-join.active { display: flex; }
+
+.join-inner { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 14px; }
+.join-title    { font-size: 24px; font-weight: 800; letter-spacing: -.03em; text-align: center; }
+.join-subtitle { font-size: 13px; color: var(--muted2); font-family: var(--mono); text-align: center; line-height: 1.6; }
+
+.code-input {
+  width: 100%; background: var(--bg3); border: 2px solid var(--border2);
+  border-radius: 14px; padding: 20px;
+  font-family: var(--mono); font-size: 42px; font-weight: 700;
+  color: var(--accent); text-align: center; letter-spacing: .24em;
+  outline: none; transition: border-color .2s;
+}
+.code-input:focus   { border-color: var(--accent); }
+.code-input.err     { border-color: var(--danger); color: var(--danger); animation: shake .3s ease; }
+.code-input.success { border-color: var(--accent2); }
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
+
+.join-btn {
+  width: 100%; padding: 15px; background: var(--accent); color: #05140c;
+  border: none; border-radius: 12px; font-family: var(--sans);
+  font-size: 15px; font-weight: 700; cursor: pointer;
+  transition: background .15s, transform .1s;
+}
+.join-btn:hover  { background: #9ef5b8; }
+.join-btn:active { transform: scale(.98); }
+.join-btn:disabled { background: var(--bg4); color: var(--muted); cursor: default; }
+
+.join-msg { font-size: 12px; font-family: var(--mono); text-align: center; min-height: 16px; }
+.join-msg.err  { color: var(--danger); }
+.join-msg.info { color: var(--muted2); }
+
+/* spinner */
+.spinner-box { display: none; flex-direction: column; align-items: center; gap: 14px; }
+.spinner-box.visible { display: flex; }
+.spinner { width: 40px; height: 40px; border: 3px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin .75s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner-label { font-size: 14px; font-weight: 700; }
+.spinner-sub   { font-size: 12px; color: var(--muted2); font-family: var(--mono); }
+
+/* ── Toast ──────────────────────────────────────── */
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(14px); background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; padding: 9px 18px; font-size: 12px; font-family: var(--mono); opacity: 0; transition: opacity .22s, transform .22s; pointer-events: none; z-index: 9999; white-space: nowrap; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* ══ SCROLLBAR ════════════════════════════════════ */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
@@ -458,7 +335,7 @@ html, body {
 </head>
 <body>
 
-<!-- ══ TOPBAR ══ -->
+<!-- Topbar -->
 <header class="topbar">
   <div class="logo">
     <svg viewBox="0 0 16 16" fill="none">
@@ -468,69 +345,115 @@ html, body {
   <span class="brand">FileShare</span>
   <div class="topbar-right">
     <div class="status-pill">
-      <div class="dot connecting" id="dot"></div>
-      <span id="status-text">Starting&hellip;</span>
+      <div class="sdot init" id="sdot"></div>
+      <span id="stext">Ready</span>
     </div>
   </div>
 </header>
 
-<!-- ══ LAYOUT ══ -->
-<div class="layout">
+<!-- ══ WELCOME ══ -->
+<div class="screen active" id="screen-welcome">
+  <div class="welcome-title">Share files<br>instantly</div>
+  <div class="welcome-sub">Peer-to-peer &middot; No cloud &middot; Any device<br>Everyone in a room can send &amp; receive</div>
+  <div class="choice-row">
+    <div class="choice-btn send-btn" id="btn-create">
+      <div class="choice-icon">&#128279;</div>
+      <div class="choice-label">Create room</div>
+      <div class="choice-desc">Get a 4-digit code.<br>Share it with others.</div>
+    </div>
+    <div class="choice-btn recv-btn" id="btn-join">
+      <div class="choice-icon">&#128203;</div>
+      <div class="choice-label">Join room</div>
+      <div class="choice-desc">Enter a 4-digit code<br>from the room creator.</div>
+    </div>
+  </div>
+</div>
 
-  <!-- ── SIDEBAR ── -->
+<!-- ══ JOIN (enter code) ══ -->
+<div class="screen" id="screen-join">
+  <div class="join-inner">
+    <div class="join-title">Join a room</div>
+    <div class="join-subtitle">Enter the 4-digit code from the room creator.<br>You&rsquo;ll connect automatically.</div>
+    <input class="code-input" id="code-input"
+           type="text" inputmode="numeric" maxlength="4"
+           placeholder="0000" autocomplete="off" spellcheck="false">
+    <button class="join-btn" id="join-btn" disabled>Join</button>
+    <div class="join-msg" id="join-msg"></div>
+    <div class="spinner-box" id="join-spinner">
+      <div class="spinner"></div>
+      <div class="spinner-label">Connecting&hellip;</div>
+      <div class="spinner-sub" id="join-spinner-sub">Reaching the room</div>
+    </div>
+    <button class="back-btn" style="align-self:center;margin-top:6px" id="join-back-btn">&#8592; Back</button>
+  </div>
+</div>
+
+<!-- ══ ROOM (hub + peer share this layout) ══ -->
+<div class="screen" id="screen-room">
+
   <aside class="sidebar" id="sidebar">
+    <button class="back-btn" id="room-back-btn">&#8592; Leave room</button>
 
-    <!-- QR card — only shown in host mode -->
-    <div class="qr-card" id="qr-card">
-      <div class="qr-text">
-        <div class="qr-label">Scan to connect</div>
+    <!-- Hub sees: code + QR + peer list -->
+    <div id="hub-sidebar" style="display:none; flex-direction:column; gap:16px;">
+
+      <div class="code-card">
+        <div class="code-card-label">Room code</div>
+        <div class="code-big" id="code-display">----</div>
+        <div class="code-hint">Share this code with anyone<br>who wants to join the room.</div>
+        <button class="regen-btn" id="regen-btn">&#8635; New code</button>
+      </div>
+
+      <div class="qr-block">
+        <div class="qr-block-label">Or scan QR code</div>
         <canvas id="qr-canvas"></canvas>
-        <div class="qr-hint">
-          Scan with any device on the same WiFi.<br>
-          Connection is automatic &mdash; no setup needed.
+        <div class="qr-note">Scanning auto-joins<br>without typing the code</div>
+      </div>
+
+      <div class="peers-section">
+        <div class="peers-label">
+          Members
+          <span class="peer-count" id="peer-count-badge">0</span>
         </div>
-        <span class="copy-link" id="copy-link" title="Click to copy link">Generating link&hellip;</span>
+        <div class="peers-list" id="peers-list">
+          <span class="peers-empty" id="peers-empty">No one connected yet</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Peer sees: room badge + hub info -->
+    <div id="peer-sidebar" style="display:none; flex-direction:column; gap:16px;">
+      <div class="role-badge">
+        <div class="role-dot"></div>
+        <div class="role-info">
+          <div class="role-name">Connected</div>
+          <div class="role-sub" id="peer-hub-label">Room hub</div>
+        </div>
+        <button class="role-leave" id="peer-leave-btn">Leave</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);font-family:var(--mono);line-height:1.7;">
+        You&rsquo;re in the room.<br>
+        Drop files to send to <strong style="color:var(--muted2)">everyone</strong>.
       </div>
     </div>
 
-    <!-- Connected card -->
-    <div class="conn-card" id="conn-card">
-      <div class="conn-top">
-        <div class="dot-blue"></div>
-        <h4>Connected</h4>
-        <button class="disc-btn" id="disc-btn">Disconnect</button>
-      </div>
-      <div class="conn-id" id="conn-id">&mdash;</div>
-    </div>
-
-    <!-- Stats -->
-    <div class="stats">
-      <div class="stat"><div class="sl">Sent</div><div class="sv green" id="s-sent">0</div></div>
-      <div class="stat"><div class="sl">Received</div><div class="sv green" id="s-recv">0</div></div>
+    <!-- Stats (shared) -->
+    <div class="stats-grid" style="margin-top:auto;">
+      <div class="stat"><div class="sl">Sent</div><div class="sv g" id="s-sent">0</div></div>
+      <div class="stat"><div class="sl">Received</div><div class="sv g" id="s-recv">0</div></div>
       <div class="stat"><div class="sl">MB out</div><div class="sv" id="s-out">0</div></div>
       <div class="stat"><div class="sl">MB in</div><div class="sv" id="s-in">0</div></div>
     </div>
 
-    <div style="margin-top:auto;padding-top:12px;border-top:1px solid var(--border)">
-      <p style="font-size:10px;color:var(--muted);font-family:var(--mono);line-height:1.7">
-        Files transfer <strong style="color:var(--muted2)">directly</strong> between browsers.<br>
-        Nothing passes through any server.
-      </p>
+    <div class="sidebar-foot">
+      Files transfer peer-to-peer.<br>
+      Nothing passes through any server.
     </div>
-
   </aside>
 
-  <!-- ── MAIN ── -->
-  <main class="main" id="main-area">
-
-    <!-- Guest connecting overlay — shown while guest is auto-connecting -->
-    <div class="guest-overlay" id="guest-overlay">
-      <div class="spinner"></div>
-      <div class="guest-title" id="guest-title">Connecting&hellip;</div>
-      <div class="guest-sub" id="guest-sub">Establishing secure peer connection</div>
-    </div>
-
-    <!-- Drop zone — shown once connected -->
+  <!-- Drop zone + transfers -->
+  <div class="room-main">
     <div class="drop-zone disabled" id="drop-zone">
       <input type="file" class="file-input" id="file-input" multiple>
       <div class="drop-inner">
@@ -540,16 +463,15 @@ html, body {
             <path d="M4 21h18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
           </svg>
         </div>
-        <div class="drop-title" id="drop-title">Drop files to send</div>
+        <div class="drop-title">Drop files to send</div>
         <div class="drop-sub">or tap to browse</div>
-        <div class="drop-hint" id="drop-hint">Waiting for connection&hellip;</div>
+        <div class="drop-hint" id="drop-hint">Waiting for others to join&hellip;</div>
       </div>
-      <div class="warn-banner" id="warn-banner">
-        &#9888;&nbsp; Scan the QR code on another device to connect
+      <div class="no-peer-banner" id="no-peer-banner">
+        &#9888;&nbsp; No one else in the room yet — share your code
       </div>
     </div>
 
-    <!-- Transfer history -->
     <div class="tf-section" id="tf-section" style="display:none">
       <div class="tf-header">
         <h3>Transfers</h3>
@@ -557,218 +479,337 @@ html, body {
       </div>
       <div class="tf-list" id="tf-list"></div>
     </div>
+  </div>
 
-  </main>
-</div>
+</div><!-- /screen-room -->
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ══ CONSTANTS ═══════════════════════════════════════════════
-const CHUNK    = 64 * 1024; // 64 KB chunks
-const ICE      = { iceServers: [
+// ═══════════════════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════════════════
+const NS    = 'fshr-hub-';   // namespace prefix for hub peer IDs
+const CHUNK = 64 * 1024;     // 64 KB transfer chunks
+const ICE   = { iceServers: [
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:global.stun.twilio.com:3478' }
 ]};
 
-// ══ STATE ═══════════════════════════════════════════════════
-let peer = null, conn = null, myId = null;
-const incoming = {};
+// ═══════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════
+let role      = null;   // 'hub' | 'peer'
+let myPeer    = null;   // our Peer instance
+let roomCode  = null;   // current 4-digit code
+
+// Hub state
+const peerConns = {};   // connId -> DataConnection (all peers connected to hub)
+
+// Peer state
+let hubConn   = null;   // single connection to hub
+
+// Transfer state
+const incoming = {};    // transferId -> { ...metadata, chunks[], received }
 let sSent = 0, sRecv = 0, sMbOut = 0, sMbIn = 0;
 
-// ══ MODE DETECTION ══════════════════════════════════════════
-// Guest mode = URL has ?peer=XYZ (came from scanning QR)
-// Host mode  = no peer param (opened the page directly)
-const urlPeer  = new URLSearchParams(location.search).get('peer');
-const isGuest  = !!urlPeer;
+// ═══════════════════════════════════════════════════════════
+//  SCREEN NAVIGATION
+// ═══════════════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
 
-// ══ BOOT ════════════════════════════════════════════════════
-window.addEventListener('DOMContentLoaded', () => {
-  wireEvents();
+// ═══════════════════════════════════════════════════════════
+//  STATUS BAR
+// ═══════════════════════════════════════════════════════════
+function setStatus(state, text) {
+  document.getElementById('sdot').className = 'sdot ' + state;
+  document.getElementById('stext').textContent = text;
+}
 
-  if (isGuest) {
-    // Guest: hide QR, show spinner overlay, auto-connect once peer is ready
-    document.getElementById('qr-card').style.display   = 'none';
-    document.getElementById('drop-zone').style.display = 'none';
-    document.getElementById('guest-overlay').classList.add('visible');
-    setStatus('connecting', 'Connecting\u2026');
-  } else {
-    // Host: show QR, hide guest overlay
-    document.getElementById('guest-overlay').style.display = 'none';
-  }
+// ═══════════════════════════════════════════════════════════
+//  HUB — create room
+// ═══════════════════════════════════════════════════════════
+function createRoom(code) {
+  roomCode = code || randCode();
+  role     = 'hub';
 
-  initPeer();
-});
+  // Destroy any existing peer cleanly
+  if (myPeer && !myPeer.destroyed) myPeer.destroy();
+  myPeer = null;
 
-// ══ PEER INIT ═══════════════════════════════════════════════
-function initPeer() {
-  peer = new Peer({ debug: 0, config: ICE });
+  setStatus('connecting', 'Creating room\u2026');
+  document.getElementById('code-display').textContent = roomCode;
 
-  peer.on('open', id => {
-    myId = id;
+  const hubId = NS + roomCode;
+  myPeer = new Peer(hubId, { debug: 0, config: ICE });
 
-    if (isGuest) {
-      // Auto-connect to host — no user action needed
-      connectTo(urlPeer);
+  myPeer.on('open', id => {
+    setStatus('ready', 'Room open \u00b7 code ' + roomCode);
+    generateQR(roomCode);
+    // show hub sidebar
+    document.getElementById('hub-sidebar').style.display = 'flex';
+    document.getElementById('peer-sidebar').style.display = 'none';
+    enableDrop(false); // no peers yet
+    showScreen('screen-room');
+  });
+
+  myPeer.on('connection', conn => {
+    acceptPeer(conn);
+  });
+
+  myPeer.on('error', err => {
+    if (err.type === 'unavailable-id') {
+      toast('Code ' + roomCode + ' is taken — trying another');
+      createRoom(randCode());
     } else {
-      // Host — generate QR
-      setStatus('ready', 'Waiting for connection');
-      generateQR(id);
+      setStatus('error', 'Error: ' + err.type);
+      toast('Error: ' + err.type, 4000);
     }
   });
 
-  peer.on('connection', c => handleConn(c));
-
-  peer.on('error', err => {
-    setStatus('error', 'Error: ' + err.type);
-    toast('Connection error: ' + err.type, 4000);
-    if (err.type === 'network' || err.type === 'server-error') setTimeout(initPeer, 3000);
-    if (isGuest) {
-      document.getElementById('guest-title').textContent = 'Connection failed';
-      document.getElementById('guest-sub').textContent   = err.type + ' — try scanning the QR again';
-      document.getElementById('spinner') && (document.getElementById('spinner').style.display = 'none');
-    }
-  });
-
-  peer.on('disconnected', () => {
-    setTimeout(() => peer && !peer.destroyed && peer.reconnect(), 2000);
+  myPeer.on('disconnected', () => {
+    if (myPeer && !myPeer.destroyed) myPeer.reconnect();
   });
 }
 
-// ══ QR ══════════════════════════════════════════════════════
-function generateQR(peerId) {
-  // Build URL: same page + ?peer=ID so guest auto-connects
-  const base = location.href.split('?')[0];
-  const url  = base + '?peer=' + peerId;
+// Hub: accept an incoming peer connection
+function acceptPeer(conn) {
+  const id = conn.peer;
 
-  // Render QR
+  conn.on('open', () => {
+    peerConns[id] = conn;
+    addPeerToList(id, conn);
+    updatePeerCount();
+    enableDrop(true);
+    toast('Someone joined the room');
+
+    // Send them a welcome with the list of other peer IDs
+    // (not used for direct connection, just info)
+    conn.send(enc({ type: 'WELCOME', hubId: myPeer.id, peerId: id }));
+  });
+
+  conn.on('data', raw => {
+    const msg = tryParseMsg(raw);
+    if (msg) {
+      if (msg.type === 'FILE_META' || msg.type === 'FILE_DONE') {
+        handleFileControl(msg, id);
+      }
+    } else {
+      // Binary chunk — relay + handle locally
+      handleChunkData(raw, id);
+    }
+  });
+
+  conn.on('close', () => {
+    removePeer(id);
+  });
+
+  conn.on('error', () => {
+    removePeer(id);
+  });
+}
+
+function removePeer(id) {
+  delete peerConns[id];
+  const el = document.getElementById('peer-item-' + id);
+  if (el) el.remove();
+  updatePeerCount();
+  if (Object.keys(peerConns).length === 0) enableDrop(false);
+  toast('A member left the room');
+}
+
+function kickPeer(id) {
+  if (peerConns[id]) {
+    peerConns[id].close();
+    removePeer(id);
+  }
+}
+
+function updatePeerCount() {
+  const n = Object.keys(peerConns).length;
+  document.getElementById('peer-count-badge').textContent = n;
+  document.getElementById('peers-empty').style.display = n === 0 ? '' : 'none';
+}
+
+function addPeerToList(id, conn) {
+  document.getElementById('peers-empty').style.display = 'none';
+  const list = document.getElementById('peers-list');
+  const div  = document.createElement('div');
+  div.className = 'peer-item'; div.id = 'peer-item-' + id;
+  div.innerHTML = `
+    <div class="peer-item-dot"></div>
+    <div class="peer-item-name">${esc(id.slice(0,20))}&hellip;</div>
+    <button class="peer-item-kick" title="Remove" onclick="kickPeer('${esc(id)}')">&#10005;</button>`;
+  list.appendChild(div);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PEER — join room
+// ═══════════════════════════════════════════════════════════
+function joinRoom(code) {
+  roomCode = code;
+  role     = 'peer';
+
+  if (myPeer && !myPeer.destroyed) myPeer.destroy();
+  myPeer = null;
+
+  // Show spinner
+  document.getElementById('join-btn').disabled = true;
+  document.getElementById('join-msg').textContent = '';
+  document.getElementById('join-msg').className = 'join-msg';
+  document.getElementById('join-spinner').classList.add('visible');
+  document.getElementById('join-spinner-sub').textContent = 'Reaching room ' + code;
+
+  setStatus('connecting', 'Joining room ' + code + '\u2026');
+
+  // Random peer ID for ourselves
+  myPeer = new Peer({ debug: 0, config: ICE });
+
+  myPeer.on('open', myId => {
+    const hubId = NS + code;
+    hubConn = myPeer.connect(hubId, { reliable: true, serialization: 'raw' });
+
+    hubConn.on('open', () => {
+      setStatus('paired', 'In room ' + code);
+      document.getElementById('peer-hub-label').textContent = 'Room ' + code;
+      document.getElementById('hub-sidebar').style.display  = 'none';
+      document.getElementById('peer-sidebar').style.display = 'flex';
+      document.getElementById('no-peer-banner').style.display = 'none';
+      enableDrop(true);
+      document.getElementById('drop-hint').textContent = 'Sends to everyone in the room';
+      document.getElementById('join-spinner').classList.remove('visible');
+      showScreen('screen-room');
+      toast('Joined room ' + code + '!');
+    });
+
+    hubConn.on('data', raw => {
+      const msg = tryParseMsg(raw);
+      if (msg) {
+        handleFileControl(msg, 'hub');
+      } else {
+        handleChunkData(raw, 'hub');
+      }
+    });
+
+    hubConn.on('close', () => {
+      onPeerDisconnected();
+    });
+
+    hubConn.on('error', err => {
+      onJoinFailed(err);
+    });
+
+    // Timeout: if open doesn't fire in 8s, hub probably doesn't exist
+    setTimeout(() => {
+      if (!hubConn || !hubConn.open) {
+        onJoinFailed({ type: 'peer-unavailable' });
+      }
+    }, 8000);
+  });
+
+  myPeer.on('error', err => {
+    if (err.type !== 'peer-unavailable') {
+      onJoinFailed(err);
+    }
+  });
+}
+
+function onJoinFailed(err) {
+  document.getElementById('join-spinner').classList.remove('visible');
+  document.getElementById('join-btn').disabled = false;
+  const ci = document.getElementById('code-input');
+  ci.classList.add('err');
+  setTimeout(() => ci.classList.remove('err'), 600);
+  const msg = err.type === 'peer-unavailable'
+    ? 'Room not found — check the code'
+    : 'Connection failed: ' + err.type;
+  document.getElementById('join-msg').textContent = msg;
+  document.getElementById('join-msg').className = 'join-msg err';
+  setStatus('error', 'Could not join');
+  if (myPeer && !myPeer.destroyed) { myPeer.destroy(); myPeer = null; }
+}
+
+function onPeerDisconnected() {
+  hubConn = null;
+  setStatus('ready', 'Disconnected');
+  enableDrop(false);
+  toast('Disconnected from room');
+  // Go back to welcome
+  leaveRoom();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  LEAVE / RESET
+// ═══════════════════════════════════════════════════════════
+function leaveRoom() {
+  if (myPeer && !myPeer.destroyed) myPeer.destroy();
+  myPeer = null; hubConn = null;
+  Object.keys(peerConns).forEach(k => { try { peerConns[k].close(); } catch(e){} delete peerConns[k]; });
+  roomCode = null; role = null;
+  sSent = sRecv = sMbOut = sMbIn = 0;
+  document.getElementById('s-sent').textContent = '0';
+  document.getElementById('s-recv').textContent = '0';
+  document.getElementById('s-out').textContent  = '0';
+  document.getElementById('s-in').textContent   = '0';
+  document.getElementById('peers-list').innerHTML = '<span class="peers-empty" id="peers-empty">No one connected yet</span>';
+  document.getElementById('peer-count-badge').textContent = '0';
+  document.getElementById('tf-list').innerHTML = '';
+  document.getElementById('tf-section').style.display = 'none';
+  document.getElementById('drop-zone').classList.add('disabled');
+  document.getElementById('no-peer-banner').style.display = 'flex';
+  setStatus('init', 'Ready');
+  showScreen('screen-welcome');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  QR CODE
+// ═══════════════════════════════════════════════════════════
+function generateQR(code) {
+  const base = location.href.split('?')[0];
+  const url  = base + '?code=' + code;
   QRCode.toCanvas(document.getElementById('qr-canvas'), url, {
-    width: 188, margin: 1,
+    width: 148, margin: 1,
     color: { dark: '#07070d', light: '#ffffff' }
   });
-
-  // Copy link chip
-  const chip = document.getElementById('copy-link');
-  // Show shortened display
-  const display = location.hostname + '/\u2026?peer=' + peerId.slice(0,8) + '\u2026';
-  chip.textContent   = '\uD83D\uDD17 ' + display;
-  chip.dataset.url   = url;
-  chip.title         = 'Click to copy: ' + url;
 }
 
-// ══ CONNECTION ══════════════════════════════════════════════
-function connectTo(id) {
-  if (!id || !myId) return;
-  if (id === myId) {
-    // Edge case: same page opened twice, ignore
-    document.getElementById('guest-title').textContent = 'Same device detected';
-    document.getElementById('guest-sub').textContent   = 'Open this link on a different device.';
-    return;
-  }
-  handleConn(peer.connect(id, { reliable: true, serialization: 'raw' }));
-}
-
-function handleConn(c) {
-  if (conn && conn.open) { c.close(); return; } // already connected
-  conn = c;
-
-  c.on('open', () => {
-    onConnected(c.peer);
-  });
-
-  c.on('data',  handleData);
-  c.on('close', onDisconnected);
-  c.on('error', () => onDisconnected());
-}
-
-function onConnected(remotePeerId) {
-  setStatus('paired', 'Connected');
-
-  // Show connected card in sidebar
-  document.getElementById('conn-card').classList.add('visible');
-  document.getElementById('conn-id').textContent = remotePeerId;
-
-  // Reveal drop zone, hide overlays
-  document.getElementById('guest-overlay').classList.remove('visible');
-  document.getElementById('guest-overlay').style.display = 'none';
-  document.getElementById('drop-zone').style.display = '';
-  document.getElementById('drop-zone').classList.remove('disabled');
-  document.getElementById('warn-banner').style.display = 'none';
-  document.getElementById('drop-hint').textContent = 'Any file \u00b7 Any size \u00b7 Direct transfer';
-  document.getElementById('drop-title').textContent = 'Drop files to send';
-
-  // On mobile as guest, also show the sidebar stats
-  document.getElementById('qr-card').style.display = 'none';
-
-  toast('Connected! Drop or tap to send files.');
-}
-
-function disconnect() {
-  if (conn) conn.close();
-  onDisconnected();
-}
-
-function onDisconnected() {
-  conn = null;
-  setStatus('ready', isGuest ? 'Disconnected' : 'Waiting for connection');
-  document.getElementById('conn-card').classList.remove('visible');
-  document.getElementById('drop-zone').classList.add('disabled');
-  document.getElementById('warn-banner').style.display = 'flex';
-  document.getElementById('drop-hint').textContent = 'Waiting for connection\u2026';
-
-  if (!isGuest) {
-    document.getElementById('qr-card').style.display = '';
-  } else {
-    // Guest: show a reconnect message
-    document.getElementById('guest-overlay').style.display  = 'flex';
-    document.getElementById('guest-overlay').classList.add('visible');
-    document.getElementById('drop-zone').style.display      = 'none';
-    document.getElementById('guest-title').textContent      = 'Disconnected';
-    document.getElementById('guest-sub').textContent        = 'The other device closed the connection.';
-    document.getElementById('spinner') && (document.getElementById('spinner').style.display = 'none');
-  }
-  toast('Disconnected from peer');
-}
-
-// ══ SENDING ═════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+//  SENDING — hub broadcasts to all, peer sends to hub (hub relays)
+// ═══════════════════════════════════════════════════════════
 function sendFiles(files) {
-  if (!conn || !conn.open) { toast('Not connected'); return; }
+  const targets = getTargets();
+  if (!targets.length) { toast('No one else in the room'); return; }
 
   [...files].forEach(file => {
-    const id = crypto.randomUUID();
-    addTf({ id, name: file.name, size: file.size, mime: file.type, dir: 'send' });
+    const tfId  = crypto.randomUUID();
+    const total = Math.ceil(file.size / CHUNK);
 
-    // Send metadata
-    conn.send(new TextEncoder().encode(JSON.stringify({
-      type: 'FILE_META', transferId: id,
-      name: file.name, size: file.size,
-      mime: file.type || 'application/octet-stream',
-      chunks: Math.ceil(file.size / CHUNK)
-    })));
+    addTf({ id: tfId, name: file.name, size: file.size, mime: file.type, dir: 'send' });
+
+    const meta = enc({ type:'FILE_META', transferId:tfId, name:file.name, size:file.size, mime:file.type||'application/octet-stream', chunks:total });
+    broadcast(targets, meta);
 
     const reader = new FileReader();
     reader.onload = () => {
       const buf = reader.result;
-      const total = Math.ceil(buf.byteLength / CHUNK);
       let i = 0;
-
       function next() {
-        if (!conn || !conn.open) return;
-        const hdr = new TextEncoder().encode(
-          JSON.stringify({ type: 'CHUNK', transferId: id, index: i }).padEnd(256, ' ')
-        );
-        const slice = buf.slice(i * CHUNK, (i + 1) * CHUNK);
-        const msg = new Uint8Array(hdr.byteLength + slice.byteLength);
+        if (!targets.some(t => t.open)) return;
+        const hdr   = encHdr({ type:'CHUNK', transferId:tfId, index:i });
+        const slice = buf.slice(i * CHUNK, (i+1) * CHUNK);
+        const msg   = new Uint8Array(hdr.byteLength + slice.byteLength);
         msg.set(hdr);
         msg.set(new Uint8Array(slice), hdr.byteLength);
-        conn.send(msg.buffer);
-        updateTf(id, { progress: Math.round(++i / total * 100) });
-        if (i < total) { setTimeout(next, 0); }
+        broadcast(targets, msg.buffer);
+        updateTf(tfId, { progress: Math.round(++i / total * 100) });
+        if (i < total) setTimeout(next, 0);
         else {
-          conn.send(new TextEncoder().encode(JSON.stringify({ type: 'FILE_DONE', transferId: id })));
-          updateTf(id, { status: 'done', progress: 100 });
-          sSent++; sMbOut += file.size / 1048576;
-          updateStats();
+          broadcast(targets, enc({ type:'FILE_DONE', transferId:tfId }));
+          updateTf(tfId, { status:'done', progress:100 });
+          sSent++; sMbOut += file.size/1048576; updateStats();
           toast('Sent: ' + file.name);
         }
       }
@@ -778,56 +819,115 @@ function sendFiles(files) {
   });
 }
 
-// ══ RECEIVING ═══════════════════════════════════════════════
-function handleData(raw) {
+// Returns array of open DataConnections to send to
+function getTargets() {
+  if (role === 'hub') return Object.values(peerConns).filter(c => c.open);
+  if (role === 'peer' && hubConn && hubConn.open) return [hubConn];
+  return [];
+}
+
+function broadcast(targets, data) {
+  targets.forEach(t => { try { t.send(data); } catch(e){} });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RECEIVING
+// ═══════════════════════════════════════════════════════════
+
+// Hub: handle data from a peer, then relay to all OTHER peers
+function handleChunkData(raw, fromId) {
   let buf;
-  if      (raw instanceof ArrayBuffer) { buf = new Uint8Array(raw); }
-  else if (raw instanceof Blob)        { raw.arrayBuffer().then(handleData); return; }
-  else { try { handleMsg(JSON.parse(raw)); } catch(e){} return; }
+  if (raw instanceof ArrayBuffer) buf = new Uint8Array(raw);
+  else if (raw instanceof Blob) { raw.arrayBuffer().then(ab => handleChunkData(ab, fromId)); return; }
+  else return;
 
-  // Try plain JSON first (metadata / done signals)
+  // Parse the 256-byte header
   try {
-    const text = new TextDecoder().decode(buf).trim();
-    if (text.startsWith('{')) { handleMsg(JSON.parse(text)); return; }
-  } catch(e){}
-
-  // Chunk: first 256 bytes = JSON header, rest = data
-  try {
-    const hdr = JSON.parse(new TextDecoder().decode(buf.slice(0, 256)).trim());
+    const hdr = JSON.parse(new TextDecoder().decode(buf.slice(0,256)).trim());
     if (hdr.type === 'CHUNK') {
       const tf = incoming[hdr.transferId]; if (!tf) return;
       tf.chunks[hdr.index] = buf.slice(256);
       tf.received++;
       updateTf(hdr.transferId, { progress: Math.round(tf.received / tf.total * 100) });
+
+      // Hub relay: forward this chunk to all peers EXCEPT the sender
+      if (role === 'hub') relayToPeers(buf.buffer, fromId);
     }
   } catch(e){}
 }
 
-function handleMsg(msg) {
+function handleFileControl(msg, fromId) {
+  if (msg.type === 'WELCOME') return; // ignore
+
   if (msg.type === 'FILE_META') {
     incoming[msg.transferId] = {
-      name: msg.name, size: msg.size, mime: msg.mime,
-      total: msg.chunks, chunks: new Array(msg.chunks), received: 0
+      name:msg.name, size:msg.size, mime:msg.mime,
+      total:msg.chunks, chunks:new Array(msg.chunks), received:0
     };
-    addTf({ id: msg.transferId, name: msg.name, size: msg.size, mime: msg.mime, dir: 'recv' });
+    addTf({ id:msg.transferId, name:msg.name, size:msg.size, mime:msg.mime, dir:'recv' });
+
+    // Hub relay
+    if (role === 'hub') relayToPeers(enc(msg), fromId);
   }
 
   if (msg.type === 'FILE_DONE') {
     const tf = incoming[msg.transferId]; if (!tf) return;
-    const blob = new Blob(tf.chunks.map(c => new Uint8Array(c)), { type: tf.mime || 'application/octet-stream' });
+    const blob = new Blob(tf.chunks.map(c => new Uint8Array(c)), { type: tf.mime||'application/octet-stream' });
     const url  = URL.createObjectURL(blob);
-    updateTf(msg.transferId, { status: 'done', progress: 100, dlUrl: url, dlName: tf.name });
+    updateTf(msg.transferId, { status:'done', progress:100, dlUrl:url, dlName:tf.name });
     delete incoming[msg.transferId];
-    sRecv++; sMbIn += tf.size / 1048576;
-    updateStats();
+    sRecv++; sMbIn += tf.size/1048576; updateStats();
     toast('Received: ' + tf.name);
+
+    // Hub relay
+    if (role === 'hub') relayToPeers(enc(msg), fromId);
   }
 }
 
-// ══ UI HELPERS ══════════════════════════════════════════════
-function setStatus(state, msg) {
-  document.getElementById('dot').className       = 'dot ' + state;
-  document.getElementById('status-text').textContent = msg;
+// Hub relays data to all peers except the original sender
+function relayToPeers(data, exceptId) {
+  Object.entries(peerConns).forEach(([id, conn]) => {
+    if (id !== exceptId && conn.open) {
+      try { conn.send(data); } catch(e){}
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════════
+function enc(obj)    { return new TextEncoder().encode(JSON.stringify(obj)); }
+function encHdr(obj) { return new TextEncoder().encode(JSON.stringify(obj).padEnd(256,' ')); }
+
+function tryParseMsg(raw) {
+  // Returns parsed JSON object if raw is a pure control message, else null
+  try {
+    let text;
+    if (raw instanceof ArrayBuffer)  text = new TextDecoder().decode(raw);
+    else if (raw instanceof Uint8Array) text = new TextDecoder().decode(raw);
+    else if (typeof raw === 'string') text = raw;
+    else if (raw instanceof Blob) return null; // handle async elsewhere
+    else return null;
+    const trimmed = text.trim();
+    if (!trimmed.startsWith('{')) return null;
+    return JSON.parse(trimmed);
+  } catch(e) { return null; }
+}
+
+function randCode() {
+  return String(Math.floor(1000 + Math.random() * 9000));
+}
+
+function enableDrop(yes) {
+  const dz = document.getElementById('drop-zone');
+  const banner = document.getElementById('no-peer-banner');
+  if (yes) {
+    dz.classList.remove('disabled');
+    banner.style.display = 'none';
+  } else {
+    dz.classList.add('disabled');
+    banner.style.display = 'flex';
+  }
 }
 
 function updateStats() {
@@ -837,38 +937,37 @@ function updateStats() {
   document.getElementById('s-in').textContent   = sMbIn.toFixed(1);
 }
 
-function toast(msg, dur = 2500) {
+function toast(msg, dur=2500) {
   const el = document.getElementById('toast');
   el.textContent = msg; el.classList.add('show');
   clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), dur);
 }
 
-// ══ TRANSFER LIST ════════════════════════════════════════════
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ═══════════════════════════════════════════════════════════
+//  TRANSFER LIST UI
+// ═══════════════════════════════════════════════════════════
 function fileIcon(m) {
-  if (!m)                              return '\uD83D\uDCC4';
-  if (m.startsWith('image/'))          return '\uD83D\uDDBC';
-  if (m.startsWith('video/'))          return '\uD83C\uDFAC';
-  if (m.startsWith('audio/'))          return '\uD83C\uDFB5';
-  if (m.includes('pdf'))               return '\uD83D\uDCD5';
+  if (!m)                                   return '\uD83D\uDCC4';
+  if (m.startsWith('image/'))               return '\uD83D\uDDBC';
+  if (m.startsWith('video/'))               return '\uD83C\uDFAC';
+  if (m.startsWith('audio/'))               return '\uD83C\uDFB5';
+  if (m.includes('pdf'))                    return '\uD83D\uDCD5';
   if (m.includes('zip')||m.includes('tar')) return '\uD83D\uDCE6';
-  if (m.includes('text'))              return '\uD83D\uDCDD';
+  if (m.includes('text'))                   return '\uD83D\uDCDD';
   return '\uD83D\uDCC4';
 }
-
 function fmtSize(b) {
-  if (b < 1024)    return b + ' B';
-  if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
-  return (b / 1048576).toFixed(1) + ' MB';
-}
-
-function esc(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  if (b<1024) return b+' B';
+  if (b<1048576) return (b/1024).toFixed(1)+' KB';
+  return (b/1048576).toFixed(1)+' MB';
 }
 
 function addTf(tf) {
   document.getElementById('tf-section').style.display = 'block';
   const div = document.createElement('div');
-  div.className = 'tf-item'; div.id = 'tf-' + tf.id;
+  div.className = 'tf-item'; div.id = 'tf-'+tf.id;
   div.innerHTML = `
     <div class="tf-icon">${fileIcon(tf.mime)}</div>
     <div class="tf-info">
@@ -877,76 +976,126 @@ function addTf(tf) {
         <span>${fmtSize(tf.size)}</span>
         <span id="tfp-${tf.id}">0%</span>
       </div>
-      <div class="tf-bar-wrap">
-        <div class="tf-bar" id="tfb-${tf.id}" style="width:0%"></div>
-      </div>
+      <div class="tf-bar-wrap"><div class="tf-bar" id="tfb-${tf.id}" style="width:0%"></div></div>
     </div>
-    <div class="tf-status ts-${tf.dir==='send'?'send':'recv'}" id="tfs-${tf.id}">
-      ${tf.dir === 'send' ? 'Sending' : 'Receiving'}
+    <div class="tf-tag tt-${tf.dir==='send'?'send':'recv'}" id="tft-${tf.id}">
+      ${tf.dir==='send'?'Sending':'Receiving'}
     </div>`;
   document.getElementById('tf-list').prepend(div);
 }
 
 function updateTf(id, ch) {
-  const el = document.getElementById('tf-' + id); if (!el) return;
+  const el = document.getElementById('tf-'+id); if (!el) return;
   if (ch.progress !== undefined) {
-    const b = document.getElementById('tfb-' + id);
-    const p = document.getElementById('tfp-' + id);
-    if (b) b.style.width  = ch.progress + '%';
-    if (p) p.textContent  = ch.progress + '%';
+    const b = document.getElementById('tfb-'+id), p = document.getElementById('tfp-'+id);
+    if (b) b.style.width  = ch.progress+'%';
+    if (p) p.textContent  = ch.progress+'%';
   }
   if (ch.status === 'done') {
-    const st   = document.getElementById('tfs-' + id);
+    const tag  = document.getElementById('tft-'+id);
     const wrap = el.querySelector('.tf-bar-wrap');
-    if (st)   { st.textContent = 'Done'; st.className = 'tf-status ts-done'; }
+    if (tag)  { tag.textContent = 'Done'; tag.className = 'tf-tag tt-done'; }
     if (wrap) wrap.style.display = 'none';
     if (ch.dlUrl) {
       const a = document.createElement('a');
-      a.href = ch.dlUrl; a.download = ch.dlName || 'file';
+      a.href = ch.dlUrl; a.download = ch.dlName||'file';
       a.className = 'dl-btn'; a.textContent = 'Save';
-      el.appendChild(a);
-      a.click(); // auto-trigger download
+      el.appendChild(a); a.click();
     }
   }
   if (ch.status === 'error') {
-    const st = document.getElementById('tfs-' + id);
-    if (st) { st.textContent = 'Error'; st.className = 'tf-status ts-err'; }
+    const tag = document.getElementById('tft-'+id);
+    if (tag) { tag.textContent='Error'; tag.className='tf-tag tt-err'; }
   }
 }
 
 function clearDone() {
-  document.querySelectorAll('.tf-item').forEach(el => {
-    if (el.querySelector('.ts-done')) el.remove();
-  });
-  if (!document.getElementById('tf-list').children.length) {
-    document.getElementById('tf-section').style.display = 'none';
+  document.querySelectorAll('.tf-item').forEach(el => { if (el.querySelector('.tt-done')) el.remove(); });
+  if (!document.getElementById('tf-list').children.length) document.getElementById('tf-section').style.display='none';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DROP ZONE EVENTS
+// ═══════════════════════════════════════════════════════════
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover',  e  => { e.preventDefault(); if (!dz.classList.contains('disabled')) dz.classList.add('over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+dz.addEventListener('drop',      e  => {
+  e.preventDefault(); dz.classList.remove('over');
+  if (dz.classList.contains('disabled')) return;
+  sendFiles(e.dataTransfer.files);
+});
+dz.addEventListener('click', () => {
+  if (!dz.classList.contains('disabled')) document.getElementById('file-input').click();
+});
+document.getElementById('file-input').addEventListener('change', e => {
+  if (e.target.files.length) sendFiles(e.target.files);
+  e.target.value = '';
+});
+
+// ═══════════════════════════════════════════════════════════
+//  BUTTON WIRING
+// ═══════════════════════════════════════════════════════════
+// Welcome
+document.getElementById('btn-create').addEventListener('click', () => createRoom());
+document.getElementById('btn-join').addEventListener('click',   () => showScreen('screen-join'));
+
+// Join screen
+const codeInput = document.getElementById('code-input');
+const joinBtn   = document.getElementById('join-btn');
+
+codeInput.addEventListener('input', () => {
+  codeInput.classList.remove('err','success');
+  document.getElementById('join-msg').textContent = '';
+  const v = codeInput.value.replace(/\D/g,'');
+  codeInput.value = v;
+  joinBtn.disabled = v.length !== 4;
+  if (v.length === 4) codeInput.classList.add('success');
+});
+codeInput.addEventListener('keydown', e => { if (e.key==='Enter' && !joinBtn.disabled) joinBtn.click(); });
+
+joinBtn.addEventListener('click', () => {
+  const code = codeInput.value.trim();
+  if (code.length === 4) joinRoom(code);
+});
+
+document.getElementById('join-back-btn').addEventListener('click', () => {
+  document.getElementById('join-spinner').classList.remove('visible');
+  codeInput.value = '';
+  joinBtn.disabled = true;
+  document.getElementById('join-msg').textContent = '';
+  if (myPeer && !myPeer.destroyed) { myPeer.destroy(); myPeer = null; }
+  showScreen('screen-welcome');
+});
+
+// Room
+document.getElementById('room-back-btn').addEventListener('click', leaveRoom);
+document.getElementById('regen-btn').addEventListener('click', () => {
+  // Close all existing connections then recreate
+  Object.values(peerConns).forEach(c => { try { c.close(); } catch(e){} });
+  Object.keys(peerConns).forEach(k => delete peerConns[k]);
+  document.getElementById('peers-list').innerHTML = '<span class="peers-empty" id="peers-empty">No one connected yet</span>';
+  document.getElementById('peer-count-badge').textContent = '0';
+  createRoom(randCode());
+});
+document.getElementById('peer-leave-btn').addEventListener('click', leaveRoom);
+document.getElementById('clear-btn').addEventListener('click', clearDone);
+
+// ═══════════════════════════════════════════════════════════
+//  AUTO-JOIN VIA QR (?code=XXXX in URL)
+// ═══════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  const code = new URLSearchParams(location.search).get('code');
+  if (code && /^\d{4}$/.test(code)) {
+    // Pre-fill and auto-join
+    codeInput.value = code;
+    codeInput.classList.add('success');
+    joinBtn.disabled = false;
+    showScreen('screen-join');
+    // Small delay so the UI renders before connecting
+    setTimeout(() => joinRoom(code), 300);
   }
-}
-
-// ══ EVENTS ══════════════════════════════════════════════════
-function wireEvents() {
-  const dz = document.getElementById('drop-zone');
-  dz.addEventListener('dragover',  e  => { e.preventDefault(); if (conn&&conn.open) dz.classList.add('over'); });
-  dz.addEventListener('dragleave', () => dz.classList.remove('over'));
-  dz.addEventListener('drop',      e  => { e.preventDefault(); dz.classList.remove('over'); if (!conn||!conn.open){toast('Not connected');return;} sendFiles(e.dataTransfer.files); });
-  dz.addEventListener('click',     () => { if (conn && conn.open) document.getElementById('file-input').click(); });
-
-  document.getElementById('file-input').addEventListener('change', e => {
-    if (e.target.files.length) sendFiles(e.target.files);
-    e.target.value = '';
-  });
-
-  document.getElementById('disc-btn').addEventListener('click', disconnect);
-  document.getElementById('clear-btn').addEventListener('click', clearDone);
-
-  document.getElementById('copy-link').addEventListener('click', () => {
-    const url = document.getElementById('copy-link').dataset.url;
-    if (url) {
-      navigator.clipboard.writeText(url);
-      toast('Link copied!');
-    }
-  });
-}
+});
 </script>
 </body>
 </html>
