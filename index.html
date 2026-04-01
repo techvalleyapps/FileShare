@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FileShare — Send files instantly</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>FileShare</title>
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@500;600;700;800&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -29,241 +29,395 @@
   --danger:  #e05a5a;
   --mono:    'DM Mono', monospace;
   --sans:    'Syne', sans-serif;
-  --radius:  12px;
 }
 
-html, body { min-height: 100vh; background: var(--bg); color: var(--text); font-family: var(--sans); }
-
-/* ── Layout ── */
-.shell {
-  display: grid;
-  grid-template-columns: 300px 1fr;
-  grid-template-rows: 60px 1fr;
-  min-height: 100vh;
+html, body {
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
 }
 
-/* ── Topbar ── */
+/* ══ TOPBAR ══════════════════════════════════════ */
 .topbar {
-  grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  padding: 0 28px;
+  gap: 14px;
+  padding: 0 24px;
+  height: 58px;
   border-bottom: 1px solid var(--border);
   background: var(--bg);
-  position: sticky; top: 0; z-index: 100;
-  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .logo {
-  width: 34px; height: 34px;
+  width: 32px; height: 32px;
   background: var(--accent);
   border-radius: 9px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-.logo svg { width: 18px; height: 18px; }
+.logo svg { width: 16px; height: 16px; }
 
-.brand { font-size: 17px; font-weight: 800; letter-spacing: -.03em; }
-.brand-sub { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+.brand {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -.03em;
+}
 
-.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.topbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
 .status-pill {
-  display: flex; align-items: center; gap: 6px;
-  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
   background: var(--bg3);
   border: 1px solid var(--border2);
   border-radius: 20px;
-  font-family: var(--mono); font-size: 11px; color: var(--muted2);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted2);
 }
 
 .dot {
   width: 7px; height: 7px;
   border-radius: 50%;
   background: var(--muted);
-  transition: background .3s;
   flex-shrink: 0;
+  transition: background .3s;
 }
 .dot.connecting { background: var(--warn); animation: blink 1s ease-in-out infinite; }
 .dot.ready      { background: var(--accent); animation: blink 2s ease-in-out infinite; }
-.dot.paired     { background: var(--blue); }
+.dot.paired     { background: var(--blue); box-shadow: 0 0 6px var(--blue); }
 .dot.error      { background: var(--danger); }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
 
-.my-id-chip {
-  font-family: var(--mono); font-size: 11px; color: var(--muted2);
-  padding: 6px 12px;
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: border-color .2s, color .2s;
-  user-select: none;
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+/* ══ MAIN LAYOUT ══════════════════════════════════ */
+/* Desktop: sidebar + main. Mobile: single column */
+.layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: calc(100dvh - 58px);
 }
-.my-id-chip:hover { border-color: var(--accent); color: var(--accent); }
 
-.mobile-link-btn {
-  padding: 6px 14px;
-  background: var(--bg3);
-  border: 1px solid var(--border2);
-  border-radius: 8px;
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--muted2);
-  cursor: pointer;
-  transition: color .2s, border-color .2s;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+@media (max-width: 720px) {
+  .layout { grid-template-columns: 1fr; }
+  .topbar { padding: 0 16px; }
+  .brand-sub { display: none; }
 }
-.mobile-link-btn:hover { color: var(--accent); border-color: var(--accent); }
 
-/* ── Sidebar ── */
+/* ══ SIDEBAR ══════════════════════════════════════ */
 .sidebar {
   background: var(--bg2);
   border-right: 1px solid var(--border);
-  padding: 22px;
+  padding: 22px 18px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  overflow-y: auto;
 }
 
-.qr-wrap {
+@media (max-width: 720px) {
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 16px;
+  }
+}
+
+/* ══ QR SECTION ═══════════════════════════════════ */
+.qr-card {
   background: var(--bg3);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 14px;
   padding: 18px;
   text-align: center;
 }
 
-.qr-label { font-size: 10px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 12px; }
+.qr-label {
+  font-size: 10px;
+  font-family: var(--mono);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 14px;
+}
 
-#qr-canvas { width: 200px !important; height: 200px !important; border-radius: 10px; display: block; margin: 0 auto; background: #fff; padding: 8px; }
+#qr-canvas {
+  width: 188px !important;
+  height: 188px !important;
+  border-radius: 10px;
+  display: block;
+  margin: 0 auto;
+  background: #fff;
+  padding: 7px;
+}
 
-.qr-url {
-  margin-top: 10px;
-  font-family: var(--mono); font-size: 10px; color: var(--accent);
-  word-break: break-all; cursor: pointer; line-height: 1.5;
-  padding: 7px 10px;
+/* Mobile: show QR smaller and inline */
+@media (max-width: 720px) {
+  .qr-card { display: flex; align-items: center; gap: 16px; text-align: left; }
+  .qr-label { margin-bottom: 6px; }
+  #qr-canvas { width: 100px !important; height: 100px !important; flex-shrink: 0; }
+  .qr-text { flex: 1; }
+}
+
+.qr-hint {
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--muted2);
+  font-family: var(--mono);
+  line-height: 1.6;
+}
+
+@media (max-width: 720px) {
+  .qr-hint { margin-top: 4px; }
+}
+
+.copy-link {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 10px;
+  color: var(--accent);
+  font-family: var(--mono);
+  cursor: pointer;
+  padding: 4px 8px;
   background: var(--bg4);
-  border-radius: 7px;
+  border-radius: 5px;
   border: 1px solid var(--border);
   transition: border-color .2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
-.qr-url:hover { border-color: var(--accent); }
+.copy-link:hover { border-color: var(--accent); }
 
-.section-label { font-size: 10px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
-
-.id-row { display: flex; gap: 6px; }
-
-.id-input {
-  flex: 1;
-  background: var(--bg4);
-  border: 1px solid var(--border2);
-  border-radius: 8px;
-  padding: 9px 12px;
-  font-family: var(--mono); font-size: 12px; color: var(--text);
-  outline: none;
-  transition: border-color .2s;
+/* ══ CONNECTED CARD ═══════════════════════════════ */
+.conn-card {
+  display: none;
+  background: rgba(106,180,245,.07);
+  border: 1px solid rgba(106,180,245,.22);
+  border-radius: 12px;
+  padding: 14px 16px;
+  gap: 10px;
+  align-items: flex-start;
+  flex-direction: column;
 }
-.id-input:focus { border-color: var(--accent); }
-.id-input::placeholder { color: var(--muted); }
+.conn-card.visible { display: flex; }
 
-.btn {
-  padding: 9px 14px;
-  background: var(--accent);
-  color: #05140c;
-  border: none;
-  border-radius: 8px;
-  font-family: var(--sans); font-size: 12px; font-weight: 700;
-  cursor: pointer;
-  transition: background .15s, transform .1s;
-  white-space: nowrap; flex-shrink: 0;
+.conn-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
 }
-.btn:hover  { background: #9ef5b8; }
-.btn:active { transform: scale(.97); }
-
-.peer-card { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; display: none; }
-.peer-card.visible { display: block; }
-.peer-card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .dot-blue { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); flex-shrink: 0; }
-.peer-card-header h4 { font-size: 12px; font-weight: 600; flex: 1; }
-.disc-btn { background: none; border: 1px solid var(--border2); border-radius: 5px; padding: 3px 8px; font-size: 10px; font-family: var(--mono); color: var(--muted2); cursor: pointer; transition: color .2s, border-color .2s; }
-.disc-btn:hover { color: var(--danger); border-color: var(--danger); }
-.peer-id-disp { font-family: var(--mono); font-size: 10px; color: var(--muted); word-break: break-all; line-height: 1.5; }
+.conn-top h4 { font-size: 13px; font-weight: 700; color: var(--blue); flex: 1; }
 
-.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.stat { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.disc-btn {
+  background: none;
+  border: 1px solid rgba(106,180,245,.3);
+  border-radius: 5px;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-family: var(--mono);
+  color: var(--muted2);
+  cursor: pointer;
+  transition: color .2s, border-color .2s;
+}
+.disc-btn:hover { color: var(--danger); border-color: var(--danger); }
+
+.conn-id {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  word-break: break-all;
+  line-height: 1.5;
+}
+
+/* ══ STATS ════════════════════════════════════════ */
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+@media (max-width: 720px) {
+  .stats { grid-template-columns: repeat(4, 1fr); }
+}
+
+.stat {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
 .stat .sl { font-size: 9px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 4px; }
-.stat .sv { font-size: 20px; font-weight: 700; line-height: 1; }
+.stat .sv { font-size: 18px; font-weight: 700; line-height: 1; }
 .sv.green { color: var(--accent); }
 
-/* ── Main ── */
-.main { display: flex; flex-direction: column; overflow: hidden; }
+@media (max-width: 720px) {
+  .stat .sv { font-size: 15px; }
+}
 
+/* ══ MAIN CONTENT ═════════════════════════════════ */
+.main {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ══ DROP ZONE ════════════════════════════════════ */
 .drop-zone {
   flex: 1;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  margin: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 24px;
   border: 2px dashed var(--border2);
-  border-radius: 22px;
+  border-radius: 20px;
   cursor: pointer;
-  transition: border-color .2s, background .2s;
+  transition: border-color .25s, background .25s;
   position: relative;
-  min-height: 280px;
+  min-height: 220px;
+  text-align: center;
 }
 .drop-zone.over     { border-color: var(--accent); background: rgba(126,232,162,.04); }
-.drop-zone.disabled { cursor: default; opacity: .5; }
+.drop-zone.disabled { cursor: default; opacity: .45; }
 
-.drop-inner { text-align: center; pointer-events: none; }
+@media (max-width: 720px) {
+  .drop-zone { margin: 14px; border-radius: 14px; min-height: 160px; }
+}
+
+.drop-inner { pointer-events: none; }
 
 .drop-icon {
-  width: 64px; height: 64px;
-  margin: 0 auto 18px;
-  border-radius: 18px;
+  width: 60px; height: 60px;
+  margin: 0 auto 16px;
+  border-radius: 16px;
   background: var(--bg3);
   border: 1px solid var(--border2);
   display: flex; align-items: center; justify-content: center;
   transition: transform .2s;
 }
-.drop-zone.over .drop-icon { transform: scale(1.1); }
-.drop-icon svg { width: 28px; height: 28px; }
+.drop-zone.over .drop-icon { transform: scale(1.08); }
+.drop-icon svg { width: 26px; height: 26px; }
 
-.drop-title { font-size: 22px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 6px; }
+.drop-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  margin-bottom: 6px;
+}
 .drop-sub { font-size: 13px; color: var(--muted2); font-family: var(--mono); }
-.drop-hint { margin-top: 12px; font-size: 11px; color: var(--muted); font-family: var(--mono); }
+.drop-hint { margin-top: 10px; font-size: 11px; color: var(--muted); font-family: var(--mono); }
 .file-input { display: none; }
 
-.no-conn-banner {
-  margin-top: 20px;
-  padding: 10px 20px;
+@media (max-width: 720px) {
+  .drop-title { font-size: 16px; }
+  .drop-icon { width: 48px; height: 48px; margin-bottom: 12px; }
+}
+
+.warn-banner {
+  margin-top: 18px;
+  padding: 9px 18px;
   background: var(--bg3);
   border: 1px solid var(--border);
   border-radius: 8px;
-  font-size: 12px; font-family: var(--mono); color: var(--warn);
-  display: flex; align-items: center; gap: 8px;
+  font-size: 12px;
+  font-family: var(--mono);
+  color: var(--warn);
+  display: flex;
+  align-items: center;
+  gap: 7px;
   pointer-events: none;
 }
 
-/* ── Transfers ── */
-.tf-section { border-top: 1px solid var(--border); max-height: 340px; overflow-y: auto; }
-.tf-header { display: flex; align-items: center; padding: 14px 28px 10px; gap: 10px; }
+/* ══ GUEST CONNECTING OVERLAY ═════════════════════ */
+/* Shown when guest first opens the page */
+.guest-overlay {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 16px;
+  padding: 40px;
+  text-align: center;
+}
+.guest-overlay.visible { display: flex; }
+
+.spinner {
+  width: 44px; height: 44px;
+  border: 3px solid var(--border2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.guest-title { font-size: 20px; font-weight: 700; letter-spacing: -.02em; }
+.guest-sub   { font-size: 13px; color: var(--muted2); font-family: var(--mono); line-height: 1.6; }
+
+/* ══ TRANSFERS ════════════════════════════════════ */
+.tf-section {
+  border-top: 1px solid var(--border);
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.tf-header {
+  display: flex;
+  align-items: center;
+  padding: 14px 24px 10px;
+  gap: 10px;
+}
 .tf-header h3 { font-size: 13px; font-weight: 600; flex: 1; }
-.clear-done { font-size: 11px; font-family: var(--mono); color: var(--muted); background: none; border: none; cursor: pointer; transition: color .2s; }
-.clear-done:hover { color: var(--danger); }
-.tf-list { padding: 0 28px 18px; display: flex; flex-direction: column; gap: 8px; }
+
+.clear-btn {
+  font-size: 11px;
+  font-family: var(--mono);
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color .2s;
+}
+.clear-btn:hover { color: var(--danger); }
+
+.tf-list {
+  padding: 0 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+@media (max-width: 720px) {
+  .tf-header { padding: 12px 14px 8px; }
+  .tf-list   { padding: 0 14px 14px; }
+}
 
 .tf-item {
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 10px; padding: 12px 14px;
-  display: flex; align-items: center; gap: 12px;
-  animation: slideIn .25s ease;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 14px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  animation: slideIn .2s ease;
 }
-@keyframes slideIn { from { opacity:0; transform: translateY(-8px); } to { opacity:1; transform: translateY(0); } }
+@keyframes slideIn { from { opacity:0; transform: translateY(-6px); } to { opacity:1; transform: translateY(0); } }
 
-.tf-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--bg4); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 15px; }
+.tf-icon { width: 34px; height: 34px; border-radius: 8px; background: var(--bg4); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
 .tf-info { flex: 1; min-width: 0; }
 .tf-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
 .tf-meta { font-size: 11px; color: var(--muted2); font-family: var(--mono); display: flex; gap: 8px; align-items: center; }
@@ -271,128 +425,135 @@ html, body { min-height: 100vh; background: var(--bg); color: var(--text); font-
 .tf-bar { height: 100%; background: var(--accent); border-radius: 2px; transition: width .15s; }
 .tf-status { flex-shrink: 0; font-size: 10px; font-family: var(--mono); padding: 3px 8px; border-radius: 4px; }
 .ts-send { background: rgba(106,180,245,.12); color: var(--blue); }
-.ts-recv { background: rgba(126,232,162,.1); color: var(--accent); }
+.ts-recv { background: rgba(126,232,162,.1);  color: var(--accent); }
 .ts-done { background: rgba(126,232,162,.12); color: var(--accent2); }
-.ts-err  { background: rgba(224,90,90,.12); color: var(--danger); }
-.dl-btn { padding: 5px 10px; background: var(--bg4); border: 1px solid var(--border2); border-radius: 6px; font-size: 11px; font-family: var(--mono); color: var(--accent); text-decoration: none; display: inline-block; transition: background .15s; }
+.ts-err  { background: rgba(224,90,90,.12);   color: var(--danger); }
+.dl-btn  { padding: 4px 9px; background: var(--bg4); border: 1px solid var(--border2); border-radius: 5px; font-size: 11px; font-family: var(--mono); color: var(--accent); text-decoration: none; display: inline-block; transition: background .15s; }
 .dl-btn:hover { background: var(--accentd); }
 
-/* ── Toast ── */
-.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; padding: 10px 20px; font-size: 12px; font-family: var(--mono); opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; z-index: 9999; white-space: nowrap; }
+/* ══ TOAST ════════════════════════════════════════ */
+.toast {
+  position: fixed;
+  bottom: 20px; left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 12px;
+  font-family: var(--mono);
+  opacity: 0;
+  transition: opacity .22s, transform .22s;
+  pointer-events: none;
+  z-index: 9999;
+  white-space: nowrap;
+}
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* ── Scrollbar ── */
+/* ══ SCROLLBAR ════════════════════════════════════ */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
-
-/* ── Responsive ── */
-@media (max-width: 768px) {
-  .shell { grid-template-columns: 1fr; grid-template-rows: 60px auto 1fr; }
-  .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
-  .brand-sub { display: none; }
-}
 </style>
 </head>
 <body>
 
-<div class="shell">
-
-  <!-- Topbar -->
-  <header class="topbar">
-    <div class="logo">
-      <svg viewBox="0 0 18 18" fill="none">
-        <path d="M2 9h14M9 2l7 7-7 7" stroke="#05140c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+<!-- ══ TOPBAR ══ -->
+<header class="topbar">
+  <div class="logo">
+    <svg viewBox="0 0 16 16" fill="none">
+      <path d="M2 8h12M8 2l6 6-6 6" stroke="#05140c" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <span class="brand">FileShare</span>
+  <div class="topbar-right">
+    <div class="status-pill">
+      <div class="dot connecting" id="dot"></div>
+      <span id="status-text">Starting&hellip;</span>
     </div>
-    <span class="brand">FileShare</span>
-    <span class="brand-sub">WebRTC &middot; No cloud &middot; Peer&ndash;to&ndash;peer</span>
-    <div class="topbar-right">
-      <div class="status-pill">
-        <div class="dot connecting" id="top-dot"></div>
-        <span id="top-status">Connecting&hellip;</span>
-      </div>
-      <div class="my-id-chip" id="my-id-chip" title="Click to copy">
-        ID: <span id="my-id-display">&mdash;</span>
-      </div>
-      <a href="mobile.html" class="mobile-link-btn" target="_blank">
-        &#128241; Mobile page
-      </a>
-    </div>
-  </header>
+  </div>
+</header>
 
-  <!-- Sidebar -->
-  <aside class="sidebar">
+<!-- ══ LAYOUT ══ -->
+<div class="layout">
 
-    <div>
-      <div class="qr-label">Scan on other device</div>
-      <div class="qr-wrap">
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar" id="sidebar">
+
+    <!-- QR card — only shown in host mode -->
+    <div class="qr-card" id="qr-card">
+      <div class="qr-text">
+        <div class="qr-label">Scan to connect</div>
         <canvas id="qr-canvas"></canvas>
-        <div class="qr-url" id="qr-url" title="Click to copy">Generating&hellip;</div>
+        <div class="qr-hint">
+          Scan with any device on the same WiFi.<br>
+          Connection is automatic &mdash; no setup needed.
+        </div>
+        <span class="copy-link" id="copy-link" title="Click to copy link">Generating link&hellip;</span>
       </div>
     </div>
 
-    <div>
-      <div class="section-label">Connect by Peer ID</div>
-      <div class="id-row">
-        <input class="id-input" id="peer-input" placeholder="Paste peer ID&hellip;" />
-        <button class="btn" id="join-btn">Join</button>
-      </div>
-    </div>
-
-    <div class="peer-card" id="peer-card">
-      <div class="peer-card-header">
+    <!-- Connected card -->
+    <div class="conn-card" id="conn-card">
+      <div class="conn-top">
         <div class="dot-blue"></div>
         <h4>Connected</h4>
         <button class="disc-btn" id="disc-btn">Disconnect</button>
       </div>
-      <div class="peer-id-disp" id="peer-id-disp">&mdash;</div>
+      <div class="conn-id" id="conn-id">&mdash;</div>
     </div>
 
-    <div>
-      <div class="section-label">Session stats</div>
-      <div class="stats-grid">
-        <div class="stat"><div class="sl">Sent</div><div class="sv green" id="s-sent">0</div></div>
-        <div class="stat"><div class="sl">Received</div><div class="sv green" id="s-recv">0</div></div>
-        <div class="stat"><div class="sl">MB out</div><div class="sv" id="s-out">0</div></div>
-        <div class="stat"><div class="sl">MB in</div><div class="sv" id="s-in">0</div></div>
-      </div>
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat"><div class="sl">Sent</div><div class="sv green" id="s-sent">0</div></div>
+      <div class="stat"><div class="sl">Received</div><div class="sv green" id="s-recv">0</div></div>
+      <div class="stat"><div class="sl">MB out</div><div class="sv" id="s-out">0</div></div>
+      <div class="stat"><div class="sl">MB in</div><div class="sv" id="s-in">0</div></div>
     </div>
 
     <div style="margin-top:auto;padding-top:12px;border-top:1px solid var(--border)">
       <p style="font-size:10px;color:var(--muted);font-family:var(--mono);line-height:1.7">
-        Files transfer <strong style="color:var(--text)">directly</strong> between browsers via WebRTC.<br>
-        Nothing goes to any server. Works on any device.
+        Files transfer <strong style="color:var(--muted2)">directly</strong> between browsers.<br>
+        Nothing passes through any server.
       </p>
     </div>
 
   </aside>
 
-  <!-- Main -->
-  <main class="main">
+  <!-- ── MAIN ── -->
+  <main class="main" id="main-area">
 
+    <!-- Guest connecting overlay — shown while guest is auto-connecting -->
+    <div class="guest-overlay" id="guest-overlay">
+      <div class="spinner"></div>
+      <div class="guest-title" id="guest-title">Connecting&hellip;</div>
+      <div class="guest-sub" id="guest-sub">Establishing secure peer connection</div>
+    </div>
+
+    <!-- Drop zone — shown once connected -->
     <div class="drop-zone disabled" id="drop-zone">
       <input type="file" class="file-input" id="file-input" multiple>
       <div class="drop-inner">
         <div class="drop-icon">
-          <svg viewBox="0 0 28 28" fill="none" color="var(--accent)">
-            <path d="M14 4v15M8 12l6-8 6 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M4 22h20" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+          <svg viewBox="0 0 26 26" fill="none" color="var(--accent)">
+            <path d="M13 3v14M7 11l6-8 6 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4 21h18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
           </svg>
         </div>
-        <div class="drop-title">Drop files to send</div>
-        <div class="drop-sub">or click anywhere here to browse</div>
-        <div class="drop-hint" id="drop-hint">Connect a device first</div>
+        <div class="drop-title" id="drop-title">Drop files to send</div>
+        <div class="drop-sub">or tap to browse</div>
+        <div class="drop-hint" id="drop-hint">Waiting for connection&hellip;</div>
       </div>
-      <div class="no-conn-banner" id="no-conn-banner">
+      <div class="warn-banner" id="warn-banner">
         &#9888;&nbsp; Scan the QR code on another device to connect
       </div>
     </div>
 
+    <!-- Transfer history -->
     <div class="tf-section" id="tf-section" style="display:none">
       <div class="tf-header">
         <h3>Transfers</h3>
-        <button class="clear-done" id="clear-done">Clear done</button>
+        <button class="clear-btn" id="clear-btn">Clear done</button>
       </div>
       <div class="tf-list" id="tf-list"></div>
     </div>
@@ -403,128 +564,211 @@ html, body { min-height: 100vh; background: var(--bg); color: var(--text); font-
 <div class="toast" id="toast"></div>
 
 <script>
-// ══ CONFIG ══════════════════════════════════════════════════
-// Base URL for QR code — points to mobile.html on same origin
-const MOBILE_URL = location.origin + location.pathname.replace('index.html','').replace(/\/$/, '') + '/mobile.html';
+// ══ CONSTANTS ═══════════════════════════════════════════════
+const CHUNK    = 64 * 1024; // 64 KB chunks
+const ICE      = { iceServers: [
+  { urls: 'stun:stun.l.google.com:19302' },
+  { urls: 'stun:global.stun.twilio.com:3478' }
+]};
 
 // ══ STATE ═══════════════════════════════════════════════════
 let peer = null, conn = null, myId = null;
-const CHUNK = 64 * 1024;
 const incoming = {};
 let sSent = 0, sRecv = 0, sMbOut = 0, sMbIn = 0;
 
-// ══ INIT ════════════════════════════════════════════════════
+// ══ MODE DETECTION ══════════════════════════════════════════
+// Guest mode = URL has ?peer=XYZ (came from scanning QR)
+// Host mode  = no peer param (opened the page directly)
+const urlPeer  = new URLSearchParams(location.search).get('peer');
+const isGuest  = !!urlPeer;
+
+// ══ BOOT ════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  wireEvents();
+
+  if (isGuest) {
+    // Guest: hide QR, show spinner overlay, auto-connect once peer is ready
+    document.getElementById('qr-card').style.display   = 'none';
+    document.getElementById('drop-zone').style.display = 'none';
+    document.getElementById('guest-overlay').classList.add('visible');
+    setStatus('connecting', 'Connecting\u2026');
+  } else {
+    // Host: show QR, hide guest overlay
+    document.getElementById('guest-overlay').style.display = 'none';
+  }
+
+  initPeer();
+});
+
+// ══ PEER INIT ═══════════════════════════════════════════════
 function initPeer() {
-  setStatus('connecting', 'Connecting\u2026');
-  peer = new Peer({ debug: 0, config: { iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:global.stun.twilio.com:3478' }
-  ]}});
+  peer = new Peer({ debug: 0, config: ICE });
 
   peer.on('open', id => {
     myId = id;
-    document.getElementById('my-id-display').textContent = id.slice(0,12) + '\u2026';
-    document.getElementById('my-id-chip').title = 'Your ID: ' + id + ' — click to copy';
-    setStatus('ready', 'Ready \u2014 waiting for connection');
-    generateQR(id);
-    // Auto-connect if ?peer= in URL
-    const targetId = new URLSearchParams(location.search).get('peer');
-    if (targetId && targetId !== id) connectTo(targetId);
+
+    if (isGuest) {
+      // Auto-connect to host — no user action needed
+      connectTo(urlPeer);
+    } else {
+      // Host — generate QR
+      setStatus('ready', 'Waiting for connection');
+      generateQR(id);
+    }
   });
 
   peer.on('connection', c => handleConn(c));
+
   peer.on('error', err => {
     setStatus('error', 'Error: ' + err.type);
-    toast('Error: ' + err.type, 4000);
+    toast('Connection error: ' + err.type, 4000);
     if (err.type === 'network' || err.type === 'server-error') setTimeout(initPeer, 3000);
+    if (isGuest) {
+      document.getElementById('guest-title').textContent = 'Connection failed';
+      document.getElementById('guest-sub').textContent   = err.type + ' — try scanning the QR again';
+      document.getElementById('spinner') && (document.getElementById('spinner').style.display = 'none');
+    }
   });
+
   peer.on('disconnected', () => {
-    setStatus('ready', 'Reconnecting\u2026');
     setTimeout(() => peer && !peer.destroyed && peer.reconnect(), 2000);
   });
 }
 
 // ══ QR ══════════════════════════════════════════════════════
 function generateQR(peerId) {
-  const url = MOBILE_URL + '?peer=' + peerId;
-  const el  = document.getElementById('qr-url');
-  el.textContent        = url;
-  el.dataset.fullUrl    = url;
+  // Build URL: same page + ?peer=ID so guest auto-connects
+  const base = location.href.split('?')[0];
+  const url  = base + '?peer=' + peerId;
+
+  // Render QR
   QRCode.toCanvas(document.getElementById('qr-canvas'), url, {
-    width: 200, margin: 1,
+    width: 188, margin: 1,
     color: { dark: '#07070d', light: '#ffffff' }
   });
+
+  // Copy link chip
+  const chip = document.getElementById('copy-link');
+  // Show shortened display
+  const display = location.hostname + '/\u2026?peer=' + peerId.slice(0,8) + '\u2026';
+  chip.textContent   = '\uD83D\uDD17 ' + display;
+  chip.dataset.url   = url;
+  chip.title         = 'Click to copy: ' + url;
 }
 
 // ══ CONNECTION ══════════════════════════════════════════════
 function connectTo(id) {
-  if (!id) { toast('Enter a Peer ID'); return; }
-  if (!myId) { toast('Still initialising\u2026'); return; }
-  if (id === myId) { toast("That\u2019s your own ID!"); return; }
-  toast('Connecting\u2026');
+  if (!id || !myId) return;
+  if (id === myId) {
+    // Edge case: same page opened twice, ignore
+    document.getElementById('guest-title').textContent = 'Same device detected';
+    document.getElementById('guest-sub').textContent   = 'Open this link on a different device.';
+    return;
+  }
   handleConn(peer.connect(id, { reliable: true, serialization: 'raw' }));
 }
 
 function handleConn(c) {
-  if (conn && conn.open) { toast('Already connected'); c.close(); return; }
+  if (conn && conn.open) { c.close(); return; } // already connected
   conn = c;
+
   c.on('open', () => {
-    setStatus('paired', 'Connected to ' + c.peer.slice(0,12) + '\u2026');
-    document.getElementById('peer-id-disp').textContent = c.peer;
-    document.getElementById('peer-card').classList.add('visible');
-    document.getElementById('no-conn-banner').style.display = 'none';
-    document.getElementById('drop-zone').classList.remove('disabled');
-    document.getElementById('drop-hint').textContent = 'Any file \u00b7 Any size \u00b7 Direct transfer';
-    toast('Connected! Drop files to send.');
+    onConnected(c.peer);
   });
-  c.on('data', handleData);
-  c.on('close', onDisc);
-  c.on('error', () => onDisc());
+
+  c.on('data',  handleData);
+  c.on('close', onDisconnected);
+  c.on('error', () => onDisconnected());
 }
 
-function disconnect() { if (conn) conn.close(); onDisc(); }
+function onConnected(remotePeerId) {
+  setStatus('paired', 'Connected');
 
-function onDisc() {
+  // Show connected card in sidebar
+  document.getElementById('conn-card').classList.add('visible');
+  document.getElementById('conn-id').textContent = remotePeerId;
+
+  // Reveal drop zone, hide overlays
+  document.getElementById('guest-overlay').classList.remove('visible');
+  document.getElementById('guest-overlay').style.display = 'none';
+  document.getElementById('drop-zone').style.display = '';
+  document.getElementById('drop-zone').classList.remove('disabled');
+  document.getElementById('warn-banner').style.display = 'none';
+  document.getElementById('drop-hint').textContent = 'Any file \u00b7 Any size \u00b7 Direct transfer';
+  document.getElementById('drop-title').textContent = 'Drop files to send';
+
+  // On mobile as guest, also show the sidebar stats
+  document.getElementById('qr-card').style.display = 'none';
+
+  toast('Connected! Drop or tap to send files.');
+}
+
+function disconnect() {
+  if (conn) conn.close();
+  onDisconnected();
+}
+
+function onDisconnected() {
   conn = null;
-  setStatus('ready', 'Disconnected \u2014 waiting for connection');
-  document.getElementById('peer-card').classList.remove('visible');
-  document.getElementById('no-conn-banner').style.display = 'flex';
+  setStatus('ready', isGuest ? 'Disconnected' : 'Waiting for connection');
+  document.getElementById('conn-card').classList.remove('visible');
   document.getElementById('drop-zone').classList.add('disabled');
-  document.getElementById('drop-hint').textContent = 'Connect a device first';
-  toast('Disconnected');
+  document.getElementById('warn-banner').style.display = 'flex';
+  document.getElementById('drop-hint').textContent = 'Waiting for connection\u2026';
+
+  if (!isGuest) {
+    document.getElementById('qr-card').style.display = '';
+  } else {
+    // Guest: show a reconnect message
+    document.getElementById('guest-overlay').style.display  = 'flex';
+    document.getElementById('guest-overlay').classList.add('visible');
+    document.getElementById('drop-zone').style.display      = 'none';
+    document.getElementById('guest-title').textContent      = 'Disconnected';
+    document.getElementById('guest-sub').textContent        = 'The other device closed the connection.';
+    document.getElementById('spinner') && (document.getElementById('spinner').style.display = 'none');
+  }
+  toast('Disconnected from peer');
 }
 
 // ══ SENDING ═════════════════════════════════════════════════
 function sendFiles(files) {
   if (!conn || !conn.open) { toast('Not connected'); return; }
+
   [...files].forEach(file => {
     const id = crypto.randomUUID();
     addTf({ id, name: file.name, size: file.size, mime: file.type, dir: 'send' });
+
+    // Send metadata
     conn.send(new TextEncoder().encode(JSON.stringify({
-      type:'FILE_META', transferId: id,
+      type: 'FILE_META', transferId: id,
       name: file.name, size: file.size,
       mime: file.type || 'application/octet-stream',
       chunks: Math.ceil(file.size / CHUNK)
     })));
+
     const reader = new FileReader();
     reader.onload = () => {
-      const buf = reader.result, total = Math.ceil(buf.byteLength / CHUNK);
+      const buf = reader.result;
+      const total = Math.ceil(buf.byteLength / CHUNK);
       let i = 0;
+
       function next() {
         if (!conn || !conn.open) return;
         const hdr = new TextEncoder().encode(
-          JSON.stringify({ type:'CHUNK', transferId: id, index: i }).padEnd(256,' ')
+          JSON.stringify({ type: 'CHUNK', transferId: id, index: i }).padEnd(256, ' ')
         );
-        const slice = buf.slice(i*CHUNK, (i+1)*CHUNK);
+        const slice = buf.slice(i * CHUNK, (i + 1) * CHUNK);
         const msg = new Uint8Array(hdr.byteLength + slice.byteLength);
-        msg.set(hdr); msg.set(new Uint8Array(slice), hdr.byteLength);
+        msg.set(hdr);
+        msg.set(new Uint8Array(slice), hdr.byteLength);
         conn.send(msg.buffer);
-        updateTf(id, { progress: Math.round(++i/total*100) });
-        if (i < total) setTimeout(next, 0);
+        updateTf(id, { progress: Math.round(++i / total * 100) });
+        if (i < total) { setTimeout(next, 0); }
         else {
-          conn.send(new TextEncoder().encode(JSON.stringify({ type:'FILE_DONE', transferId: id })));
-          updateTf(id, { status:'done', progress:100 });
-          sSent++; sMbOut += file.size/1048576; updateStats();
+          conn.send(new TextEncoder().encode(JSON.stringify({ type: 'FILE_DONE', transferId: id })));
+          updateTf(id, { status: 'done', progress: 100 });
+          sSent++; sMbOut += file.size / 1048576;
+          updateStats();
           toast('Sent: ' + file.name);
         }
       }
@@ -537,45 +781,53 @@ function sendFiles(files) {
 // ══ RECEIVING ═══════════════════════════════════════════════
 function handleData(raw) {
   let buf;
-  if (raw instanceof ArrayBuffer) buf = new Uint8Array(raw);
-  else if (raw instanceof Blob) { raw.arrayBuffer().then(handleData); return; }
+  if      (raw instanceof ArrayBuffer) { buf = new Uint8Array(raw); }
+  else if (raw instanceof Blob)        { raw.arrayBuffer().then(handleData); return; }
   else { try { handleMsg(JSON.parse(raw)); } catch(e){} return; }
 
+  // Try plain JSON first (metadata / done signals)
   try {
     const text = new TextDecoder().decode(buf).trim();
     if (text.startsWith('{')) { handleMsg(JSON.parse(text)); return; }
   } catch(e){}
 
+  // Chunk: first 256 bytes = JSON header, rest = data
   try {
-    const hdr = JSON.parse(new TextDecoder().decode(buf.slice(0,256)).trim());
+    const hdr = JSON.parse(new TextDecoder().decode(buf.slice(0, 256)).trim());
     if (hdr.type === 'CHUNK') {
       const tf = incoming[hdr.transferId]; if (!tf) return;
-      tf.chunks[hdr.index] = buf.slice(256); tf.received++;
-      updateTf(hdr.transferId, { progress: Math.round(tf.received/tf.total*100) });
+      tf.chunks[hdr.index] = buf.slice(256);
+      tf.received++;
+      updateTf(hdr.transferId, { progress: Math.round(tf.received / tf.total * 100) });
     }
   } catch(e){}
 }
 
 function handleMsg(msg) {
   if (msg.type === 'FILE_META') {
-    incoming[msg.transferId] = { name:msg.name, size:msg.size, mime:msg.mime, total:msg.chunks, chunks:new Array(msg.chunks), received:0 };
-    addTf({ id:msg.transferId, name:msg.name, size:msg.size, mime:msg.mime, dir:'recv' });
+    incoming[msg.transferId] = {
+      name: msg.name, size: msg.size, mime: msg.mime,
+      total: msg.chunks, chunks: new Array(msg.chunks), received: 0
+    };
+    addTf({ id: msg.transferId, name: msg.name, size: msg.size, mime: msg.mime, dir: 'recv' });
   }
+
   if (msg.type === 'FILE_DONE') {
     const tf = incoming[msg.transferId]; if (!tf) return;
-    const blob = new Blob(tf.chunks.map(c => new Uint8Array(c)), { type: tf.mime||'application/octet-stream' });
+    const blob = new Blob(tf.chunks.map(c => new Uint8Array(c)), { type: tf.mime || 'application/octet-stream' });
     const url  = URL.createObjectURL(blob);
-    updateTf(msg.transferId, { status:'done', progress:100, dlUrl:url, dlName:tf.name });
+    updateTf(msg.transferId, { status: 'done', progress: 100, dlUrl: url, dlName: tf.name });
     delete incoming[msg.transferId];
-    sRecv++; sMbIn += tf.size/1048576; updateStats();
+    sRecv++; sMbIn += tf.size / 1048576;
+    updateStats();
     toast('Received: ' + tf.name);
   }
 }
 
 // ══ UI HELPERS ══════════════════════════════════════════════
 function setStatus(state, msg) {
-  document.getElementById('top-dot').className = 'dot ' + state;
-  document.getElementById('top-status').textContent = msg;
+  document.getElementById('dot').className       = 'dot ' + state;
+  document.getElementById('status-text').textContent = msg;
 }
 
 function updateStats() {
@@ -593,75 +845,108 @@ function toast(msg, dur = 2500) {
 
 // ══ TRANSFER LIST ════════════════════════════════════════════
 function fileIcon(m) {
-  if (!m) return '\uD83D\uDCC4';
-  if (m.startsWith('image/')) return '\uD83D\uDDBC';
-  if (m.startsWith('video/')) return '\uD83C\uDFAC';
-  if (m.startsWith('audio/')) return '\uD83C\uDFB5';
-  if (m.includes('pdf'))      return '\uD83D\uDCD5';
+  if (!m)                              return '\uD83D\uDCC4';
+  if (m.startsWith('image/'))          return '\uD83D\uDDBC';
+  if (m.startsWith('video/'))          return '\uD83C\uDFAC';
+  if (m.startsWith('audio/'))          return '\uD83C\uDFB5';
+  if (m.includes('pdf'))               return '\uD83D\uDCD5';
   if (m.includes('zip')||m.includes('tar')) return '\uD83D\uDCE6';
-  if (m.includes('text'))     return '\uD83D\uDCDD';
+  if (m.includes('text'))              return '\uD83D\uDCDD';
   return '\uD83D\uDCC4';
 }
-function fmtSize(b) { if(b<1024) return b+' B'; if(b<1048576) return (b/1024).toFixed(1)+' KB'; return (b/1048576).toFixed(1)+' MB'; }
-function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function fmtSize(b) {
+  if (b < 1024)    return b + ' B';
+  if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+  return (b / 1048576).toFixed(1) + ' MB';
+}
+
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 
 function addTf(tf) {
   document.getElementById('tf-section').style.display = 'block';
   const div = document.createElement('div');
-  div.className = 'tf-item'; div.id = 'tf-'+tf.id;
+  div.className = 'tf-item'; div.id = 'tf-' + tf.id;
   div.innerHTML = `
     <div class="tf-icon">${fileIcon(tf.mime)}</div>
     <div class="tf-info">
       <div class="tf-name">${esc(tf.name)}</div>
-      <div class="tf-meta"><span>${fmtSize(tf.size)}</span><span id="tfp-${tf.id}">0%</span></div>
-      <div class="tf-bar-wrap"><div class="tf-bar" id="tfb-${tf.id}" style="width:0%"></div></div>
+      <div class="tf-meta">
+        <span>${fmtSize(tf.size)}</span>
+        <span id="tfp-${tf.id}">0%</span>
+      </div>
+      <div class="tf-bar-wrap">
+        <div class="tf-bar" id="tfb-${tf.id}" style="width:0%"></div>
+      </div>
     </div>
-    <div class="tf-status ts-${tf.dir==='send'?'send':'recv'}" id="tfs-${tf.id}">${tf.dir==='send'?'Sending':'Receiving'}</div>`;
+    <div class="tf-status ts-${tf.dir==='send'?'send':'recv'}" id="tfs-${tf.id}">
+      ${tf.dir === 'send' ? 'Sending' : 'Receiving'}
+    </div>`;
   document.getElementById('tf-list').prepend(div);
 }
 
 function updateTf(id, ch) {
-  const el = document.getElementById('tf-'+id); if (!el) return;
+  const el = document.getElementById('tf-' + id); if (!el) return;
   if (ch.progress !== undefined) {
-    const b = document.getElementById('tfb-'+id), p = document.getElementById('tfp-'+id);
-    if (b) b.style.width = ch.progress+'%';
-    if (p) p.textContent = ch.progress+'%';
+    const b = document.getElementById('tfb-' + id);
+    const p = document.getElementById('tfp-' + id);
+    if (b) b.style.width  = ch.progress + '%';
+    if (p) p.textContent  = ch.progress + '%';
   }
   if (ch.status === 'done') {
-    const st = document.getElementById('tfs-'+id), wrap = el.querySelector('.tf-bar-wrap');
-    if (st) { st.textContent='Done'; st.className='tf-status ts-done'; }
-    if (wrap) wrap.style.display='none';
+    const st   = document.getElementById('tfs-' + id);
+    const wrap = el.querySelector('.tf-bar-wrap');
+    if (st)   { st.textContent = 'Done'; st.className = 'tf-status ts-done'; }
+    if (wrap) wrap.style.display = 'none';
     if (ch.dlUrl) {
       const a = document.createElement('a');
-      a.href=ch.dlUrl; a.download=ch.dlName||'file';
-      a.className='dl-btn'; a.textContent='Save';
-      el.appendChild(a); a.click();
+      a.href = ch.dlUrl; a.download = ch.dlName || 'file';
+      a.className = 'dl-btn'; a.textContent = 'Save';
+      el.appendChild(a);
+      a.click(); // auto-trigger download
     }
+  }
+  if (ch.status === 'error') {
+    const st = document.getElementById('tfs-' + id);
+    if (st) { st.textContent = 'Error'; st.className = 'tf-status ts-err'; }
   }
 }
 
 function clearDone() {
-  document.querySelectorAll('.tf-item').forEach(el => { if(el.querySelector('.ts-done')) el.remove(); });
-  if (!document.getElementById('tf-list').children.length) document.getElementById('tf-section').style.display='none';
+  document.querySelectorAll('.tf-item').forEach(el => {
+    if (el.querySelector('.ts-done')) el.remove();
+  });
+  if (!document.getElementById('tf-list').children.length) {
+    document.getElementById('tf-section').style.display = 'none';
+  }
 }
 
 // ══ EVENTS ══════════════════════════════════════════════════
-const dz = document.getElementById('drop-zone');
-dz.addEventListener('dragover',  e => { e.preventDefault(); if(conn&&conn.open) dz.classList.add('over'); });
-dz.addEventListener('dragleave', ()  => dz.classList.remove('over'));
-dz.addEventListener('drop',      e  => { e.preventDefault(); dz.classList.remove('over'); if(!conn||!conn.open){toast('Not connected');return;} sendFiles(e.dataTransfer.files); });
-dz.addEventListener('click',     ()  => { if(conn&&conn.open) document.getElementById('file-input').click(); });
+function wireEvents() {
+  const dz = document.getElementById('drop-zone');
+  dz.addEventListener('dragover',  e  => { e.preventDefault(); if (conn&&conn.open) dz.classList.add('over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+  dz.addEventListener('drop',      e  => { e.preventDefault(); dz.classList.remove('over'); if (!conn||!conn.open){toast('Not connected');return;} sendFiles(e.dataTransfer.files); });
+  dz.addEventListener('click',     () => { if (conn && conn.open) document.getElementById('file-input').click(); });
 
-document.getElementById('file-input').addEventListener('change', e => { if(e.target.files.length) sendFiles(e.target.files); e.target.value=''; });
-document.getElementById('join-btn').addEventListener('click', () => connectTo(document.getElementById('peer-input').value.trim()));
-document.getElementById('peer-input').addEventListener('keydown', e => { if(e.key==='Enter') connectTo(document.getElementById('peer-input').value.trim()); });
-document.getElementById('disc-btn').addEventListener('click', disconnect);
-document.getElementById('clear-done').addEventListener('click', clearDone);
-document.getElementById('my-id-chip').addEventListener('click', () => { if(myId){navigator.clipboard.writeText(myId);toast('Peer ID copied!');} });
-document.getElementById('qr-url').addEventListener('click', () => { const el=document.getElementById('qr-url'); navigator.clipboard.writeText(el.dataset.fullUrl||el.textContent); toast('Link copied!'); });
+  document.getElementById('file-input').addEventListener('change', e => {
+    if (e.target.files.length) sendFiles(e.target.files);
+    e.target.value = '';
+  });
 
-// ══ BOOT ════════════════════════════════════════════════════
-initPeer();
+  document.getElementById('disc-btn').addEventListener('click', disconnect);
+  document.getElementById('clear-btn').addEventListener('click', clearDone);
+
+  document.getElementById('copy-link').addEventListener('click', () => {
+    const url = document.getElementById('copy-link').dataset.url;
+    if (url) {
+      navigator.clipboard.writeText(url);
+      toast('Link copied!');
+    }
+  });
+}
 </script>
 </body>
 </html>
