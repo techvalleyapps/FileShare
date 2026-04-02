@@ -542,7 +542,7 @@ function tryParse(raw){
     else if(raw instanceof Uint8Array)t=new TextDecoder().decode(raw);
     else if(typeof raw==='string')t=raw;
     else return null;
-    var s=t.trim();return s.charAt(0)==='{'}?JSON.parse(s):null;
+    var s=t.trim();return s.charAt(0)==='{' ? JSON.parse(s) : null;
   }catch(e){return null;}
 }
 function enableDrop(yes){
