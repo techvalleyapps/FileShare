@@ -131,7 +131,7 @@ html, body {
 .item-from.mine { color: var(--accent); background: var(--accentd); }
 .item-text-body { margin-top: 8px; padding: 10px 12px; background: var(--bg4); border-radius: 8px; font-family: var(--mono); font-size: 13px; color: var(--text); white-space: pre-wrap; word-break: break-word; line-height: 1.6; max-height: 160px; overflow-y: auto; }
 .item-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-top: 2px; }
-.save-btn { padding: 5px 12px; background: var(--bg4); border: 1px solid var(--border2); border-radius: 6px; font-size: 11px; font-family: var(--mono); color: var(--accent); cursor: pointer; transition: background .15s, border-color .15s; white-space: nowrap; text-decoration: none; display: inline-block; }
+.save-btn { padding: 5px 12px; background: var(--bg4); border: 1px solid var(--border2); border-radius: 6px; font-size: 11px; font-family: var(--mono); color: var(--accent); cursor: pointer; transition: background .15s, border-color .15px; white-space: nowrap; text-decoration: none; display: inline-block; }
 .save-btn:hover { background: var(--accentd); border-color: var(--accent); }
 .copy-btn { padding: 5px 12px; background: var(--bg4); border: 1px solid var(--border2); border-radius: 6px; font-size: 11px; font-family: var(--mono); color: var(--muted2); cursor: pointer; transition: color .2s, border-color .2s; white-space: nowrap; }
 .copy-btn:hover  { color: var(--accent); border-color: var(--accent); }
@@ -219,9 +219,24 @@ var ICE    = { iceServers: [
   { urls: 'stun:stun1.l.google.com:19302' }
 ]};
 
-// Use PeerJS public cloud — random IDs only (free tier requirement)
-// No custom host — let PeerJS choose the best endpoint
-var PEER_CFG = { debug: 0, config: ICE };
+// Multiple free PeerJS-compatible brokers — rotated on failure
+// None use a fixed/custom peer ID (free tier only allows random IDs)
+var BROKERS = [
+  { host: '0.peerjs.com',       port: 443, secure: true,  path: '/' },
+  { host: 'peerjs.92k.de',      port: 443, secure: true,  path: '/' },
+  { host: 'peer-server.fly.dev',port: 443, secure: true,  path: '/' },
+];
+var _brokerIdx = 0;
+
+function makePeerCfg(){
+  var b = BROKERS[_brokerIdx % BROKERS.length];
+  return { debug: 0, config: ICE, host: b.host, port: b.port, secure: b.secure, path: b.path };
+}
+
+// Exponential backoff — resets on successful connection
+var _retryCount = 0;
+function retryDelay(){ var d = Math.min(1000 * Math.pow(1.8, _retryCount), 30000); _retryCount++; return d; }
+function resetRetry(){ _retryCount = 0; }
 
 // ═══════════════════════════════════════════════════════════
 //  STATE
@@ -234,7 +249,7 @@ var hubConn     = null;
 var shelf       = [];
 var memberCount = 1;
 var incoming    = {};
-var restarting  = false;   // guard against overlapping restarts
+var restarting  = false;
 
 // ═══════════════════════════════════════════════════════════
 //  BOOT
@@ -243,11 +258,8 @@ window.addEventListener('DOMContentLoaded', function(){
   wireEvents();
   var savedHubId = null;
   try{ savedHubId = localStorage.getItem(LS_KEY); }catch(e){}
-  if(savedHubId){
-    startAsPeer(savedHubId);
-  } else {
-    startAsHub();
-  }
+  if(savedHubId){ startAsPeer(savedHubId); }
+  else           { startAsHub(); }
 });
 
 // ═══════════════════════════════════════════════════════════
@@ -256,43 +268,39 @@ window.addEventListener('DOMContentLoaded', function(){
 function startAsHub(){
   if(restarting) return;
   restarting = true;
-
   role = 'hub';
   destroyPeer();
-
   setStat('starting', 'Starting\u2026');
-  myPeer = new Peer(PEER_CFG);
+
+  myPeer = new Peer(makePeerCfg());
 
   myPeer.on('open', function(id){
     restarting = false;
+    resetRetry();
     myId = id;
     try{ localStorage.setItem(LS_KEY, id); }catch(e){}
     setStat('hub', 'Ready');
     setCount(1);
-    showQR(id);
+    showQR();
   });
 
   myPeer.on('connection', function(conn){ acceptPeer(conn); });
 
   myPeer.on('error', function(err){
     restarting = false;
-    // network/server errors — just reconnect, don't restart entirely
-    if(err.type === 'network' || err.type === 'server-error'){
-      setStat('starting', 'Reconnecting\u2026');
-      // don't call startAsHub again — let PeerJS handle it via disconnected event
-    } else {
-      setStat('error', 'Error');
-    }
+    _brokerIdx++;   // rotate broker on any error
+    var delay = retryDelay();
+    setStat('starting', 'Retrying in ' + Math.round(delay/1000) + 's\u2026');
+    setTimeout(function(){ if(!restarting) startAsHub(); }, delay);
   });
 
+  // Do NOT call myPeer.reconnect() here — it causes the infinite WSS loop.
+  // Instead do a full restart with backoff which rotates brokers.
   myPeer.on('disconnected', function(){
-    // Attempt reconnect — PeerJS built-in
+    restarting = false;
+    var delay = retryDelay();
     setStat('starting', 'Reconnecting\u2026');
-    setTimeout(function(){
-      if(myPeer && !myPeer.destroyed && role === 'hub'){
-        try{ myPeer.reconnect(); }catch(e){}
-      }
-    }, 1500);
+    setTimeout(function(){ if(!restarting) startAsHub(); }, delay);
   });
 }
 
@@ -306,13 +314,9 @@ function acceptPeer(conn){
     sendShelfToPeer(conn);
     broadcastControl({ type:'COUNT', count: memberCount });
   });
-  conn.on('data', function(raw){
-    var msg = tryParse(raw);
-    if(msg) handleControl(msg, id);
-    else     handleChunk(raw, id);
-  });
-  conn.on('close',  function(){ dropPeer(id); });
-  conn.on('error',  function(){ dropPeer(id); });
+  conn.on('data',  function(raw){ var m=tryParse(raw); if(m) handleControl(m,id); else handleChunk(raw,id); });
+  conn.on('close', function(){ dropPeer(id); });
+  conn.on('error', function(){ dropPeer(id); });
 }
 
 function dropPeer(id){
@@ -329,12 +333,11 @@ function dropPeer(id){
 function startAsPeer(hubId){
   if(restarting) return;
   restarting = true;
-
   role = 'peer';
   destroyPeer();
-
   setStat('starting', 'Joining\u2026');
-  myPeer = new Peer(PEER_CFG);
+
+  myPeer = new Peer(makePeerCfg());
 
   myPeer.on('open', function(id){
     restarting = false;
@@ -344,33 +347,27 @@ function startAsPeer(hubId){
 
     hubConn.on('open', function(){
       connected = true;
+      resetRetry();
       setStat('peer', 'Connected');
       toast('Joined!');
     });
 
-    hubConn.on('data', function(raw){
-      var msg = tryParse(raw);
-      if(msg) handleControl(msg, 'hub');
-      else     handleChunk(raw, 'hub');
-    });
+    hubConn.on('data', function(raw){ var m=tryParse(raw); if(m) handleControl(m,'hub'); else handleChunk(raw,'hub'); });
 
     hubConn.on('close', function(){
-      hubConn = null;
-      clearHubId();
+      hubConn = null; clearHubId();
       setStat('starting', 'Hub left\u2026');
       setTimeout(function(){ if(!restarting) startAsHub(); }, 1000);
     });
 
     hubConn.on('error', function(){
-      hubConn = null;
-      clearHubId();
+      hubConn = null; clearHubId();
       setTimeout(function(){ if(!restarting) startAsHub(); }, 1000);
     });
 
-    // Timeout — hub ID stale
     setTimeout(function(){
       if(!connected){
-        if(hubConn){ try{hubConn.close();}catch(e){} hubConn = null; }
+        if(hubConn){ try{hubConn.close();}catch(e){} hubConn=null; }
         clearHubId();
         if(!restarting) startAsHub();
       }
@@ -380,36 +377,30 @@ function startAsPeer(hubId){
   myPeer.on('error', function(){
     restarting = false;
     clearHubId();
-    setTimeout(function(){ if(!restarting) startAsHub(); }, 1000);
+    _brokerIdx++;
+    var delay = retryDelay();
+    setTimeout(function(){ if(!restarting) startAsHub(); }, delay);
   });
 
   myPeer.on('disconnected', function(){
-    setTimeout(function(){
-      if(myPeer && !myPeer.destroyed && role === 'peer'){
-        try{ myPeer.reconnect(); }catch(e){}
-      }
-    }, 1500);
+    restarting = false;
+    var delay = retryDelay();
+    setTimeout(function(){ if(!restarting) startAsPeer(hubId); }, delay);
   });
 }
 
-function clearHubId(){
-  try{ localStorage.removeItem(LS_KEY); }catch(e){}
-}
+function clearHubId(){ try{ localStorage.removeItem(LS_KEY); }catch(e){} }
 
 function destroyPeer(){
-  if(myPeer && !myPeer.destroyed){
-    try{ myPeer.destroy(); }catch(e){}
-  }
+  if(myPeer && !myPeer.destroyed){ try{ myPeer.destroy(); }catch(e){} }
   myPeer = null; myId = null;
 }
 
 // ═══════════════════════════════════════════════════════════
 //  QR CODE
 // ═══════════════════════════════════════════════════════════
-function showQR(hubId){
-  var url = location.href.split('?')[0];
-  // QR just points to the page URL — arriving browsers will find
-  // the hub ID in localStorage automatically
+function showQR(){
+  var url  = location.href.split('?')[0];
   var card = document.getElementById('qr-card');
   var link = document.getElementById('qr-link');
   link.textContent = '\uD83D\uDD17 ' + url;
@@ -422,18 +413,16 @@ function showQR(hubId){
 
 function copyPageLink(){
   var url = document.getElementById('qr-link').dataset.url || location.href;
-  navigator.clipboard.writeText(url).then(function(){
-    toast('Link copied!');
-  }).catch(function(){
-    var ta=document.createElement('textarea'); ta.value=url;
-    ta.style.position='fixed'; ta.style.opacity='0';
+  navigator.clipboard.writeText(url).then(function(){ toast('Link copied!'); })
+  .catch(function(){
+    var ta=document.createElement('textarea'); ta.value=url; ta.style.cssText='position:fixed;opacity:0';
     document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
     toast('Link copied!');
   });
 }
 
 // ═══════════════════════════════════════════════════════════
-//  SHELF SYNC — send existing shelf to newly joined peer
+//  SHELF SYNC
 // ═══════════════════════════════════════════════════════════
 function sendShelfToPeer(conn){
   shelf.forEach(function(item){
@@ -448,21 +437,19 @@ function sendShelfToPeer(conn){
 }
 
 function sendBlobToPeer(conn, itemId, blob){
-  var total = Math.ceil(blob.size / CHUNK), i = 0;
+  var total=Math.ceil(blob.size/CHUNK), i=0;
   function next(){
-    if(!conn.open || i >= total) return;
-    var sl = blob.slice(i*CHUNK, (i+1)*CHUNK);
-    var r  = new FileReader();
-    r.onload = function(){
+    if(!conn.open || i>=total) return;
+    var r=new FileReader();
+    r.onload=function(){
       if(!conn.open) return;
-      var hdr = encHdr({ type:'CHUNK', id:itemId, index:i });
-      var dat = r.result;
-      var msg = new Uint8Array(hdr.byteLength + dat.byteLength);
-      msg.set(hdr); msg.set(new Uint8Array(dat), hdr.byteLength);
-      try{ conn.send(msg.buffer); }catch(e){ return; }
-      i++; setTimeout(next, 0);
+      var hdr=encHdr({type:'CHUNK',id:itemId,index:i}), dat=r.result;
+      var msg=new Uint8Array(hdr.byteLength+dat.byteLength);
+      msg.set(hdr); msg.set(new Uint8Array(dat),hdr.byteLength);
+      try{conn.send(msg.buffer);}catch(e){return;}
+      i++; setTimeout(next,0);
     };
-    r.readAsArrayBuffer(sl);
+    r.readAsArrayBuffer(blob.slice(i*CHUNK,(i+1)*CHUNK));
   }
   next();
 }
@@ -472,42 +459,39 @@ function sendBlobToPeer(conn, itemId, blob){
 // ═══════════════════════════════════════════════════════════
 function sendFiles(files){
   Array.prototype.forEach.call(files, function(file){
-    var itemId = uid(), total = Math.ceil(file.size / CHUNK), time = nowTime();
-    var item = { id:itemId, type:'file', name:file.name, size:file.size, mime:file.type||'application/octet-stream', blob:null, from:'You', time:time };
+    var itemId=uid(), total=Math.ceil(file.size/CHUNK), time=nowTime();
+    var item={id:itemId, type:'file', name:file.name, size:file.size, mime:file.type||'application/octet-stream', blob:null, from:'You', time:time};
     shelf.push(item);
     addShelfItem(item, true);
 
-    var r = new FileReader();
-    r.onload = function(){
-      var buf = r.result;
-      item.blob = new Blob([buf], { type: item.mime });
+    var r=new FileReader();
+    r.onload=function(){
+      var buf=r.result;
+      item.blob=new Blob([buf],{type:item.mime});
 
-      // Activate save button for sender
-      var el = document.getElementById('si-'+itemId);
+      var el=document.getElementById('si-'+itemId);
       if(el){
-        var btn = el.querySelector('.save-btn');
-        if(btn){ btn.href=URL.createObjectURL(item.blob); btn.download=file.name; btn.textContent='Save'; btn.style.opacity='1'; btn.style.pointerEvents=''; }
-        var bw = el.querySelector('.sending-bar-wrap'); if(bw) bw.style.display='none';
+        var btn=el.querySelector('.save-btn');
+        if(btn){btn.href=URL.createObjectURL(item.blob);btn.download=file.name;btn.textContent='Save';btn.style.opacity='1';btn.style.pointerEvents='';}
+        var bw=el.querySelector('.sending-bar-wrap');if(bw)bw.style.display='none';
       }
 
-      var tgts = getTargets();
+      var tgts=getTargets();
       if(!tgts.length) return;
+      tgts.forEach(function(c){try{c.send(enc({type:'FILE_META',id:itemId,name:file.name,size:file.size,mime:item.mime,chunks:total,from:'Room',time:time}));}catch(e){}});
 
-      tgts.forEach(function(c){ try{ c.send(enc({ type:'FILE_META', id:itemId, name:file.name, size:file.size, mime:item.mime, chunks:total, from:'Room', time:time })); }catch(e){} });
-
-      var i = 0;
+      var i=0;
       function next(){
-        var live = tgts.filter(function(c){return c.open;});
-        if(!live.length || i >= total) return;
-        var hdr = encHdr({ type:'CHUNK', id:itemId, index:i });
-        var sl  = buf.slice(i*CHUNK, (i+1)*CHUNK);
-        var msg = new Uint8Array(hdr.byteLength + sl.byteLength);
-        msg.set(hdr); msg.set(new Uint8Array(sl), hdr.byteLength);
-        live.forEach(function(c){ try{c.send(msg.buffer);}catch(e){} });
+        var live=tgts.filter(function(c){return c.open;});
+        if(!live.length||i>=total) return;
+        var hdr=encHdr({type:'CHUNK',id:itemId,index:i}), sl=buf.slice(i*CHUNK,(i+1)*CHUNK);
+        var msg=new Uint8Array(hdr.byteLength+sl.byteLength);
+        msg.set(hdr); msg.set(new Uint8Array(sl),hdr.byteLength);
+        live.forEach(function(c){try{c.send(msg.buffer);}catch(e){}});
         i++;
-        if(i < total) setTimeout(next, 0);
+        if(i<total) setTimeout(next,0);
         else{
-          tgts.forEach(function(c){ try{c.send(enc({type:'FILE_DONE',id:itemId}));}catch(e){} });
+          tgts.forEach(function(c){try{c.send(enc({type:'FILE_DONE',id:itemId}));}catch(e){}});
           toast('Sent: '+file.name);
         }
       }
@@ -521,13 +505,14 @@ function sendFiles(files){
 //  SEND TEXT
 // ═══════════════════════════════════════════════════════════
 function sendText(){
-  var ta = document.getElementById('text-input'), txt = ta.value.trim();
+  var ta=document.getElementById('text-input'), txt=ta.value.trim();
   if(!txt) return;
-  var itemId = uid(), time = nowTime();
-  shelf.push({ id:itemId, type:'text', text:txt, from:'You', time:time });
-  addShelfItem({ id:itemId, type:'text', text:txt, from:'You', time:time }, true);
-  ta.value = ''; document.getElementById('char-count').textContent = '0 / 5000';
-  getTargets().forEach(function(c){ try{c.send(enc({ type:'TEXT_ITEM', id:itemId, text:txt, from:'Room', time:time }));}catch(e){} });
+  var itemId=uid(), time=nowTime();
+  var item={id:itemId, type:'text', text:txt, from:'You', time:time};
+  shelf.push(item);
+  addShelfItem(item, true);
+  ta.value=''; document.getElementById('char-count').textContent='0 / 5000';
+  getTargets().forEach(function(c){try{c.send(enc({type:'TEXT_ITEM',id:itemId,text:txt,from:'Room',time:time}));}catch(e){}});
   if(getTargets().length) toast('Text sent!');
 }
 
@@ -535,35 +520,35 @@ function sendText(){
 //  RECEIVE
 // ═══════════════════════════════════════════════════════════
 function handleControl(msg, fromId){
-  if(msg.type === 'COUNT'){ setCount(msg.count); return; }
+  if(msg.type==='COUNT'){ setCount(msg.count); return; }
 
-  if(msg.type === 'TEXT_ITEM'){
+  if(msg.type==='TEXT_ITEM'){
     if(shelf.find(function(x){return x.id===msg.id;})) return;
-    shelf.push({ id:msg.id, type:'text', text:msg.text, from:msg.from||'Room', time:msg.time });
-    addShelfItem({ id:msg.id, type:'text', text:msg.text, from:msg.from||'Room', time:msg.time }, false);
+    var item={id:msg.id, type:'text', text:msg.text, from:msg.from||'Room', time:msg.time};
+    shelf.push(item); addShelfItem(item, false);
     if(role==='hub') relayExcept(enc(msg), fromId);
     return;
   }
 
-  if(msg.type === 'FILE_META'){
+  if(msg.type==='FILE_META'){
     if(shelf.find(function(x){return x.id===msg.id;})) return;
-    incoming[msg.id] = { name:msg.name, size:msg.size, mime:msg.mime, total:msg.chunks, chunks:new Array(msg.chunks), received:0 };
-    shelf.push({ id:msg.id, type:'file', name:msg.name, size:msg.size, mime:msg.mime, blob:null, from:msg.from||'Room', time:msg.time });
-    addShelfItem({ id:msg.id, type:'file', name:msg.name, size:msg.size, mime:msg.mime, from:msg.from||'Room', time:msg.time }, false);
+    incoming[msg.id]={name:msg.name, size:msg.size, mime:msg.mime, total:msg.chunks, chunks:new Array(msg.chunks), received:0};
+    var item={id:msg.id, type:'file', name:msg.name, size:msg.size, mime:msg.mime, blob:null, from:msg.from||'Room', time:msg.time};
+    shelf.push(item); addShelfItem(item, false);
     if(role==='hub') relayExcept(enc(msg), fromId);
     return;
   }
 
-  if(msg.type === 'FILE_DONE'){
-    var tf = incoming[msg.id]; if(!tf) return;
-    var blob = new Blob(tf.chunks.map(function(c){return new Uint8Array(c);}), { type:tf.mime });
-    var url  = URL.createObjectURL(blob);
-    var si = shelf.find(function(x){return x.id===msg.id;}); if(si) si.blob = blob;
-    var el = document.getElementById('si-'+msg.id);
+  if(msg.type==='FILE_DONE'){
+    var tf=incoming[msg.id]; if(!tf) return;
+    var blob=new Blob(tf.chunks.map(function(c){return new Uint8Array(c);}),{type:tf.mime});
+    var url=URL.createObjectURL(blob);
+    var si=shelf.find(function(x){return x.id===msg.id;}); if(si) si.blob=blob;
+    var el=document.getElementById('si-'+msg.id);
     if(el){
-      var btn = el.querySelector('.save-btn');
-      if(btn){ btn.href=url; btn.download=tf.name; btn.textContent='Save'; btn.style.opacity='1'; btn.style.pointerEvents=''; }
-      var bw = el.querySelector('.sending-bar-wrap'); if(bw) bw.remove();
+      var btn=el.querySelector('.save-btn');
+      if(btn){btn.href=url;btn.download=tf.name;btn.textContent='Save';btn.style.opacity='1';btn.style.pointerEvents='';}
+      var bw=el.querySelector('.sending-bar-wrap');if(bw)bw.remove();
     }
     delete incoming[msg.id];
     if(role==='hub') relayExcept(enc(msg), fromId);
@@ -574,16 +559,16 @@ function handleControl(msg, fromId){
 
 function handleChunk(raw, fromId){
   var buf;
-  if(raw instanceof ArrayBuffer)  buf = new Uint8Array(raw);
-  else if(raw instanceof Blob)    { raw.arrayBuffer().then(function(ab){handleChunk(ab,fromId);}); return; }
+  if(raw instanceof ArrayBuffer)  buf=new Uint8Array(raw);
+  else if(raw instanceof Blob)    {raw.arrayBuffer().then(function(ab){handleChunk(ab,fromId);});return;}
   else return;
   try{
-    var hdr = JSON.parse(new TextDecoder().decode(buf.slice(0,256)).trim());
-    if(hdr.type === 'CHUNK'){
-      var tf = incoming[hdr.id]; if(!tf) return;
-      tf.chunks[hdr.index] = buf.slice(256); tf.received++;
-      var el = document.getElementById('si-'+hdr.id);
-      if(el){ var bar=el.querySelector('.sending-bar'); if(bar) bar.style.width=Math.round(tf.received/tf.total*100)+'%'; }
+    var hdr=JSON.parse(new TextDecoder().decode(buf.slice(0,256)).trim());
+    if(hdr.type==='CHUNK'){
+      var tf=incoming[hdr.id]; if(!tf) return;
+      tf.chunks[hdr.index]=buf.slice(256); tf.received++;
+      var el=document.getElementById('si-'+hdr.id);
+      if(el){var bar=el.querySelector('.sending-bar');if(bar)bar.style.width=Math.round(tf.received/tf.total*100)+'%';}
       if(role==='hub') relayExcept(buf.buffer, fromId);
     }
   }catch(e){}
@@ -593,27 +578,27 @@ function handleChunk(raw, fromId){
 //  SHELF UI
 // ═══════════════════════════════════════════════════════════
 function addShelfItem(item, isMine){
-  document.getElementById('shelf-empty').style.display = 'none';
-  var div = document.createElement('div'); div.className='shelf-item'; div.id='si-'+item.id;
-  var fc = isMine ? 'item-from mine' : 'item-from';
-  var fl = isMine ? 'You' : (item.from||'Room');
+  document.getElementById('shelf-empty').style.display='none';
+  var div=document.createElement('div'); div.className='shelf-item'; div.id='si-'+item.id;
+  var fc=isMine?'item-from mine':'item-from';
+  var fl=isMine?'You':(item.from||'Room');
 
-  if(item.type === 'text'){
-    div.innerHTML =
-      '<div class="item-icon">&#128172;</div>' +
-      '<div class="item-body">' +
-        '<div class="item-meta"><span class="'+fc+'">'+esc(fl)+'</span><span>'+esc(item.time)+'</span></div>' +
-        '<div class="item-text-body">'+esc(item.text)+'</div>' +
-      '</div>' +
+  if(item.type==='text'){
+    div.innerHTML=
+      '<div class="item-icon">&#128172;</div>'+
+      '<div class="item-body">'+
+        '<div class="item-meta"><span class="'+fc+'">'+esc(fl)+'</span><span>'+esc(item.time)+'</span></div>'+
+        '<div class="item-text-body">'+esc(item.text)+'</div>'+
+      '</div>'+
       '<div class="item-actions"><button class="copy-btn" onclick="copyText(this,'+JSON.stringify(item.text)+')">Copy</button></div>';
   } else {
-    div.innerHTML =
-      '<div class="item-icon">'+fileIcon(item.mime)+'</div>' +
-      '<div class="item-body">' +
-        '<div class="item-name">'+esc(item.name)+'</div>' +
-        '<div class="item-meta"><span>'+fmtSize(item.size)+'</span><span class="'+fc+'">'+esc(fl)+'</span><span>'+esc(item.time)+'</span></div>' +
-        '<div class="sending-bar-wrap"><div class="sending-bar" style="width:'+(isMine?100:0)+'%"></div></div>' +
-      '</div>' +
+    div.innerHTML=
+      '<div class="item-icon">'+fileIcon(item.mime)+'</div>'+
+      '<div class="item-body">'+
+        '<div class="item-name">'+esc(item.name)+'</div>'+
+        '<div class="item-meta"><span>'+fmtSize(item.size)+'</span><span class="'+fc+'">'+esc(fl)+'</span><span>'+esc(item.time)+'</span></div>'+
+        '<div class="sending-bar-wrap"><div class="sending-bar" style="width:'+(isMine?100:0)+'%"></div></div>'+
+      '</div>'+
       '<div class="item-actions"><a class="save-btn" style="opacity:.35;pointer-events:none;">'+(isMine?'Processing\u2026':'Receiving\u2026')+'</a></div>';
   }
   document.getElementById('shelf').prepend(div);
@@ -623,12 +608,12 @@ function addShelfItem(item, isMine){
 //  HELPERS
 // ═══════════════════════════════════════════════════════════
 function getTargets(){
-  if(role==='hub')  return Object.values(peerConns).filter(function(c){return c.open;});
-  if(role==='peer' && hubConn && hubConn.open) return [hubConn];
+  if(role==='hub') return Object.values(peerConns).filter(function(c){return c.open;});
+  if(role==='peer'&&hubConn&&hubConn.open) return [hubConn];
   return [];
 }
-function relayExcept(data, exceptId){
-  Object.entries(peerConns).forEach(function(e){ var id=e[0],c=e[1]; if(id!==exceptId&&c.open){try{c.send(data);}catch(x){}} });
+function relayExcept(data,exceptId){
+  Object.entries(peerConns).forEach(function(e){var id=e[0],c=e[1];if(id!==exceptId&&c.open){try{c.send(data);}catch(x){}}});
 }
 function broadcastControl(obj){
   Object.values(peerConns).forEach(function(c){try{c.send(enc(obj));}catch(e){}});
@@ -646,7 +631,7 @@ function tryParse(raw){
 function enc(o)    { return new TextEncoder().encode(JSON.stringify(o)); }
 function encHdr(o) { return new TextEncoder().encode(JSON.stringify(o).padEnd(256,' ')); }
 function uid()     { return crypto.randomUUID(); }
-function nowTime(){ var n=new Date(); return n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0'); }
+function nowTime() { var n=new Date(); return n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0'); }
 function esc(s)    { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function fmtSize(b){ if(b<1024)return b+' B'; if(b<1048576)return(b/1024).toFixed(1)+' KB'; return(b/1048576).toFixed(1)+' MB'; }
 function fileIcon(m){
@@ -658,8 +643,8 @@ function setStat(state,text){ var d=document.getElementById('sdot'),t=document.g
 function setCount(n){ memberCount=n; document.getElementById('member-count').textContent=n; }
 function toast(msg,dur){ var el=document.getElementById('toast'); el.textContent=msg; el.classList.add('on'); clearTimeout(el._t); el._t=setTimeout(function(){el.classList.remove('on');},dur||2500); }
 function copyText(btn,text){
-  navigator.clipboard.writeText(text).then(function(){ btn.textContent='Copied!'; btn.classList.add('copied'); setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied');},2000); })
-  .catch(function(){ var ta=document.createElement('textarea'); ta.value=text; ta.style.cssText='position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); btn.textContent='Copied!'; btn.classList.add('copied'); setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied');},2000); });
+  navigator.clipboard.writeText(text).then(function(){btn.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied');},2000);})
+  .catch(function(){var ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);btn.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied');},2000);});
 }
 
 // ═══════════════════════════════════════════════════════════
