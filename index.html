@@ -223,9 +223,24 @@ body {
   .room-sidebar {
     border-right: none;
     border-bottom: 1px solid var(--border);
-    padding: 14px;
-    gap: 12px;
+    padding: 10px 12px;
+    gap: 8px;
   }
+  /* On mobile hide QR block and stats to save space */
+  .qr-wrap { display: none; }
+  .stats-row { display: none; }
+  .sidebar-foot { display: none; }
+  /* Compact code card on mobile */
+  .code-card { padding: 10px 12px; }
+  .code-big { font-size: 34px; letter-spacing: .15em; }
+  .code-card-lbl { margin-bottom: 4px; }
+  .code-note { display: none; }
+  .regen-btn { font-size: 10px; padding: 3px 8px; }
+  /* Role badge compact */
+  .role-badge { padding: 10px 12px; }
+  /* Members compact */
+  .members-hdr { margin-bottom: 4px; }
+  .member-item { padding: 5px 9px; }
 }
 
 .code-card {
@@ -299,7 +314,6 @@ body {
 .members-empty { font-size: 11px; color: var(--muted); font-family: var(--mono); }
 
 .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-@media (max-width: 680px) { .stats-row { grid-template-columns: repeat(4,1fr); } }
 .stat { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px; }
 .stat-lbl { font-size: 9px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
 .stat-val { font-size: 18px; font-weight: 700; line-height: 1; }
@@ -319,50 +333,81 @@ body {
   margin: 20px; border: 2px dashed var(--border2);
   border-radius: 20px; cursor: pointer;
   transition: border-color .2s, background .2s;
-  min-height: 200px; text-align: center;
+  min-height: 160px; text-align: center;
   position: relative;
 }
 .drop-zone.over     { border-color: var(--accent); background: rgba(126,232,162,.04); }
 .drop-zone.off      { opacity: .4; cursor: default; }
 
 @media (max-width: 680px) {
-  .drop-zone { margin: 12px; border-radius: 14px; min-height: 160px; }
+  .drop-zone { margin: 10px 12px 0; border-radius: 12px; min-height: 110px; }
 }
 
 .dz-inner { pointer-events: none; }
 .dz-icon {
-  width: 56px; height: 56px; margin: 0 auto 14px;
-  border-radius: 16px; background: var(--bg3); border: 1px solid var(--border2);
+  width: 48px; height: 48px; margin: 0 auto 12px;
+  border-radius: 14px; background: var(--bg3); border: 1px solid var(--border2);
   display: flex; align-items: center; justify-content: center; transition: transform .2s;
 }
 .drop-zone.over .dz-icon { transform: scale(1.08); }
-.dz-icon svg { width: 26px; height: 26px; }
-.dz-title { font-size: 20px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 5px; }
-.dz-sub   { font-size: 13px; color: var(--muted2); font-family: var(--mono); }
-.dz-hint  { margin-top: 8px; font-size: 11px; color: var(--muted); font-family: var(--mono); }
+.dz-icon svg { width: 22px; height: 22px; }
+.dz-title { font-size: 18px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 4px; }
+.dz-sub   { font-size: 12px; color: var(--muted2); font-family: var(--mono); }
+.dz-hint  { margin-top: 6px; font-size: 11px; color: var(--muted); font-family: var(--mono); }
 .file-input { display: none; }
 
-@media (max-width: 400px) { .dz-title { font-size: 16px; } .dz-icon { width: 44px; height: 44px; } }
+@media (max-width: 680px) {
+  .dz-title { font-size: 15px; }
+  .dz-icon  { width: 38px; height: 38px; margin-bottom: 8px; }
+  .dz-sub   { font-size: 11px; }
+}
 
 .wait-banner {
-  margin-top: 14px; padding: 8px 16px;
+  margin-top: 10px; padding: 6px 14px;
   background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 8px; font-size: 12px; font-family: var(--mono); color: var(--warn);
-  display: inline-flex; align-items: center; gap: 7px;
+  border-radius: 7px; font-size: 11px; font-family: var(--mono); color: var(--warn);
+  display: inline-flex; align-items: center; gap: 6px;
   pointer-events: none;
 }
 
+/* Text input strip */
+.text-strip {
+  border-top: 1px solid var(--border);
+  padding: 10px 14px;
+  display: flex; gap: 8px; align-items: flex-end;
+  background: var(--bg);
+}
+.text-strip textarea {
+  flex: 1; min-height: 36px; max-height: 100px;
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 9px; padding: 8px 11px;
+  font-family: var(--mono); font-size: 12px; color: var(--text);
+  resize: none; outline: none; line-height: 1.5; transition: border-color .2s;
+  overflow-y: auto;
+}
+.text-strip textarea:focus { border-color: var(--accent); }
+.text-strip textarea::placeholder { color: var(--muted); }
+.send-txt-btn {
+  padding: 8px 13px; background: var(--accent); color: #05140c;
+  border: none; border-radius: 9px; font-family: var(--sans);
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  transition: background .15s; white-space: nowrap; flex-shrink: 0;
+}
+.send-txt-btn:hover  { background: #9ef5b8; }
+.send-txt-btn:active { transform: scale(.97); }
+.send-txt-btn:disabled { background: var(--bg4); color: var(--muted); cursor: default; }
+
 .tf-wrap { border-top: 1px solid var(--border); max-height: 300px; overflow-y: auto; }
-.tf-hdr  { display: flex; align-items: center; padding: 12px 20px 8px; gap: 8px; }
+.tf-hdr  { display: flex; align-items: center; padding: 10px 20px 7px; gap: 8px; }
 .tf-hdr h3 { font-size: 13px; font-weight: 600; flex: 1; }
 .clear-btn { font-size: 11px; font-family: var(--mono); color: var(--muted); background: none; border: none; cursor: pointer; transition: color .2s; }
 .clear-btn:hover { color: var(--danger); }
-.tf-list { padding: 0 20px 14px; display: flex; flex-direction: column; gap: 7px; }
-@media (max-width: 680px) { .tf-hdr { padding: 10px 12px 7px; } .tf-list { padding: 0 12px 12px; } }
+.tf-list { padding: 0 20px 12px; display: flex; flex-direction: column; gap: 7px; }
+@media (max-width: 680px) { .tf-hdr { padding: 9px 12px 6px; } .tf-list { padding: 0 12px 10px; } }
 
-.tf-item { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; animation: up .2s ease; }
+.tf-item { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; align-items: flex-start; gap: 10px; animation: up .2s ease; }
 @keyframes up { from{opacity:0;transform:translateY(-5px)} to{opacity:1;transform:translateY(0)} }
-.tf-ico  { width: 34px; height: 34px; border-radius: 8px; background: var(--bg4); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+.tf-ico  { width: 32px; height: 32px; border-radius: 8px; background: var(--bg4); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; margin-top: 1px; }
 .tf-info { flex: 1; min-width: 0; }
 .tf-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
 .tf-meta { font-size: 11px; color: var(--muted2); font-family: var(--mono); display: flex; gap: 8px; align-items: center; }
@@ -375,6 +420,10 @@ body {
 .tt-e { background: rgba(224,90,90,.12);   color: var(--danger); }
 .dl-btn { padding: 3px 8px; background: var(--bg4); border: 1px solid var(--border2); border-radius: 5px; font-size: 11px; font-family: var(--mono); color: var(--accent); text-decoration: none; display: inline-block; transition: background .15s; white-space: nowrap; }
 .dl-btn:hover { background: var(--accentd); }
+.copy-btn { padding: 3px 8px; background: var(--bg4); border: 1px solid var(--border2); border-radius: 5px; font-size: 11px; font-family: var(--mono); color: var(--muted2); cursor: pointer; transition: color .2s, border-color .2s; white-space: nowrap; }
+.copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+.copy-btn.copied { color: var(--accent2); border-color: var(--accent2); background: var(--accentd); }
+.tf-text-body { margin-top: 6px; padding: 8px 10px; background: var(--bg4); border-radius: 7px; font-family: var(--mono); font-size: 12px; color: var(--text); white-space: pre-wrap; word-break: break-word; line-height: 1.6; max-height: 120px; overflow-y: auto; }
 
 .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%) translateY(14px); background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; padding: 9px 18px; font-size: 12px; font-family: var(--mono); opacity: 0; transition: opacity .22s, transform .22s; pointer-events: none; z-index: 9999; white-space: nowrap; max-width: 90vw; text-overflow: ellipsis; overflow: hidden; }
 .toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -511,11 +560,11 @@ body {
           <button class="leave-btn" id="peer-leave">Leave</button>
         </div>
         <div style="font-size:11px;color:var(--muted);font-family:var(--mono);line-height:1.7;">
-          Drop files below to send<br>to <strong style="color:var(--muted2)">everyone</strong> in the room.
+          Drop files or send text<br>to <strong style="color:var(--muted2)">everyone</strong> in the room.
         </div>
       </div>
 
-      <!-- Stats -->
+      <!-- Stats (desktop only) -->
       <div class="stats-row" style="margin-top:auto;">
         <div class="stat"><div class="stat-lbl">Sent</div><div class="stat-val sv-g" id="s-sent">0</div></div>
         <div class="stat"><div class="stat-lbl">Rcvd</div><div class="stat-val sv-g" id="s-recv">0</div></div>
@@ -527,6 +576,8 @@ body {
     </aside>
 
     <div class="room-main">
+
+      <!-- Drop zone -->
       <div class="drop-zone off" id="drop-zone">
         <input type="file" class="file-input" id="file-input" multiple>
         <div class="dz-inner">
@@ -545,13 +596,21 @@ body {
         </div>
       </div>
 
+      <!-- Text input strip -->
+      <div class="text-strip" id="text-strip">
+        <textarea id="text-input" placeholder="Send a note, link, or password… Ctrl+Enter to send" rows="1"></textarea>
+        <button class="send-txt-btn" id="send-txt-btn" disabled>Send</button>
+      </div>
+
+      <!-- Transfers & text history -->
       <div class="tf-wrap" id="tf-wrap" style="display:none">
         <div class="tf-hdr">
-          <h3>Transfers</h3>
+          <h3>Shared</h3>
           <button class="clear-btn" id="clear-btn">Clear done</button>
         </div>
         <div class="tf-list" id="tf-list"></div>
       </div>
+
     </div>
 
   </div>
@@ -640,8 +699,9 @@ function tryParse(raw) {
 function enableDrop(yes) {
   var dz = document.getElementById('drop-zone');
   var wb = document.getElementById('wait-banner');
-  if (yes) { dz.classList.remove('off'); wb.style.display='none'; }
-  else     { dz.classList.add('off');    wb.style.display='flex'; }
+  var sb = document.getElementById('send-txt-btn');
+  if (yes) { dz.classList.remove('off'); wb.style.display='none'; if(sb) sb.disabled=false; }
+  else     { dz.classList.add('off');    wb.style.display='flex'; if(sb) sb.disabled=true;  }
 }
 
 function updateStats() {
@@ -852,7 +912,7 @@ function generateQR(code) {
 }
 
 // ═══════════════════════════════════════════════════════
-//  SEND
+//  SEND FILES
 // ═══════════════════════════════════════════════════════
 function sendFiles(files) {
   var targets = role === 'hub'
@@ -894,6 +954,63 @@ function sendFiles(files) {
 }
 
 // ═══════════════════════════════════════════════════════
+//  SEND TEXT
+// ═══════════════════════════════════════════════════════
+function sendText() {
+  var ta = document.getElementById('text-input');
+  var txt = ta.value.trim();
+  if (!txt) return;
+  var targets = role === 'hub'
+    ? Object.values(peerConns).filter(function(c) { return c.open; })
+    : (hubConn && hubConn.open ? [hubConn] : []);
+  if (!targets.length) { toast('No one else in the room'); return; }
+  var msgId = crypto.randomUUID();
+  var msgBytes = enc({ type: 'TEXT_MSG', msgId: msgId, text: txt });
+  targets.forEach(function(t) { try { t.send(msgBytes); } catch(e){} });
+  addTextItem(msgId, txt, true);
+  ta.value = '';
+  ta.style.height = '';
+  toast('Text sent');
+}
+
+function handleTextMsg(msg, fromId) {
+  addTextItem(msg.msgId, msg.text, false);
+  if (role === 'hub') relayExcept(enc(msg), fromId);
+}
+
+function addTextItem(id, text, isMine) {
+  document.getElementById('tf-wrap').style.display = 'block';
+  var div = document.createElement('div');
+  div.className = 'tf-item'; div.id = 'tf-' + id;
+  div.innerHTML =
+    '<div class="tf-ico">&#128172;</div>' +
+    '<div class="tf-info">' +
+      '<div class="tf-name" style="font-size:11px;font-weight:500;color:var(--muted2);">' +
+        (isMine ? 'You' : 'Room') +
+      '</div>' +
+      '<div class="tf-text-body">' + esc(text) + '</div>' +
+    '</div>' +
+    '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;">' +
+      '<div class="tf-tag ' + (isMine ? 'tt-s' : 'tt-r') + '">' + (isMine ? 'Sent' : 'Rcvd') + '</div>' +
+      '<button class="copy-btn" onclick="copyText(this,' + JSON.stringify(text) + ')">Copy</button>' +
+    '</div>';
+  document.getElementById('tf-list').prepend(div);
+}
+
+function copyText(btn, text) {
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = 'Copied!'; btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  }).catch(function() {
+    var ta = document.createElement('textarea'); ta.value = text;
+    ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    btn.textContent = 'Copied!'; btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
 //  RECEIVE
 // ═══════════════════════════════════════════════════════
 function handleChunk(raw, fromId) {
@@ -914,6 +1031,7 @@ function handleChunk(raw, fromId) {
 
 function handleControl(msg, fromId) {
   if (msg.type === 'WELCOME') return;
+  if (msg.type === 'TEXT_MSG') { handleTextMsg(msg, fromId); return; }
   if (msg.type === 'FILE_META') {
     incoming[msg.transferId] = { name:msg.name, size:msg.size, mime:msg.mime, total:msg.chunks, chunks:new Array(msg.chunks), received:0 };
     addTf({ id:msg.transferId, name:msg.name, size:msg.size, mime:msg.mime, dir:'recv' });
@@ -985,7 +1103,8 @@ function updateTf(id, ch) {
     if(wrap) wrap.style.display='none';
     if(ch.dlUrl){
       var a=document.createElement('a'); a.href=ch.dlUrl; a.download=ch.dlName||'file';
-      a.className='dl-btn'; a.textContent='Save'; el.appendChild(a); a.click();
+      a.className='dl-btn'; a.textContent='Save'; el.appendChild(a);
+      // no auto-download — user taps Save
     }
   }
 }
@@ -1068,6 +1187,21 @@ document.addEventListener('DOMContentLoaded', function() {
     if (e.target.files.length) sendFiles(e.target.files);
     e.target.value = '';
   });
+
+  // Text send strip — auto-grow + Ctrl+Enter
+  var txtArea = document.getElementById('text-input');
+  var sendBtn = document.getElementById('send-txt-btn');
+  txtArea.addEventListener('input', function() {
+    txtArea.style.height = '';
+    txtArea.style.height = Math.min(txtArea.scrollHeight, 100) + 'px';
+  });
+  txtArea.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      if (!sendBtn.disabled) sendText();
+    }
+  });
+  sendBtn.addEventListener('click', sendText);
 
   // Auto-join from QR scan (?code=1234)
   var code = new URLSearchParams(location.search).get('code');
