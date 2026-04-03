@@ -311,18 +311,13 @@ html, body {
 <script>
 // ═══════════════════════════════════════════════════════════
 //  CONFIG
-//  The hub peer ID is derived from the page URL so everyone
-//  on the same URL automatically connects to the same hub.
+//  Hub uses a RANDOM PeerJS ID (free tier requires this).
+//  The hub ID is stored in localStorage so all tabs on the
+//  same browser origin share it. Tabs poll for a hub, and
+//  the first one to succeed claims the role.
 // ═══════════════════════════════════════════════════════════
 
-// Stable hub ID derived from hostname + pathname (same for everyone on this URL)
-var HUB_ID = (function(){
-  var raw = location.hostname + location.pathname;
-  // Simple hash → 8 hex chars, prefixed to avoid collisions with other PeerJS users
-  var h = 0;
-  for(var i=0;i<raw.length;i++){ h = Math.imul(31,h)+raw.charCodeAt(i)|0; }
-  return 'fshr-room-' + (h>>>0).toString(16).padStart(8,'0');
-})();
+var LS_KEY = 'fshr_hub_id';   // localStorage key for hub peer ID
 
 var CHUNK = 65536;
 var ICE   = { iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:global.stun.twilio.com:3478'}] };
@@ -330,46 +325,51 @@ var ICE   = { iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:glob
 // ═══════════════════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════════════════
-var role      = null;       // 'hub' | 'peer'
+var role      = null;
 var myPeer    = null;
-var peerConns = {};         // hub: id→conn map of all peers
-var hubConn   = null;       // peer: single conn to hub
-
-// Shelf: array of item objects (persists in memory)
-// { id, type:'file'|'text', name?, size?, mime?, blob?, text?, from, time }
-var shelf = [];
-
-var memberCount = 1;        // includes self
+var peerConns = {};
+var hubConn   = null;
+var shelf     = [];
+var memberCount = 1;
+var incoming  = {};
 
 // ═══════════════════════════════════════════════════════════
-//  BOOT — try to be hub first; if taken, be peer
+//  BOOT
+//  1. Check localStorage for an existing hub ID.
+//  2. If found, try to connect as peer. If connection fails
+//     (hub gone), clear localStorage and become hub.
+//  3. If not found, become hub, get random ID from PeerJS,
+//     save it to localStorage.
 // ═══════════════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', function(){
   wireEvents();
-  startAsHub();
+  var savedHubId = localStorage.getItem(LS_KEY);
+  if(savedHubId){
+    startAsPeer(savedHubId);
+  } else {
+    startAsHub();
+  }
 });
 
 function startAsHub(){
   role = 'hub';
-  if(myPeer && !myPeer.destroyed) myPeer.destroy();
-  myPeer = new Peer(HUB_ID, { debug:0, config:ICE });
+  if(myPeer && !myPeer.destroyed){ myPeer.destroy(); myPeer = null; }
 
-  myPeer.on('open', function(){
-    setStat('hub', 'Hub \u00b7 ready');
+  // Use random ID — PeerJS free tier requires this
+  myPeer = new Peer({ debug:0, config:ICE });
+
+  myPeer.on('open', function(id){
+    // Save our random ID so other tabs/browsers can find us
+    try{ localStorage.setItem(LS_KEY, id); }catch(e){}
+    setStat('hub', 'Ready');
     setCount(1);
   });
 
   myPeer.on('connection', function(conn){ acceptPeer(conn); });
 
   myPeer.on('error', function(err){
-    if(err.type === 'unavailable-id'){
-      // Hub already exists — become a peer
-      startAsPeer();
-    } else {
-      setStat('error', 'Error: '+err.type);
-      // Retry hub after a delay
-      setTimeout(startAsHub, 4000);
-    }
+    setStat('error', 'Error');
+    setTimeout(startAsHub, 4000);
   });
 
   myPeer.on('disconnected', function(){
@@ -377,18 +377,21 @@ function startAsHub(){
   });
 }
 
-function startAsPeer(){
+function startAsPeer(hubId){
   role = 'peer';
-  if(myPeer && !myPeer.destroyed) myPeer.destroy();
+  if(myPeer && !myPeer.destroyed){ myPeer.destroy(); myPeer = null; }
+
   myPeer = new Peer({ debug:0, config:ICE });
 
   myPeer.on('open', function(){
     setStat('starting', 'Joining\u2026');
-    hubConn = myPeer.connect(HUB_ID, { reliable:true, serialization:'raw' });
+    hubConn = myPeer.connect(hubId, { reliable:true, serialization:'raw' });
+    var connected = false;
 
     hubConn.on('open', function(){
+      connected = true;
       setStat('peer', 'Connected');
-      toast('Joined the room!');
+      toast('Joined!');
     });
 
     hubConn.on('data', function(raw){
@@ -398,26 +401,31 @@ function startAsPeer(){
     });
 
     hubConn.on('close', function(){
-      // Hub left — try to become hub
-      setStat('starting', 'Reconnecting\u2026');
       hubConn = null;
-      setTimeout(startAsHub, 1000);
+      try{ localStorage.removeItem(LS_KEY); }catch(e){}
+      setStat('starting', 'Reconnecting\u2026');
+      setTimeout(startAsHub, 800);
     });
 
     hubConn.on('error', function(){
-      setTimeout(startAsHub, 2000);
+      hubConn = null;
+      try{ localStorage.removeItem(LS_KEY); }catch(e){}
+      setTimeout(startAsHub, 800);
     });
 
-    // Timeout: if hub doesn't exist yet, become hub
+    // If not connected within 6s, hub ID is stale — clear and become hub
     setTimeout(function(){
-      if(hubConn && !hubConn.open){
+      if(!connected){
+        if(hubConn){ try{hubConn.close();}catch(e){} hubConn = null; }
+        try{ localStorage.removeItem(LS_KEY); }catch(e){}
         startAsHub();
       }
     }, 6000);
   });
 
-  myPeer.on('error', function(err){
-    if(err.type !== 'peer-unavailable') startAsHub();
+  myPeer.on('error', function(){
+    try{ localStorage.removeItem(LS_KEY); }catch(e){}
+    setTimeout(startAsHub, 800);
   });
 }
 
@@ -432,11 +440,7 @@ function acceptPeer(conn){
     memberCount = 1 + Object.keys(peerConns).length;
     setCount(memberCount);
     toast('Someone joined');
-
-    // Send current shelf to new peer
     sendShelfToPeer(conn);
-
-    // Broadcast updated member count to all
     broadcastControl({ type:'COUNT', count: memberCount });
   });
 
@@ -461,13 +465,11 @@ function acceptPeer(conn){
   });
 }
 
-// Send entire current shelf to a single newly-joined peer
 function sendShelfToPeer(conn){
   shelf.forEach(function(item){
     if(item.type === 'text'){
       conn.send(enc({ type:'TEXT_ITEM', id:item.id, text:item.text, from:item.from, time:item.time }));
     } else if(item.type === 'file' && item.blob){
-      // Send file meta then chunks
       var chunks = Math.ceil(item.blob.size / CHUNK);
       conn.send(enc({ type:'FILE_META', id:item.id, name:item.name, size:item.size, mime:item.mime, chunks:chunks, from:item.from, time:item.time }));
       sendFileChunksToPeer(conn, item.id, item.blob, 0);
@@ -499,16 +501,14 @@ function sendFileChunksToPeer(conn, itemId, blob, startIndex){
 }
 
 // ═══════════════════════════════════════════════════════════
-//  SEND FILES (from any role)
+//  SEND FILES
 // ═══════════════════════════════════════════════════════════
 function sendFiles(files){
   Array.prototype.forEach.call(files, function(file){
     var itemId = uid();
     var total  = Math.ceil(file.size / CHUNK);
     var time   = nowTime();
-
-    // Add to shelf immediately (without blob URL yet — will set after reading)
-    var item = { id:itemId, type:'file', name:file.name, size:file.size, mime:file.type||'application/octet-stream', blob:null, from:'You', time:time, total:total, received:0 };
+    var item = { id:itemId, type:'file', name:file.name, size:file.size, mime:file.type||'application/octet-stream', blob:null, from:'You', time:time, total:total };
     shelf.push(item);
     addShelfItem(item, true);
 
@@ -518,40 +518,35 @@ function sendFiles(files){
       var blobObj = new Blob([buf], { type: file.type||'application/octet-stream' });
       item.blob  = blobObj;
 
-      // Set download link now that we have the blob
+      // Set save link
       var shelfEl = document.getElementById('si-'+itemId);
       if(shelfEl){
         var saveBtn = shelfEl.querySelector('.save-btn');
         if(saveBtn){
           var url = URL.createObjectURL(blobObj);
-          saveBtn.href     = url;
-          saveBtn.download = file.name;
-          saveBtn.textContent = 'Save';
-          saveBtn.style.opacity = '1';
+          saveBtn.href = url; saveBtn.download = file.name;
+          saveBtn.textContent = 'Save'; saveBtn.style.opacity = '1'; saveBtn.style.pointerEvents = '';
         }
-        // Remove sending bar
         var barWrap = shelfEl.querySelector('.sending-bar-wrap');
         if(barWrap) barWrap.style.display='none';
       }
 
-      // Send to all peers
       var targets = getTargets();
-      if(targets.length === 0) return; // alone — file is already on shelf
+      if(!targets.length) return;
 
       targets.forEach(function(conn){
         conn.send(enc({ type:'FILE_META', id:itemId, name:file.name, size:file.size, mime:file.type||'application/octet-stream', chunks:total, from:'Room', time:time }));
       });
 
-      // Stream chunks
       var i = 0;
       function next(){
-        var activeTgts = targets.filter(function(c){ return c.open; });
-        if(!activeTgts.length || i >= total) return;
+        var live = targets.filter(function(c){ return c.open; });
+        if(!live.length || i >= total) return;
         var hdr   = encHdr({ type:'CHUNK', id:itemId, index:i });
         var slice = buf.slice(i*CHUNK, (i+1)*CHUNK);
         var msg   = new Uint8Array(hdr.byteLength + slice.byteLength);
         msg.set(hdr); msg.set(new Uint8Array(slice), hdr.byteLength);
-        activeTgts.forEach(function(c){ try{c.send(msg.buffer);}catch(e){} });
+        live.forEach(function(c){ try{c.send(msg.buffer);}catch(e){} });
         i++;
         if(i < total) setTimeout(next, 0);
         else {
@@ -585,33 +580,25 @@ function sendText(){
   targets.forEach(function(c){
     try{ c.send(enc({ type:'TEXT_ITEM', id:itemId, text:txt, from:'Room', time:time })); }catch(e){}
   });
-
   if(targets.length) toast('Text sent!');
 }
 
 // ═══════════════════════════════════════════════════════════
-//  RECEIVE — incoming data handler
+//  RECEIVE
 // ═══════════════════════════════════════════════════════════
-// Tracks incoming file transfers: id → { meta, chunks[], received }
-var incoming = {};
-
 function handleControl(msg, fromId){
   if(msg.type === 'COUNT'){
     setCount(msg.count);
     return;
   }
-
   if(msg.type === 'TEXT_ITEM'){
-    // Don't duplicate if already on shelf (e.g. re-send on join)
     if(shelf.find(function(x){return x.id===msg.id;})) return;
     var item = { id:msg.id, type:'text', text:msg.text, from:msg.from||'Room', time:msg.time };
     shelf.push(item);
     addShelfItem(item, false);
-    // Hub relays to other peers
     if(role==='hub') relayExcept(enc(msg), fromId);
     return;
   }
-
   if(msg.type === 'FILE_META'){
     if(shelf.find(function(x){return x.id===msg.id;})) return;
     incoming[msg.id] = { name:msg.name, size:msg.size, mime:msg.mime, total:msg.chunks, chunks:new Array(msg.chunks), received:0, from:msg.from||'Room', time:msg.time };
@@ -621,20 +608,17 @@ function handleControl(msg, fromId){
     if(role==='hub') relayExcept(enc(msg), fromId);
     return;
   }
-
   if(msg.type === 'FILE_DONE'){
     var tf = incoming[msg.id];
     if(!tf) return;
     var blob = new Blob(tf.chunks.map(function(c){return new Uint8Array(c);}), { type:tf.mime });
     var url  = URL.createObjectURL(blob);
-    // Update shelf item with blob
     var shelfItem = shelf.find(function(x){return x.id===msg.id;});
     if(shelfItem) shelfItem.blob = blob;
-    // Update UI
     var el = document.getElementById('si-'+msg.id);
     if(el){
       var saveBtn = el.querySelector('.save-btn');
-      if(saveBtn){ saveBtn.href=url; saveBtn.download=tf.name; saveBtn.textContent='Save'; saveBtn.style.opacity='1'; }
+      if(saveBtn){ saveBtn.href=url; saveBtn.download=tf.name; saveBtn.textContent='Save'; saveBtn.style.opacity='1'; saveBtn.style.pointerEvents=''; }
       var barWrap = el.querySelector('.sending-bar-wrap');
       if(barWrap) barWrap.remove();
     }
@@ -647,8 +631,8 @@ function handleControl(msg, fromId){
 
 function handleChunk(raw, fromId){
   var buf;
-  if(raw instanceof ArrayBuffer)        buf = new Uint8Array(raw);
-  else if(raw instanceof Blob)          { raw.arrayBuffer().then(function(ab){handleChunk(ab,fromId);}); return; }
+  if(raw instanceof ArrayBuffer)  buf = new Uint8Array(raw);
+  else if(raw instanceof Blob)    { raw.arrayBuffer().then(function(ab){handleChunk(ab,fromId);}); return; }
   else return;
 
   try{
@@ -658,13 +642,11 @@ function handleChunk(raw, fromId){
       if(!tf) return;
       tf.chunks[hdr.index] = buf.slice(256);
       tf.received++;
-      // Update progress bar
       var el = document.getElementById('si-'+hdr.id);
       if(el){
         var bar = el.querySelector('.sending-bar');
         if(bar) bar.style.width = Math.round(tf.received/tf.total*100)+'%';
       }
-      // Hub relay
       if(role==='hub') relayExcept(buf.buffer, fromId);
     }
   }catch(e){}
@@ -694,35 +676,22 @@ function addShelfItem(item, isMine){
         '<button class="copy-btn" onclick="copyText(this,'+JSON.stringify(item.text)+')">Copy</button>'+
       '</div>';
   } else {
-    // File item
-    var sizeStr  = fmtSize(item.size);
-    var saveHtml = isMine
-      ? '' // sender gets save link once blob is ready — added after read
-      : '<a class="save-btn" style="opacity:.4;pointer-events:none;">Receiving\u2026</a>';
-
+    var sizeStr = fmtSize(item.size);
     var barHtml = '<div class="sending-bar-wrap"><div class="sending-bar" style="width:'+(isMine?'100':'0')+'%"></div></div>';
+    var savePlaceholder = isMine
+      ? '<a class="save-btn" style="opacity:.35;pointer-events:none;">Processing&hellip;</a>'
+      : '<a class="save-btn" style="opacity:.35;pointer-events:none;">Receiving&hellip;</a>';
 
     div.innerHTML =
       '<div class="item-icon">'+fileIcon(item.mime)+'</div>' +
       '<div class="item-body">' +
         '<div class="item-name">'+esc(item.name)+'</div>' +
         '<div class="item-meta"><span>'+sizeStr+'</span><span class="'+fromClass+'">'+esc(fromLabel)+'</span><span>'+esc(item.time)+'</span></div>' +
-        (isMine ? barHtml : barHtml) +
+        barHtml +
       '</div>' +
-      '<div class="item-actions">' +
-        (isMine
-          ? '<a class="save-btn" style="opacity:.3;pointer-events:none;">Processing\u2026</a>'
-          : saveHtml) +
-      '</div>';
-
-    // If sender and no peers, set download link immediately after blob is set
-    // (handled in sendFiles after FileReader loads)
+      '<div class="item-actions">' + savePlaceholder + '</div>';
   }
 
-  // Prepend so newest is at top
-  var shelf = document.getElementById('shelf');
-  shelf.insertBefore(div, shelf.firstChild.nextSibling || null); // after empty msg
-  // Actually prepend properly
   document.getElementById('shelf').prepend(div);
 }
 
@@ -750,7 +719,7 @@ function broadcastControl(obj){
 function tryParse(raw){
   try{
     var t;
-    if(raw instanceof ArrayBuffer)   t = new TextDecoder().decode(raw);
+    if(raw instanceof ArrayBuffer)    t = new TextDecoder().decode(raw);
     else if(raw instanceof Uint8Array) t = new TextDecoder().decode(raw);
     else if(typeof raw === 'string')   t = raw;
     else return null;
@@ -815,7 +784,6 @@ function copyText(btn, text){
 //  EVENT WIRING
 // ═══════════════════════════════════════════════════════════
 function wireEvents(){
-  // Drop zone
   var dz = document.getElementById('drop-zone');
   dz.addEventListener('dragover',  function(e){ e.preventDefault(); dz.classList.add('over'); });
   dz.addEventListener('dragleave', function(){ dz.classList.remove('over'); });
@@ -826,7 +794,6 @@ function wireEvents(){
     e.target.value = '';
   });
 
-  // Text
   var ti=document.getElementById('text-input'), sb=document.getElementById('send-text-btn'), cc=document.getElementById('char-count');
   ti.addEventListener('input', function(){ cc.textContent = ti.value.length + ' / 5000'; });
   ti.addEventListener('keydown', function(e){ if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); sendText(); } });
