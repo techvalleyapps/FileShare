@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>FileShare</title>
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237ee8a2'/><path d='M6 16h20M16 6l10 10-10 10' stroke='%2305140c' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/></svg>">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@500;600;700;800&display=swap');
 
@@ -31,11 +33,8 @@
 }
 
 html, body {
-  min-height: 100dvh;
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--sans);
-  overflow-x: hidden;
+  min-height: 100dvh; background: var(--bg);
+  color: var(--text); font-family: var(--sans); overflow-x: hidden;
 }
 
 /* ── TOPBAR ── */
@@ -43,63 +42,54 @@ html, body {
   display: flex; align-items: center; gap: 12px;
   padding: 0 20px; height: 54px;
   border-bottom: 1px solid var(--border);
-  background: var(--bg);
-  position: sticky; top: 0; z-index: 100;
+  background: var(--bg); position: sticky; top: 0; z-index: 100;
 }
-.logo {
-  width: 30px; height: 30px; background: var(--accent);
-  border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
+.logo { width: 30px; height: 30px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .logo svg { width: 15px; height: 15px; }
 .brand { font-size: 15px; font-weight: 800; letter-spacing: -.03em; }
 .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
-.status-pill {
-  display: flex; align-items: center; gap: 5px; padding: 4px 11px;
-  background: var(--bg3); border: 1px solid var(--border2);
-  border-radius: 20px; font-family: var(--mono); font-size: 11px; color: var(--muted2);
-}
-.sdot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--muted); flex-shrink: 0; transition: background .3s;
-}
-.sdot.starting   { background: var(--warn);   animation: blink 1s ease-in-out infinite; }
-.sdot.hub        { background: var(--accent);  animation: blink 2.5s ease-in-out infinite; }
-.sdot.peer       { background: var(--blue);    box-shadow: 0 0 5px var(--blue); }
-.sdot.error      { background: var(--danger); }
+.status-pill { display: flex; align-items: center; gap: 5px; padding: 4px 11px; background: var(--bg3); border: 1px solid var(--border2); border-radius: 20px; font-family: var(--mono); font-size: 11px; color: var(--muted2); }
+.sdot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .3s; }
+.sdot.starting { background: var(--warn);  animation: blink 1s   ease-in-out infinite; }
+.sdot.hub      { background: var(--accent); animation: blink 2.5s ease-in-out infinite; }
+.sdot.peer     { background: var(--blue);   box-shadow: 0 0 5px var(--blue); }
+.sdot.error    { background: var(--danger); }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
-
-.members-badge {
-  display: flex; align-items: center; gap: 5px;
-  padding: 4px 10px;
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 20px; font-family: var(--mono); font-size: 11px; color: var(--muted2);
-}
+.members-badge { display: flex; align-items: center; gap: 5px; padding: 4px 10px; background: var(--bg3); border: 1px solid var(--border); border-radius: 20px; font-family: var(--mono); font-size: 11px; color: var(--muted2); }
 .members-badge span { color: var(--accent); font-weight: 600; }
 
 /* ── LAYOUT ── */
-.layout {
-  display: grid;
-  grid-template-columns: 1fr;
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 20px 20px 60px;
-  gap: 0;
+.layout { max-width: 720px; margin: 0 auto; padding: 20px 20px 60px; }
+
+/* ── QR CARD ── */
+.qr-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px 20px;
+  display: flex; align-items: center; gap: 18px;
+  margin-bottom: 20px;
 }
+.qr-card canvas { width: 80px !important; height: 80px !important; border-radius: 6px; background: #fff; padding: 4px; flex-shrink: 0; }
+.qr-info { flex: 1; min-width: 0; }
+.qr-info-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+.qr-info-sub { font-size: 11px; color: var(--muted2); font-family: var(--mono); line-height: 1.6; }
+.qr-copy-link {
+  display: inline-block; margin-top: 6px;
+  font-size: 10px; color: var(--accent); font-family: var(--mono);
+  background: var(--bg4); border: 1px solid var(--border);
+  border-radius: 5px; padding: 3px 8px; cursor: pointer;
+  transition: border-color .2s; word-break: break-all;
+}
+.qr-copy-link:hover { border-color: var(--accent); }
 
 /* ── UPLOAD AREA ── */
-.upload-section { display: flex; flex-direction: column; gap: 12px; }
-
 .drop-zone {
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
   border: 2px dashed var(--border2); border-radius: 14px;
   padding: 28px 20px; cursor: pointer;
   transition: border-color .2s, background .2s;
-  text-align: center; position: relative;
-  min-height: 130px;
+  text-align: center; min-height: 130px;
 }
 .drop-zone.over { border-color: var(--accent); background: rgba(126,232,162,.04); }
-.drop-zone:hover { border-color: var(--border2); }
 .dz-icon { font-size: 26px; margin-bottom: 8px; }
 .dz-title { font-size: 16px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 3px; }
 .dz-sub   { font-size: 12px; color: var(--muted2); font-family: var(--mono); }
@@ -107,17 +97,10 @@ html, body {
 @media (max-width: 500px) { .drop-zone { min-height: 100px; padding: 20px; } .dz-title { font-size: 14px; } }
 
 /* ── TEXT BOX ── */
-.text-section-divider {
-  display: flex; align-items: center; gap: 10px; margin: 16px 0 0;
-}
-.text-section-divider::before,
-.text-section-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-.text-section-divider span {
-  font-size: 10px; font-family: var(--mono); color: var(--muted);
-  text-transform: uppercase; letter-spacing: .08em;
-}
+.section-divider { display: flex; align-items: center; gap: 10px; margin: 16px 0 12px; }
+.section-divider::before, .section-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.section-divider span { font-size: 10px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
 
-.text-box-wrap { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
 .text-textarea {
   width: 100%; min-height: 90px;
   background: var(--bg3); border: 1px solid var(--border2);
@@ -127,123 +110,37 @@ html, body {
 }
 .text-textarea:focus { border-color: var(--accent); }
 .text-textarea::placeholder { color: var(--muted); font-size: 12px; }
-
-.text-send-row { display: flex; align-items: center; gap: 8px; }
-.send-btn {
-  padding: 8px 18px; background: var(--accent); color: #05140c;
-  border: none; border-radius: 8px; font-family: var(--sans); font-size: 13px; font-weight: 700;
-  cursor: pointer; transition: background .15s; white-space: nowrap;
-}
+.text-send-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.send-btn { padding: 8px 18px; background: var(--accent); color: #05140c; border: none; border-radius: 8px; font-family: var(--sans); font-size: 13px; font-weight: 700; cursor: pointer; transition: background .15s; white-space: nowrap; }
 .send-btn:hover  { background: #9ef5b8; }
 .send-btn:active { transform: scale(.97); }
 .char-count { font-size: 11px; font-family: var(--mono); color: var(--muted); margin-left: auto; }
 
-/* ── SHELF (shared items) ── */
-.shelf-divider {
-  display: flex; align-items: center; gap: 10px; margin: 24px 0 16px;
-}
-.shelf-divider::before,
-.shelf-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-.shelf-divider span {
-  font-size: 10px; font-family: var(--mono); color: var(--muted);
-  text-transform: uppercase; letter-spacing: .08em; white-space: nowrap;
-}
-
+/* ── SHELF ── */
 .shelf { display: flex; flex-direction: column; gap: 10px; }
+.shelf-empty { text-align: center; padding: 28px 20px; background: var(--bg3); border: 1px solid var(--border); border-radius: 12px; font-size: 13px; font-family: var(--mono); color: var(--muted); line-height: 1.7; }
 
-.shelf-empty {
-  text-align: center; padding: 28px 20px;
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 12px;
-  font-size: 13px; font-family: var(--mono); color: var(--muted); line-height: 1.7;
-}
-
-/* ── SHELF ITEM ── */
-.shelf-item {
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 12px; padding: 14px 16px;
-  display: flex; align-items: flex-start; gap: 12px;
-  animation: fadeUp .2s ease;
-}
+.shelf-item { background: var(--bg3); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; align-items: flex-start; gap: 12px; animation: fadeUp .2s ease; }
 @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
 
-.item-icon {
-  width: 38px; height: 38px; border-radius: 9px;
-  background: var(--bg4); border: 1px solid var(--border2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; flex-shrink: 0;
-}
-
+.item-icon { width: 38px; height: 38px; border-radius: 9px; background: var(--bg4); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
 .item-body { flex: 1; min-width: 0; }
-
-.item-name {
-  font-size: 14px; font-weight: 600;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  margin-bottom: 3px;
-}
-
-.item-meta {
-  font-size: 11px; color: var(--muted2); font-family: var(--mono);
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-}
-
-.item-from {
-  background: var(--bg4); border-radius: 4px;
-  padding: 1px 6px; font-size: 10px; color: var(--muted);
-}
+.item-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+.item-meta { font-size: 11px; color: var(--muted2); font-family: var(--mono); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.item-from { background: var(--bg4); border-radius: 4px; padding: 1px 6px; font-size: 10px; color: var(--muted); }
 .item-from.mine { color: var(--accent); background: var(--accentd); }
-
-/* text items */
-.item-text-body {
-  margin-top: 8px; padding: 10px 12px;
-  background: var(--bg4); border-radius: 8px;
-  font-family: var(--mono); font-size: 13px; color: var(--text);
-  white-space: pre-wrap; word-break: break-word; line-height: 1.6;
-  max-height: 160px; overflow-y: auto;
-}
-
+.item-text-body { margin-top: 8px; padding: 10px 12px; background: var(--bg4); border-radius: 8px; font-family: var(--mono); font-size: 13px; color: var(--text); white-space: pre-wrap; word-break: break-word; line-height: 1.6; max-height: 160px; overflow-y: auto; }
 .item-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-top: 2px; }
-
-.save-btn {
-  padding: 5px 12px;
-  background: var(--bg4); border: 1px solid var(--border2);
-  border-radius: 6px; font-size: 11px; font-family: var(--mono);
-  color: var(--accent); cursor: pointer;
-  transition: background .15s, border-color .15s;
-  white-space: nowrap; text-decoration: none; display: inline-block;
-}
+.save-btn { padding: 5px 12px; background: var(--bg4); border: 1px solid var(--border2); border-radius: 6px; font-size: 11px; font-family: var(--mono); color: var(--accent); cursor: pointer; transition: background .15s, border-color .15s; white-space: nowrap; text-decoration: none; display: inline-block; }
 .save-btn:hover { background: var(--accentd); border-color: var(--accent); }
-
-.copy-btn {
-  padding: 5px 12px;
-  background: var(--bg4); border: 1px solid var(--border2);
-  border-radius: 6px; font-size: 11px; font-family: var(--mono);
-  color: var(--muted2); cursor: pointer;
-  transition: color .2s, border-color .2s;
-  white-space: nowrap;
-}
+.copy-btn { padding: 5px 12px; background: var(--bg4); border: 1px solid var(--border2); border-radius: 6px; font-size: 11px; font-family: var(--mono); color: var(--muted2); cursor: pointer; transition: color .2s, border-color .2s; white-space: nowrap; }
 .copy-btn:hover  { color: var(--accent); border-color: var(--accent); }
 .copy-btn.copied { color: var(--accent2); border-color: var(--accent2); background: var(--accentd); }
-
-/* ── SENDING PROGRESS ── */
-.sending-bar-wrap {
-  height: 3px; background: var(--bg4); border-radius: 2px; margin-top: 8px; overflow: hidden;
-}
-.sending-bar {
-  height: 100%; background: var(--accent); border-radius: 2px; transition: width .15s;
-}
+.sending-bar-wrap { height: 3px; background: var(--bg4); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+.sending-bar { height: 100%; background: var(--accent); border-radius: 2px; transition: width .15s; }
 
 /* ── TOAST ── */
-.toast {
-  position: fixed; bottom: 20px; left: 50%;
-  transform: translateX(-50%) translateY(14px);
-  background: var(--bg3); border: 1px solid var(--border2);
-  border-radius: 8px; padding: 9px 18px;
-  font-size: 12px; font-family: var(--mono);
-  opacity: 0; transition: opacity .22s, transform .22s;
-  pointer-events: none; z-index: 9999;
-  white-space: nowrap; max-width: 90vw; overflow: hidden; text-overflow: ellipsis;
-}
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(14px); background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; padding: 9px 18px; font-size: 12px; font-family: var(--mono); opacity: 0; transition: opacity .22s, transform .22s; pointer-events: none; z-index: 9999; white-space: nowrap; max-width: 90vw; overflow: hidden; text-overflow: ellipsis; }
 .toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 ::-webkit-scrollbar { width: 4px; }
@@ -271,31 +168,34 @@ html, body {
 
 <div class="layout">
 
-  <!-- Upload -->
-  <div class="upload-section">
-
-    <div class="drop-zone" id="drop-zone">
-      <input type="file" class="file-input" id="file-input" multiple>
-      <div class="dz-icon">&#128229;</div>
-      <div class="dz-title">Drop files here or tap to browse</div>
-      <div class="dz-sub">Files go to everyone on this page &middot; Any size</div>
+  <!-- QR card — shown once hub is ready -->
+  <div class="qr-card" id="qr-card" style="display:none">
+    <canvas id="qr-canvas"></canvas>
+    <div class="qr-info">
+      <div class="qr-info-title">Share this page</div>
+      <div class="qr-info-sub">Scan with any device to join.<br>Files and text are shared with everyone here.</div>
+      <span class="qr-copy-link" id="qr-link" onclick="copyPageLink()">&#128279; Copy link</span>
     </div>
-
-    <div class="text-section-divider"><span>Or send text</span></div>
-
-    <div class="text-box-wrap">
-      <textarea class="text-textarea" id="text-input"
-        placeholder="Type or paste a link, note, password…&#10;Ctrl+Enter to send"></textarea>
-      <div class="text-send-row">
-        <button class="send-btn" id="send-text-btn">Send</button>
-        <span class="char-count" id="char-count">0 / 5000</span>
-      </div>
-    </div>
-
   </div>
 
-  <!-- Shelf -->
-  <div class="shelf-divider"><span>Shared items</span></div>
+  <!-- Drop zone -->
+  <div class="drop-zone" id="drop-zone">
+    <input type="file" class="file-input" id="file-input" multiple>
+    <div class="dz-icon">&#128229;</div>
+    <div class="dz-title">Drop files here or tap to browse</div>
+    <div class="dz-sub">Shared instantly with everyone on this page</div>
+  </div>
+
+  <div class="section-divider"><span>Or send text</span></div>
+
+  <textarea class="text-textarea" id="text-input"
+    placeholder="Type or paste a link, note, password…&#10;Ctrl+Enter to send"></textarea>
+  <div class="text-send-row">
+    <button class="send-btn" id="send-text-btn">Send</button>
+    <span class="char-count" id="char-count">0 / 5000</span>
+  </div>
+
+  <div class="section-divider" style="margin-top:24px;"><span>Shared items</span></div>
 
   <div class="shelf" id="shelf">
     <div class="shelf-empty" id="shelf-empty">
@@ -311,39 +211,38 @@ html, body {
 <script>
 // ═══════════════════════════════════════════════════════════
 //  CONFIG
-//  Hub uses a RANDOM PeerJS ID (free tier requires this).
-//  The hub ID is stored in localStorage so all tabs on the
-//  same browser origin share it. Tabs poll for a hub, and
-//  the first one to succeed claims the role.
 // ═══════════════════════════════════════════════════════════
+var LS_KEY = 'fshr_hub_id_v2';
+var CHUNK  = 65536;
+var ICE    = { iceServers: [
+  { urls: 'stun:stun.l.google.com:19302' },
+  { urls: 'stun:stun1.l.google.com:19302' }
+]};
 
-var LS_KEY = 'fshr_hub_id';   // localStorage key for hub peer ID
-
-var CHUNK = 65536;
-var ICE   = { iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:global.stun.twilio.com:3478'}] };
+// Use PeerJS public cloud — random IDs only (free tier requirement)
+// No custom host — let PeerJS choose the best endpoint
+var PEER_CFG = { debug: 0, config: ICE };
 
 // ═══════════════════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════════════════
-var role      = null;
-var myPeer    = null;
-var peerConns = {};
-var hubConn   = null;
-var shelf     = [];
+var role        = null;
+var myPeer      = null;
+var myId        = null;
+var peerConns   = {};
+var hubConn     = null;
+var shelf       = [];
 var memberCount = 1;
-var incoming  = {};
+var incoming    = {};
+var restarting  = false;   // guard against overlapping restarts
 
 // ═══════════════════════════════════════════════════════════
 //  BOOT
-//  1. Check localStorage for an existing hub ID.
-//  2. If found, try to connect as peer. If connection fails
-//     (hub gone), clear localStorage and become hub.
-//  3. If not found, become hub, get random ID from PeerJS,
-//     save it to localStorage.
 // ═══════════════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', function(){
   wireEvents();
-  var savedHubId = localStorage.getItem(LS_KEY);
+  var savedHubId = null;
+  try{ savedHubId = localStorage.getItem(LS_KEY); }catch(e){}
   if(savedHubId){
     startAsPeer(savedHubId);
   } else {
@@ -351,40 +250,95 @@ window.addEventListener('DOMContentLoaded', function(){
   }
 });
 
+// ═══════════════════════════════════════════════════════════
+//  HUB
+// ═══════════════════════════════════════════════════════════
 function startAsHub(){
-  role = 'hub';
-  if(myPeer && !myPeer.destroyed){ myPeer.destroy(); myPeer = null; }
+  if(restarting) return;
+  restarting = true;
 
-  // Use random ID — PeerJS free tier requires this
-  myPeer = new Peer({ debug:0, config:ICE });
+  role = 'hub';
+  destroyPeer();
+
+  setStat('starting', 'Starting\u2026');
+  myPeer = new Peer(PEER_CFG);
 
   myPeer.on('open', function(id){
-    // Save our random ID so other tabs/browsers can find us
+    restarting = false;
+    myId = id;
     try{ localStorage.setItem(LS_KEY, id); }catch(e){}
     setStat('hub', 'Ready');
     setCount(1);
+    showQR(id);
   });
 
   myPeer.on('connection', function(conn){ acceptPeer(conn); });
 
   myPeer.on('error', function(err){
-    setStat('error', 'Error');
-    setTimeout(startAsHub, 4000);
+    restarting = false;
+    // network/server errors — just reconnect, don't restart entirely
+    if(err.type === 'network' || err.type === 'server-error'){
+      setStat('starting', 'Reconnecting\u2026');
+      // don't call startAsHub again — let PeerJS handle it via disconnected event
+    } else {
+      setStat('error', 'Error');
+    }
   });
 
   myPeer.on('disconnected', function(){
-    if(myPeer && !myPeer.destroyed) myPeer.reconnect();
+    // Attempt reconnect — PeerJS built-in
+    setStat('starting', 'Reconnecting\u2026');
+    setTimeout(function(){
+      if(myPeer && !myPeer.destroyed && role === 'hub'){
+        try{ myPeer.reconnect(); }catch(e){}
+      }
+    }, 1500);
   });
 }
 
+function acceptPeer(conn){
+  var id = conn.peer;
+  conn.on('open', function(){
+    peerConns[id] = conn;
+    memberCount = 1 + Object.keys(peerConns).length;
+    setCount(memberCount);
+    toast('Someone joined');
+    sendShelfToPeer(conn);
+    broadcastControl({ type:'COUNT', count: memberCount });
+  });
+  conn.on('data', function(raw){
+    var msg = tryParse(raw);
+    if(msg) handleControl(msg, id);
+    else     handleChunk(raw, id);
+  });
+  conn.on('close',  function(){ dropPeer(id); });
+  conn.on('error',  function(){ dropPeer(id); });
+}
+
+function dropPeer(id){
+  delete peerConns[id];
+  memberCount = 1 + Object.keys(peerConns).length;
+  setCount(memberCount);
+  broadcastControl({ type:'COUNT', count: memberCount });
+  toast('Someone left');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PEER
+// ═══════════════════════════════════════════════════════════
 function startAsPeer(hubId){
+  if(restarting) return;
+  restarting = true;
+
   role = 'peer';
-  if(myPeer && !myPeer.destroyed){ myPeer.destroy(); myPeer = null; }
+  destroyPeer();
 
-  myPeer = new Peer({ debug:0, config:ICE });
+  setStat('starting', 'Joining\u2026');
+  myPeer = new Peer(PEER_CFG);
 
-  myPeer.on('open', function(){
-    setStat('starting', 'Joining\u2026');
+  myPeer.on('open', function(id){
+    restarting = false;
+    myId = id;
     hubConn = myPeer.connect(hubId, { reliable:true, serialization:'raw' });
     var connected = false;
 
@@ -402,69 +356,85 @@ function startAsPeer(hubId){
 
     hubConn.on('close', function(){
       hubConn = null;
-      try{ localStorage.removeItem(LS_KEY); }catch(e){}
-      setStat('starting', 'Reconnecting\u2026');
-      setTimeout(startAsHub, 800);
+      clearHubId();
+      setStat('starting', 'Hub left\u2026');
+      setTimeout(function(){ if(!restarting) startAsHub(); }, 1000);
     });
 
     hubConn.on('error', function(){
       hubConn = null;
-      try{ localStorage.removeItem(LS_KEY); }catch(e){}
-      setTimeout(startAsHub, 800);
+      clearHubId();
+      setTimeout(function(){ if(!restarting) startAsHub(); }, 1000);
     });
 
-    // If not connected within 6s, hub ID is stale — clear and become hub
+    // Timeout — hub ID stale
     setTimeout(function(){
       if(!connected){
         if(hubConn){ try{hubConn.close();}catch(e){} hubConn = null; }
-        try{ localStorage.removeItem(LS_KEY); }catch(e){}
-        startAsHub();
+        clearHubId();
+        if(!restarting) startAsHub();
       }
-    }, 6000);
+    }, 7000);
   });
 
   myPeer.on('error', function(){
-    try{ localStorage.removeItem(LS_KEY); }catch(e){}
-    setTimeout(startAsHub, 800);
+    restarting = false;
+    clearHubId();
+    setTimeout(function(){ if(!restarting) startAsHub(); }, 1000);
+  });
+
+  myPeer.on('disconnected', function(){
+    setTimeout(function(){
+      if(myPeer && !myPeer.destroyed && role === 'peer'){
+        try{ myPeer.reconnect(); }catch(e){}
+      }
+    }, 1500);
+  });
+}
+
+function clearHubId(){
+  try{ localStorage.removeItem(LS_KEY); }catch(e){}
+}
+
+function destroyPeer(){
+  if(myPeer && !myPeer.destroyed){
+    try{ myPeer.destroy(); }catch(e){}
+  }
+  myPeer = null; myId = null;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  QR CODE
+// ═══════════════════════════════════════════════════════════
+function showQR(hubId){
+  var url = location.href.split('?')[0];
+  // QR just points to the page URL — arriving browsers will find
+  // the hub ID in localStorage automatically
+  var card = document.getElementById('qr-card');
+  var link = document.getElementById('qr-link');
+  link.textContent = '\uD83D\uDD17 ' + url;
+  link.dataset.url = url;
+  QRCode.toCanvas(document.getElementById('qr-canvas'), url, {
+    width: 80, margin: 1, color: { dark:'#07070d', light:'#ffffff' }
+  });
+  card.style.display = 'flex';
+}
+
+function copyPageLink(){
+  var url = document.getElementById('qr-link').dataset.url || location.href;
+  navigator.clipboard.writeText(url).then(function(){
+    toast('Link copied!');
+  }).catch(function(){
+    var ta=document.createElement('textarea'); ta.value=url;
+    ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    toast('Link copied!');
   });
 }
 
 // ═══════════════════════════════════════════════════════════
-//  HUB: accept incoming peer
+//  SHELF SYNC — send existing shelf to newly joined peer
 // ═══════════════════════════════════════════════════════════
-function acceptPeer(conn){
-  var id = conn.peer;
-
-  conn.on('open', function(){
-    peerConns[id] = conn;
-    memberCount = 1 + Object.keys(peerConns).length;
-    setCount(memberCount);
-    toast('Someone joined');
-    sendShelfToPeer(conn);
-    broadcastControl({ type:'COUNT', count: memberCount });
-  });
-
-  conn.on('data', function(raw){
-    var msg = tryParse(raw);
-    if(msg) handleControl(msg, id);
-    else     handleChunk(raw, id);
-  });
-
-  conn.on('close', function(){
-    delete peerConns[id];
-    memberCount = 1 + Object.keys(peerConns).length;
-    setCount(memberCount);
-    broadcastControl({ type:'COUNT', count: memberCount });
-    toast('Someone left');
-  });
-
-  conn.on('error', function(){
-    delete peerConns[id];
-    memberCount = 1 + Object.keys(peerConns).length;
-    setCount(memberCount);
-  });
-}
-
 function sendShelfToPeer(conn){
   shelf.forEach(function(item){
     if(item.type === 'text'){
@@ -472,30 +442,27 @@ function sendShelfToPeer(conn){
     } else if(item.type === 'file' && item.blob){
       var chunks = Math.ceil(item.blob.size / CHUNK);
       conn.send(enc({ type:'FILE_META', id:item.id, name:item.name, size:item.size, mime:item.mime, chunks:chunks, from:item.from, time:item.time }));
-      sendFileChunksToPeer(conn, item.id, item.blob, 0);
+      sendBlobToPeer(conn, item.id, item.blob);
     }
   });
 }
 
-function sendFileChunksToPeer(conn, itemId, blob, startIndex){
-  if(!conn.open) return;
-  var chunks = Math.ceil(blob.size / CHUNK);
-  var i = startIndex;
+function sendBlobToPeer(conn, itemId, blob){
+  var total = Math.ceil(blob.size / CHUNK), i = 0;
   function next(){
-    if(!conn.open || i >= chunks) return;
-    var sliceBlob = blob.slice(i*CHUNK, (i+1)*CHUNK);
-    var reader = new FileReader();
-    reader.onload = function(){
+    if(!conn.open || i >= total) return;
+    var sl = blob.slice(i*CHUNK, (i+1)*CHUNK);
+    var r  = new FileReader();
+    r.onload = function(){
       if(!conn.open) return;
       var hdr = encHdr({ type:'CHUNK', id:itemId, index:i });
-      var data = reader.result;
-      var msg = new Uint8Array(hdr.byteLength + data.byteLength);
-      msg.set(hdr); msg.set(new Uint8Array(data), hdr.byteLength);
-      try{ conn.send(msg.buffer); } catch(e){ return; }
-      i++;
-      setTimeout(next, 0);
+      var dat = r.result;
+      var msg = new Uint8Array(hdr.byteLength + dat.byteLength);
+      msg.set(hdr); msg.set(new Uint8Array(dat), hdr.byteLength);
+      try{ conn.send(msg.buffer); }catch(e){ return; }
+      i++; setTimeout(next, 0);
     };
-    reader.readAsArrayBuffer(sliceBlob);
+    r.readAsArrayBuffer(sl);
   }
   next();
 }
@@ -505,58 +472,48 @@ function sendFileChunksToPeer(conn, itemId, blob, startIndex){
 // ═══════════════════════════════════════════════════════════
 function sendFiles(files){
   Array.prototype.forEach.call(files, function(file){
-    var itemId = uid();
-    var total  = Math.ceil(file.size / CHUNK);
-    var time   = nowTime();
-    var item = { id:itemId, type:'file', name:file.name, size:file.size, mime:file.type||'application/octet-stream', blob:null, from:'You', time:time, total:total };
+    var itemId = uid(), total = Math.ceil(file.size / CHUNK), time = nowTime();
+    var item = { id:itemId, type:'file', name:file.name, size:file.size, mime:file.type||'application/octet-stream', blob:null, from:'You', time:time };
     shelf.push(item);
     addShelfItem(item, true);
 
-    var reader = new FileReader();
-    reader.onload = function(){
-      var buf    = reader.result;
-      var blobObj = new Blob([buf], { type: file.type||'application/octet-stream' });
-      item.blob  = blobObj;
+    var r = new FileReader();
+    r.onload = function(){
+      var buf = r.result;
+      item.blob = new Blob([buf], { type: item.mime });
 
-      // Set save link
-      var shelfEl = document.getElementById('si-'+itemId);
-      if(shelfEl){
-        var saveBtn = shelfEl.querySelector('.save-btn');
-        if(saveBtn){
-          var url = URL.createObjectURL(blobObj);
-          saveBtn.href = url; saveBtn.download = file.name;
-          saveBtn.textContent = 'Save'; saveBtn.style.opacity = '1'; saveBtn.style.pointerEvents = '';
-        }
-        var barWrap = shelfEl.querySelector('.sending-bar-wrap');
-        if(barWrap) barWrap.style.display='none';
+      // Activate save button for sender
+      var el = document.getElementById('si-'+itemId);
+      if(el){
+        var btn = el.querySelector('.save-btn');
+        if(btn){ btn.href=URL.createObjectURL(item.blob); btn.download=file.name; btn.textContent='Save'; btn.style.opacity='1'; btn.style.pointerEvents=''; }
+        var bw = el.querySelector('.sending-bar-wrap'); if(bw) bw.style.display='none';
       }
 
-      var targets = getTargets();
-      if(!targets.length) return;
+      var tgts = getTargets();
+      if(!tgts.length) return;
 
-      targets.forEach(function(conn){
-        conn.send(enc({ type:'FILE_META', id:itemId, name:file.name, size:file.size, mime:file.type||'application/octet-stream', chunks:total, from:'Room', time:time }));
-      });
+      tgts.forEach(function(c){ try{ c.send(enc({ type:'FILE_META', id:itemId, name:file.name, size:file.size, mime:item.mime, chunks:total, from:'Room', time:time })); }catch(e){} });
 
       var i = 0;
       function next(){
-        var live = targets.filter(function(c){ return c.open; });
+        var live = tgts.filter(function(c){return c.open;});
         if(!live.length || i >= total) return;
-        var hdr   = encHdr({ type:'CHUNK', id:itemId, index:i });
-        var slice = buf.slice(i*CHUNK, (i+1)*CHUNK);
-        var msg   = new Uint8Array(hdr.byteLength + slice.byteLength);
-        msg.set(hdr); msg.set(new Uint8Array(slice), hdr.byteLength);
+        var hdr = encHdr({ type:'CHUNK', id:itemId, index:i });
+        var sl  = buf.slice(i*CHUNK, (i+1)*CHUNK);
+        var msg = new Uint8Array(hdr.byteLength + sl.byteLength);
+        msg.set(hdr); msg.set(new Uint8Array(sl), hdr.byteLength);
         live.forEach(function(c){ try{c.send(msg.buffer);}catch(e){} });
         i++;
         if(i < total) setTimeout(next, 0);
-        else {
-          targets.forEach(function(c){ try{c.send(enc({type:'FILE_DONE',id:itemId}));}catch(e){} });
+        else{
+          tgts.forEach(function(c){ try{c.send(enc({type:'FILE_DONE',id:itemId}));}catch(e){} });
           toast('Sent: '+file.name);
         }
       }
       next();
     };
-    reader.readAsArrayBuffer(file);
+    r.readAsArrayBuffer(file);
   });
 }
 
@@ -564,63 +521,49 @@ function sendFiles(files){
 //  SEND TEXT
 // ═══════════════════════════════════════════════════════════
 function sendText(){
-  var ta  = document.getElementById('text-input');
-  var txt = ta.value.trim();
+  var ta = document.getElementById('text-input'), txt = ta.value.trim();
   if(!txt) return;
-
-  var itemId = uid();
-  var time   = nowTime();
-  var item   = { id:itemId, type:'text', text:txt, from:'You', time:time };
-  shelf.push(item);
-  addShelfItem(item, true);
-  ta.value = '';
-  document.getElementById('char-count').textContent = '0 / 5000';
-
-  var targets = getTargets();
-  targets.forEach(function(c){
-    try{ c.send(enc({ type:'TEXT_ITEM', id:itemId, text:txt, from:'Room', time:time })); }catch(e){}
-  });
-  if(targets.length) toast('Text sent!');
+  var itemId = uid(), time = nowTime();
+  shelf.push({ id:itemId, type:'text', text:txt, from:'You', time:time });
+  addShelfItem({ id:itemId, type:'text', text:txt, from:'You', time:time }, true);
+  ta.value = ''; document.getElementById('char-count').textContent = '0 / 5000';
+  getTargets().forEach(function(c){ try{c.send(enc({ type:'TEXT_ITEM', id:itemId, text:txt, from:'Room', time:time }));}catch(e){} });
+  if(getTargets().length) toast('Text sent!');
 }
 
 // ═══════════════════════════════════════════════════════════
 //  RECEIVE
 // ═══════════════════════════════════════════════════════════
 function handleControl(msg, fromId){
-  if(msg.type === 'COUNT'){
-    setCount(msg.count);
-    return;
-  }
+  if(msg.type === 'COUNT'){ setCount(msg.count); return; }
+
   if(msg.type === 'TEXT_ITEM'){
     if(shelf.find(function(x){return x.id===msg.id;})) return;
-    var item = { id:msg.id, type:'text', text:msg.text, from:msg.from||'Room', time:msg.time };
-    shelf.push(item);
-    addShelfItem(item, false);
+    shelf.push({ id:msg.id, type:'text', text:msg.text, from:msg.from||'Room', time:msg.time });
+    addShelfItem({ id:msg.id, type:'text', text:msg.text, from:msg.from||'Room', time:msg.time }, false);
     if(role==='hub') relayExcept(enc(msg), fromId);
     return;
   }
+
   if(msg.type === 'FILE_META'){
     if(shelf.find(function(x){return x.id===msg.id;})) return;
-    incoming[msg.id] = { name:msg.name, size:msg.size, mime:msg.mime, total:msg.chunks, chunks:new Array(msg.chunks), received:0, from:msg.from||'Room', time:msg.time };
-    var item = { id:msg.id, type:'file', name:msg.name, size:msg.size, mime:msg.mime, blob:null, from:msg.from||'Room', time:msg.time };
-    shelf.push(item);
-    addShelfItem(item, false);
+    incoming[msg.id] = { name:msg.name, size:msg.size, mime:msg.mime, total:msg.chunks, chunks:new Array(msg.chunks), received:0 };
+    shelf.push({ id:msg.id, type:'file', name:msg.name, size:msg.size, mime:msg.mime, blob:null, from:msg.from||'Room', time:msg.time });
+    addShelfItem({ id:msg.id, type:'file', name:msg.name, size:msg.size, mime:msg.mime, from:msg.from||'Room', time:msg.time }, false);
     if(role==='hub') relayExcept(enc(msg), fromId);
     return;
   }
+
   if(msg.type === 'FILE_DONE'){
-    var tf = incoming[msg.id];
-    if(!tf) return;
+    var tf = incoming[msg.id]; if(!tf) return;
     var blob = new Blob(tf.chunks.map(function(c){return new Uint8Array(c);}), { type:tf.mime });
     var url  = URL.createObjectURL(blob);
-    var shelfItem = shelf.find(function(x){return x.id===msg.id;});
-    if(shelfItem) shelfItem.blob = blob;
+    var si = shelf.find(function(x){return x.id===msg.id;}); if(si) si.blob = blob;
     var el = document.getElementById('si-'+msg.id);
     if(el){
-      var saveBtn = el.querySelector('.save-btn');
-      if(saveBtn){ saveBtn.href=url; saveBtn.download=tf.name; saveBtn.textContent='Save'; saveBtn.style.opacity='1'; saveBtn.style.pointerEvents=''; }
-      var barWrap = el.querySelector('.sending-bar-wrap');
-      if(barWrap) barWrap.remove();
+      var btn = el.querySelector('.save-btn');
+      if(btn){ btn.href=url; btn.download=tf.name; btn.textContent='Save'; btn.style.opacity='1'; btn.style.pointerEvents=''; }
+      var bw = el.querySelector('.sending-bar-wrap'); if(bw) bw.remove();
     }
     delete incoming[msg.id];
     if(role==='hub') relayExcept(enc(msg), fromId);
@@ -634,19 +577,13 @@ function handleChunk(raw, fromId){
   if(raw instanceof ArrayBuffer)  buf = new Uint8Array(raw);
   else if(raw instanceof Blob)    { raw.arrayBuffer().then(function(ab){handleChunk(ab,fromId);}); return; }
   else return;
-
   try{
     var hdr = JSON.parse(new TextDecoder().decode(buf.slice(0,256)).trim());
     if(hdr.type === 'CHUNK'){
-      var tf = incoming[hdr.id];
-      if(!tf) return;
-      tf.chunks[hdr.index] = buf.slice(256);
-      tf.received++;
+      var tf = incoming[hdr.id]; if(!tf) return;
+      tf.chunks[hdr.index] = buf.slice(256); tf.received++;
       var el = document.getElementById('si-'+hdr.id);
-      if(el){
-        var bar = el.querySelector('.sending-bar');
-        if(bar) bar.style.width = Math.round(tf.received/tf.total*100)+'%';
-      }
+      if(el){ var bar=el.querySelector('.sending-bar'); if(bar) bar.style.width=Math.round(tf.received/tf.total*100)+'%'; }
       if(role==='hub') relayExcept(buf.buffer, fromId);
     }
   }catch(e){}
@@ -657,41 +594,28 @@ function handleChunk(raw, fromId){
 // ═══════════════════════════════════════════════════════════
 function addShelfItem(item, isMine){
   document.getElementById('shelf-empty').style.display = 'none';
-
-  var div = document.createElement('div');
-  div.className = 'shelf-item';
-  div.id = 'si-' + item.id;
-
-  var fromLabel = isMine ? 'You' : (item.from || 'Room');
-  var fromClass = isMine ? 'item-from mine' : 'item-from';
+  var div = document.createElement('div'); div.className='shelf-item'; div.id='si-'+item.id;
+  var fc = isMine ? 'item-from mine' : 'item-from';
+  var fl = isMine ? 'You' : (item.from||'Room');
 
   if(item.type === 'text'){
     div.innerHTML =
       '<div class="item-icon">&#128172;</div>' +
       '<div class="item-body">' +
-        '<div class="item-meta"><span class="'+fromClass+'">'+esc(fromLabel)+'</span><span>'+esc(item.time)+'</span></div>' +
+        '<div class="item-meta"><span class="'+fc+'">'+esc(fl)+'</span><span>'+esc(item.time)+'</span></div>' +
         '<div class="item-text-body">'+esc(item.text)+'</div>' +
       '</div>' +
-      '<div class="item-actions">'+
-        '<button class="copy-btn" onclick="copyText(this,'+JSON.stringify(item.text)+')">Copy</button>'+
-      '</div>';
+      '<div class="item-actions"><button class="copy-btn" onclick="copyText(this,'+JSON.stringify(item.text)+')">Copy</button></div>';
   } else {
-    var sizeStr = fmtSize(item.size);
-    var barHtml = '<div class="sending-bar-wrap"><div class="sending-bar" style="width:'+(isMine?'100':'0')+'%"></div></div>';
-    var savePlaceholder = isMine
-      ? '<a class="save-btn" style="opacity:.35;pointer-events:none;">Processing&hellip;</a>'
-      : '<a class="save-btn" style="opacity:.35;pointer-events:none;">Receiving&hellip;</a>';
-
     div.innerHTML =
       '<div class="item-icon">'+fileIcon(item.mime)+'</div>' +
       '<div class="item-body">' +
         '<div class="item-name">'+esc(item.name)+'</div>' +
-        '<div class="item-meta"><span>'+sizeStr+'</span><span class="'+fromClass+'">'+esc(fromLabel)+'</span><span>'+esc(item.time)+'</span></div>' +
-        barHtml +
+        '<div class="item-meta"><span>'+fmtSize(item.size)+'</span><span class="'+fc+'">'+esc(fl)+'</span><span>'+esc(item.time)+'</span></div>' +
+        '<div class="sending-bar-wrap"><div class="sending-bar" style="width:'+(isMine?100:0)+'%"></div></div>' +
       '</div>' +
-      '<div class="item-actions">' + savePlaceholder + '</div>';
+      '<div class="item-actions"><a class="save-btn" style="opacity:.35;pointer-events:none;">'+(isMine?'Processing\u2026':'Receiving\u2026')+'</a></div>';
   }
-
   document.getElementById('shelf').prepend(div);
 }
 
@@ -699,105 +623,60 @@ function addShelfItem(item, isMine){
 //  HELPERS
 // ═══════════════════════════════════════════════════════════
 function getTargets(){
-  if(role === 'hub') return Object.values(peerConns).filter(function(c){return c.open;});
-  if(role === 'peer' && hubConn && hubConn.open) return [hubConn];
+  if(role==='hub')  return Object.values(peerConns).filter(function(c){return c.open;});
+  if(role==='peer' && hubConn && hubConn.open) return [hubConn];
   return [];
 }
-
 function relayExcept(data, exceptId){
-  Object.entries(peerConns).forEach(function(e){
-    var id=e[0], conn=e[1];
-    if(id !== exceptId && conn.open){ try{conn.send(data);}catch(x){} }
-  });
+  Object.entries(peerConns).forEach(function(e){ var id=e[0],c=e[1]; if(id!==exceptId&&c.open){try{c.send(data);}catch(x){}} });
 }
-
 function broadcastControl(obj){
-  var data = enc(obj);
-  Object.values(peerConns).forEach(function(c){ try{c.send(data);}catch(e){} });
+  Object.values(peerConns).forEach(function(c){try{c.send(enc(obj));}catch(e){}});
 }
-
 function tryParse(raw){
   try{
     var t;
-    if(raw instanceof ArrayBuffer)    t = new TextDecoder().decode(raw);
-    else if(raw instanceof Uint8Array) t = new TextDecoder().decode(raw);
-    else if(typeof raw === 'string')   t = raw;
+    if(raw instanceof ArrayBuffer)    t=new TextDecoder().decode(raw);
+    else if(raw instanceof Uint8Array) t=new TextDecoder().decode(raw);
+    else if(typeof raw==='string')     t=raw;
     else return null;
-    var s = t.trim();
-    return s.charAt(0) === '{' ? JSON.parse(s) : null;
-  }catch(e){ return null; }
+    var s=t.trim(); return s.charAt(0)==='{' ? JSON.parse(s) : null;
+  }catch(e){return null;}
 }
-
 function enc(o)    { return new TextEncoder().encode(JSON.stringify(o)); }
 function encHdr(o) { return new TextEncoder().encode(JSON.stringify(o).padEnd(256,' ')); }
 function uid()     { return crypto.randomUUID(); }
-function nowTime(){
-  var n=new Date();
-  return n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');
-}
-function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function fmtSize(b){
-  if(b<1024) return b+' B';
-  if(b<1048576) return (b/1024).toFixed(1)+' KB';
-  return (b/1048576).toFixed(1)+' MB';
-}
+function nowTime(){ var n=new Date(); return n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0'); }
+function esc(s)    { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtSize(b){ if(b<1024)return b+' B'; if(b<1048576)return(b/1024).toFixed(1)+' KB'; return(b/1048576).toFixed(1)+' MB'; }
 function fileIcon(m){
-  if(!m) return '\uD83D\uDCC4';
-  if(m.startsWith('image/')) return '\uD83D\uDDBC';
-  if(m.startsWith('video/')) return '\uD83C\uDFAC';
-  if(m.startsWith('audio/')) return '\uD83C\uDFB5';
-  if(m.includes('pdf'))       return '\uD83D\uDCD5';
-  if(m.includes('zip')||m.includes('tar')) return '\uD83D\uDCE6';
-  if(m.includes('text'))      return '\uD83D\uDCDD';
-  return '\uD83D\uDCC4';
+  if(!m)return'\uD83D\uDCC4'; if(m.startsWith('image/'))return'\uD83D\uDDBC'; if(m.startsWith('video/'))return'\uD83C\uDFAC';
+  if(m.startsWith('audio/'))return'\uD83C\uDFB5'; if(m.includes('pdf'))return'\uD83D\uDCD5';
+  if(m.includes('zip')||m.includes('tar'))return'\uD83D\uDCE6'; if(m.includes('text'))return'\uD83D\uDCDD'; return'\uD83D\uDCC4';
 }
-
-function setStat(state, text){
-  var d=document.getElementById('sdot'), t=document.getElementById('stext');
-  if(d) d.className='sdot '+state;
-  if(t) t.textContent=text;
-}
-function setCount(n){
-  memberCount = n;
-  document.getElementById('member-count').textContent = n;
-}
-function toast(msg, dur){
-  var el=document.getElementById('toast');
-  el.textContent=msg; el.classList.add('on');
-  clearTimeout(el._t); el._t=setTimeout(function(){el.classList.remove('on');},dur||2500);
-}
-
-function copyText(btn, text){
-  navigator.clipboard.writeText(text).then(function(){
-    btn.textContent='Copied!'; btn.classList.add('copied');
-    setTimeout(function(){ btn.textContent='Copy'; btn.classList.remove('copied'); },2000);
-  }).catch(function(){
-    var ta=document.createElement('textarea'); ta.value=text;
-    ta.style.position='fixed'; ta.style.opacity='0';
-    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-    btn.textContent='Copied!'; btn.classList.add('copied');
-    setTimeout(function(){ btn.textContent='Copy'; btn.classList.remove('copied'); },2000);
-  });
+function setStat(state,text){ var d=document.getElementById('sdot'),t=document.getElementById('stext'); if(d)d.className='sdot '+state; if(t)t.textContent=text; }
+function setCount(n){ memberCount=n; document.getElementById('member-count').textContent=n; }
+function toast(msg,dur){ var el=document.getElementById('toast'); el.textContent=msg; el.classList.add('on'); clearTimeout(el._t); el._t=setTimeout(function(){el.classList.remove('on');},dur||2500); }
+function copyText(btn,text){
+  navigator.clipboard.writeText(text).then(function(){ btn.textContent='Copied!'; btn.classList.add('copied'); setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied');},2000); })
+  .catch(function(){ var ta=document.createElement('textarea'); ta.value=text; ta.style.cssText='position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); btn.textContent='Copied!'; btn.classList.add('copied'); setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied');},2000); });
 }
 
 // ═══════════════════════════════════════════════════════════
 //  EVENT WIRING
 // ═══════════════════════════════════════════════════════════
 function wireEvents(){
-  var dz = document.getElementById('drop-zone');
-  dz.addEventListener('dragover',  function(e){ e.preventDefault(); dz.classList.add('over'); });
-  dz.addEventListener('dragleave', function(){ dz.classList.remove('over'); });
-  dz.addEventListener('drop',      function(e){ e.preventDefault(); dz.classList.remove('over'); sendFiles(e.dataTransfer.files); });
-  dz.addEventListener('click',     function(){ document.getElementById('file-input').click(); });
-  document.getElementById('file-input').addEventListener('change', function(e){
-    if(e.target.files.length) sendFiles(e.target.files);
-    e.target.value = '';
-  });
+  var dz=document.getElementById('drop-zone');
+  dz.addEventListener('dragover',  function(e){e.preventDefault();dz.classList.add('over');});
+  dz.addEventListener('dragleave', function(){dz.classList.remove('over');});
+  dz.addEventListener('drop',      function(e){e.preventDefault();dz.classList.remove('over');sendFiles(e.dataTransfer.files);});
+  dz.addEventListener('click',     function(){document.getElementById('file-input').click();});
+  document.getElementById('file-input').addEventListener('change',function(e){if(e.target.files.length)sendFiles(e.target.files);e.target.value='';});
 
-  var ti=document.getElementById('text-input'), sb=document.getElementById('send-text-btn'), cc=document.getElementById('char-count');
-  ti.addEventListener('input', function(){ cc.textContent = ti.value.length + ' / 5000'; });
-  ti.addEventListener('keydown', function(e){ if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); sendText(); } });
-  sb.addEventListener('click', sendText);
+  var ti=document.getElementById('text-input'),sb=document.getElementById('send-text-btn'),cc=document.getElementById('char-count');
+  ti.addEventListener('input',function(){cc.textContent=ti.value.length+' / 5000';});
+  ti.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();sendText();}});
+  sb.addEventListener('click',sendText);
 }
 </script>
 </body>
