@@ -488,6 +488,8 @@ body {
 // ═══════════════════════════════════════════════════════
 var NS    = 'fshr2-';
 var CHUNK = 65536;
+var HEARTBEAT_MS = 8000;
+var HEARTBEAT_TIMEOUT = 25000;
 var ICE   = { iceServers: [
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:global.stun.twilio.com:3478' }
@@ -504,7 +506,10 @@ var isHub    = false;
 var peers = {};   // { id -> { conn, open } }
 
 var incoming = {};
+var seenTexts = {};
+var seenTransfers = {};
 var sSent=0, sRecv=0, sMbOut=0, sMbIn=0;
+var heartbeatTimer = null;
 var shelf = [];  // all items sent — replayed to late-joiners
 
 // ═══════════════════════════════════════════════════════
@@ -615,6 +620,41 @@ function updatePeerUI() {
   updateStats();
 }
 
+function resetRoomState() {
+  peers={};
+  incoming={};
+  seenTexts={};
+  seenTransfers={};
+  shelf=[];
+  sSent=0; sRecv=0; sMbOut=0; sMbIn=0;
+  updateStats();
+  document.getElementById('members-list').innerHTML='<span class="members-empty" id="members-empty">No one connected yet</span>';
+  document.getElementById('members-list-peer').innerHTML='';
+  document.getElementById('member-count').textContent='0';
+  document.getElementById('member-count-peer').textContent='0';
+  document.getElementById('tf-list').innerHTML='';
+  document.getElementById('tf-wrap').style.display='none';
+}
+
+function startHeartbeatLoop() {
+  if(heartbeatTimer) return;
+  heartbeatTimer=setInterval(function(){
+    var now=Date.now();
+    Object.keys(peers).forEach(function(id){
+      var peer=peers[id];
+      if(!peer||!peer.conn) return;
+      if(peer.open&&peer.conn.open){
+        if(now-(peer.lastSeen||0)>HEARTBEAT_TIMEOUT){
+          try{ peer.conn.close(); }catch(e){}
+          dropPeer(id, peer.conn);
+          return;
+        }
+        try{ peer.conn.send(enc({type:'PING'})); }catch(e){}
+      }
+    });
+  }, HEARTBEAT_MS);
+}
+
 // ═══════════════════════════════════════════════════════
 //  CREATE ROOM (hub)
 // ═══════════════════════════════════════════════════════
@@ -622,6 +662,7 @@ function createRoom(code) {
   roomCode=code||randCode(); isHub=true;
   if(myPeer&&!myPeer.destroyed) myPeer.destroy();
   myPeer=null;
+  resetRoomState();
   setStat('connecting','Creating room\u2026');
   document.getElementById('code-display').textContent=roomCode;
 
@@ -655,10 +696,12 @@ function joinRoom(code) {
   roomCode=code; isHub=false;
   if(myPeer&&!myPeer.destroyed) myPeer.destroy();
   myPeer=null;
+  resetRoomState();
 
   var joinBtn=document.getElementById('join-btn');
   var spinner=document.getElementById('join-spinner');
   var joinMsg=document.getElementById('join-msg');
+  var joined=false;
   joinBtn.disabled=true; joinMsg.textContent=''; joinMsg.className='join-msg';
   spinner.classList.add('on');
   document.getElementById('join-spinner-sub').textContent='Reaching room '+code;
@@ -670,6 +713,7 @@ function joinRoom(code) {
     var hubConn=myPeer.connect(NS+code, {reliable:true, serialization:'raw'});
 
     hubConn.on('open', function() {
+      joined=true;
       wireConn(hubConn, true);
       setStat('paired','Room '+code);
       document.getElementById('room-label').textContent='Room '+code;
@@ -683,15 +727,19 @@ function joinRoom(code) {
       toast('Joined room '+code+'!');
     });
 
-    hubConn.on('error', function() { onJoinFail({type:'network'}); });
-    setTimeout(function(){ if(!hubConn||!hubConn.open) onJoinFail({type:'peer-unavailable'}); }, 8000);
+    hubConn.on('error', function() {
+      if(!joined) onJoinFail({type:'network'});
+    });
+    setTimeout(function(){
+      if(!joined&&(!hubConn||!hubConn.open)) onJoinFail({type:'peer-unavailable'});
+    }, 8000);
   });
 
   // Accept direct connections from other peers who mesh with us
   myPeer.on('connection', function(conn) { wireConn(conn, false); });
 
   myPeer.on('error', function(err) {
-    if(err.type!=='peer-unavailable') onJoinFail(err);
+    if(!joined&&err.type!=='peer-unavailable') onJoinFail(err);
   });
 }
 
@@ -717,12 +765,13 @@ function wireConn(conn, isOutbound) {
     try{ peers[id].conn.close(); }catch(e){}
     delete peers[id];
   }
-  peers[id]={conn:conn, open:false};
+  peers[id]={conn:conn, open:false, lastSeen:Date.now()};
 
   function markConnOpen() {
     if(!peers[id]||peers[id].conn!==conn) return;
     if(peers[id].open) return;
     peers[id].open=true;
+    peers[id].lastSeen=Date.now();
     addMemberUI(id);
     updatePeerUI();
     if(!isOutbound) {
@@ -739,6 +788,7 @@ function wireConn(conn, isOutbound) {
   conn.on('open', markConnOpen);
 
   conn.on('data', function(raw) {
+    if(peers[id]&&peers[id].conn===conn) peers[id].lastSeen=Date.now();
     var msg=tryParse(raw);
     if(msg) handleControl(msg,id);
     else    handleChunk(raw,id);
@@ -758,16 +808,29 @@ function addMemberUI(id) {
     if(empty) empty.style.display='none';
     var d=document.createElement('div');
     d.className='member-item'; d.id='mi-'+listId+'-'+id;
+    var actions=(listId==='members-list'&&isHub)
+      ? '<button class="member-kick" onclick="kickPeer(\''+esc(id)+'\')">&#10005;</button>'
+      : '';
     d.innerHTML=
       '<div class="member-dot"></div>'+
       '<div class="member-name">'+esc(id.slice(0,18))+'&hellip;</div>'+
-      '<button class="member-kick" onclick="kickPeer(\''+esc(id)+'\')">&#10005;</button>';
+      actions;
     list.appendChild(d);
   });
 }
 
 function dropPeer(id, conn) {
   if(conn&&peers[id]&&peers[id].conn!==conn) return;
+  var hadPeer=!!peers[id];
+  var hadUi=!!document.getElementById('mi-members-list-'+id)||!!document.getElementById('mi-members-list-peer-'+id);
+  if(!hadPeer&&!hadUi) return;
+  Object.keys(incoming).forEach(function(tfId){
+    var tf=incoming[tfId];
+    if(tf&&tf.fromId===id){
+      updateTf(tfId,{error:'Sender left'});
+      delete incoming[tfId];
+    }
+  });
   if(peers[id]) peers[id].open=false;
   delete peers[id];
   ['members-list','members-list-peer'].forEach(function(listId){
@@ -780,8 +843,9 @@ function dropPeer(id, conn) {
 }
 
 function kickPeer(id) {
-  if(peers[id]&&peers[id].conn) peers[id].conn.close();
-  dropPeer(id);
+  var conn=peers[id]&&peers[id].conn;
+  if(conn) conn.close();
+  dropPeer(id, conn);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -791,15 +855,8 @@ function leaveRoom() {
   if(myPeer&&!myPeer.destroyed) myPeer.destroy();
   myPeer=null;
   Object.keys(peers).forEach(function(k){ try{ peers[k].conn.close(); }catch(e){} });
-  peers={};
   roomCode=null; isHub=false;
-  sSent=0; sRecv=0; sMbOut=0; sMbIn=0; updateStats();
-  shelf=[];
-  document.getElementById('members-list').innerHTML='<span class="members-empty" id="members-empty">No one connected yet</span>';
-  document.getElementById('members-list-peer').innerHTML='';
-  document.getElementById('member-count').textContent='0';
-  document.getElementById('tf-list').innerHTML='';
-  document.getElementById('tf-wrap').style.display='none';
+  resetRoomState();
   enableDrop(false);
   setStat('','');
   goTo('page-welcome');
@@ -873,6 +930,7 @@ function sendText() {
   var ta=document.getElementById('text-input');
   var txt=ta.value.trim(); if(!txt) return;
   var msgId=crypto.randomUUID();
+  seenTexts[msgId]=true;
   broadcastData(enc({type:'TEXT_MSG',msgId:msgId,text:txt}));
   shelf.push({type:'text',msgId:msgId,text:txt});
   addTextItem(msgId,txt,true);
@@ -882,7 +940,8 @@ function sendText() {
 }
 
 function handleTextMsg(msg) {
-  if(shelf.some(function(s){ return s.msgId===msg.msgId; })) return;
+  if(seenTexts[msg.msgId]) return;
+  seenTexts[msg.msgId]=true;
   shelf.push({type:'text',msgId:msg.msgId,text:msg.text});
   addTextItem(msg.msgId,msg.text,false);
 }
@@ -937,6 +996,13 @@ function handleChunk(raw, fromId) {
 
 function handleControl(msg, fromId) {
   if(msg.type==='WELCOME') return;
+  if(msg.type==='PING'){
+    if(peers[fromId]&&peers[fromId].conn&&peers[fromId].conn.open){
+      try{ peers[fromId].conn.send(enc({type:'PONG'})); }catch(e){}
+    }
+    return;
+  }
+  if(msg.type==='PONG') return;
 
   // Mesh: connect to all other peers we don't know yet
   if(msg.type==='PEER_LIST'){
@@ -949,17 +1015,20 @@ function handleControl(msg, fromId) {
   if(msg.type==='TEXT_MSG'){ handleTextMsg(msg); return; }
 
   if(msg.type==='FILE_META'){
+    if(seenTransfers[msg.transferId]) return;
     if(incoming[msg.transferId]) return;
     incoming[msg.transferId]={name:msg.name,size:msg.size,mime:msg.mime,
-                               total:msg.chunks,chunks:new Array(msg.chunks),received:0};
+                               total:msg.chunks,chunks:new Array(msg.chunks),received:0,fromId:fromId};
     addTf({id:msg.transferId,name:msg.name,size:msg.size,mime:msg.mime,dir:'recv'});
   }
 
   if(msg.type==='FILE_DONE'){
+    if(seenTransfers[msg.transferId]) return;
     var tf=incoming[msg.transferId]; if(!tf) return;
     var blob=new Blob(tf.chunks.map(function(c){return new Uint8Array(c);}),{type:tf.mime||'application/octet-stream'});
     var url=URL.createObjectURL(blob);
     updateTf(msg.transferId,{done:true,dlUrl:url,dlName:tf.name});
+    seenTransfers[msg.transferId]=true;
     delete incoming[msg.transferId];
     sRecv++; sMbIn+=tf.size/1048576; updateStats();
     toast('Received: '+tf.name);
@@ -1015,6 +1084,8 @@ function fmtSize(b) {
 
 function addTf(tf) {
   document.getElementById('tf-wrap').style.display='block';
+  var existing=document.getElementById('tf-'+tf.id);
+  if(existing) existing.remove();
   var div=document.createElement('div'); div.className='tf-item'; div.id='tf-'+tf.id;
   div.innerHTML=
     '<div class="tf-ico">'+fileIcon(tf.mime)+'</div>'+
@@ -1042,6 +1113,11 @@ function updateTf(id,ch) {
       a.className='dl-btn'; a.textContent='Save'; el.appendChild(a);
     }
   }
+  if(ch.error){
+    var tag2=document.getElementById('tt-'+id), wrap2=el.querySelector('.tf-bar-wrap');
+    if(tag2){ tag2.textContent=ch.error; tag2.className='tf-tag tt-e'; }
+    if(wrap2) wrap2.style.display='none';
+  }
 }
 
 function clearDone() {
@@ -1053,6 +1129,7 @@ function clearDone() {
 //  BOOT
 // ═══════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded',function(){
+  startHeartbeatLoop();
 
   document.getElementById('btn-create').addEventListener('click',function(){ createRoom(); });
   document.getElementById('btn-join').addEventListener('click',function(){ goTo('page-join'); });
