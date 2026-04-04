@@ -683,10 +683,16 @@ function onJoinFail(err) {
 // ═══════════════════════════════════════════════════════
 function wireConn(conn, isOutbound) {
   var id=conn.peer;
-  if(peers[id]) return;  // already wired
+  if(peers[id]) {
+    if(peers[id].conn===conn) return;
+    try{ peers[id].conn.close(); }catch(e){}
+    delete peers[id];
+  }
   peers[id]={conn:conn, open:false};
 
-  conn.on('open', function() {
+  function markConnOpen() {
+    if(!peers[id]||peers[id].conn!==conn) return;
+    if(peers[id].open) return;
     peers[id].open=true;
     addMemberUI(id);
     updatePeerUI();
@@ -698,7 +704,9 @@ function wireConn(conn, isOutbound) {
       replayShelf(conn);
     }
     toast('Someone joined the room');
-  });
+  }
+
+  conn.on('open', markConnOpen);
 
   conn.on('data', function(raw) {
     var msg=tryParse(raw);
@@ -707,6 +715,8 @@ function wireConn(conn, isOutbound) {
   });
   conn.on('close', function() { dropPeer(id); });
   conn.on('error', function() { dropPeer(id); });
+
+  if(conn.open) markConnOpen();
 }
 
 function addMemberUI(id) {
