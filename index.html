@@ -226,19 +226,15 @@ body {
     padding: 10px 12px;
     gap: 8px;
   }
-  /* On mobile hide QR block and stats to save space */
   .qr-wrap { display: none; }
   .stats-row { display: none; }
   .sidebar-foot { display: none; }
-  /* Compact code card on mobile */
   .code-card { padding: 10px 12px; }
   .code-big { font-size: 34px; letter-spacing: .15em; }
   .code-card-lbl { margin-bottom: 4px; }
   .code-note { display: none; }
   .regen-btn { font-size: 10px; padding: 3px 8px; }
-  /* Role badge compact */
   .role-badge { padding: 10px 12px; }
-  /* Members compact */
   .members-hdr { margin-bottom: 4px; }
   .member-item { padding: 5px 9px; }
 }
@@ -336,8 +332,8 @@ body {
   min-height: 160px; text-align: center;
   position: relative;
 }
-.drop-zone.over     { border-color: var(--accent); background: rgba(126,232,162,.04); }
-.drop-zone.off      { opacity: .4; cursor: default; }
+.drop-zone.over { border-color: var(--accent); background: rgba(126,232,162,.04); }
+.drop-zone.off  { opacity: .4; cursor: default; }
 
 @media (max-width: 680px) {
   .drop-zone { margin: 10px 12px 0; border-radius: 12px; min-height: 110px; }
@@ -592,7 +588,7 @@ body {
           <div class="dz-hint" id="dz-hint">Waiting for others to join&hellip;</div>
         </div>
         <div class="wait-banner" id="wait-banner">
-          &#9888;&nbsp; Share your code &mdash; no one else is here yet
+          &#9888;&nbsp; No one else here yet &mdash; your items will send when they join
         </div>
       </div>
 
@@ -623,8 +619,8 @@ body {
 // ═══════════════════════════════════════════════════════
 //  CONSTANTS
 // ═══════════════════════════════════════════════════════
-var NS    = 'fshr2-';   // peer ID prefix for hub
-var CHUNK = 65536;      // 64 KB
+var NS    = 'fshr2-';
+var CHUNK = 65536;
 var ICE   = { iceServers: [
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:global.stun.twilio.com:3478' }
@@ -633,53 +629,47 @@ var ICE   = { iceServers: [
 // ═══════════════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════════════
-var role     = null;   // 'hub' | 'peer'
+var role     = null;
 var myPeer   = null;
 var roomCode = null;
-var peerConns = {};    // id -> DataConnection  (hub only)
-var hubConn   = null;  // peer -> hub connection
-var incoming  = {};    // transferId -> {chunks, received, total, ...}
+var peerConns = {};
+var hubConn   = null;
+var incoming  = {};
 var sSent=0, sRecv=0, sMbOut=0, sMbIn=0;
+var shelf = [];  // everything sent/received — replayed to late-joiners
 
 // ═══════════════════════════════════════════════════════
 //  NAVIGATION
 // ═══════════════════════════════════════════════════════
 function goTo(pageId) {
-  document.querySelectorAll('.page').forEach(function(p) {
-    p.classList.remove('active');
-  });
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
   var target = document.getElementById(pageId);
-  if (target) {
-    target.classList.add('active');
-    window.scrollTo(0, 0);
-  }
+  if (target) { target.classList.add('active'); window.scrollTo(0,0); }
 }
 
 // ═══════════════════════════════════════════════════════
 //  STATUS
 // ═══════════════════════════════════════════════════════
 function setStat(state, txt) {
-  var d = document.getElementById('sdot');
-  var t = document.getElementById('stext');
-  if (d) d.className = 'sdot ' + state;
-  if (t) t.textContent = txt;
+  var d=document.getElementById('sdot'), t=document.getElementById('stext');
+  if(d) d.className='sdot '+state;
+  if(t) t.textContent=txt;
 }
 
 // ═══════════════════════════════════════════════════════
 //  TOAST
 // ═══════════════════════════════════════════════════════
 function toast(msg, dur) {
-  var el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('on');
+  var el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('on');
   clearTimeout(el._t);
-  el._t = setTimeout(function() { el.classList.remove('on'); }, dur || 2500);
+  el._t=setTimeout(function(){ el.classList.remove('on'); }, dur||2500);
 }
 
 // ═══════════════════════════════════════════════════════
 //  HELPERS
 // ═══════════════════════════════════════════════════════
-function randCode() { return String(Math.floor(1000 + Math.random() * 9000)); }
+function randCode() { return String(Math.floor(1000+Math.random()*9000)); }
 function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function enc(obj) { return new TextEncoder().encode(JSON.stringify(obj)); }
 function encHdr(obj) { return new TextEncoder().encode(JSON.stringify(obj).padEnd(256,' ')); }
@@ -687,194 +677,190 @@ function encHdr(obj) { return new TextEncoder().encode(JSON.stringify(obj).padEn
 function tryParse(raw) {
   try {
     var text;
-    if (raw instanceof ArrayBuffer)  text = new TextDecoder().decode(raw);
-    else if (raw instanceof Uint8Array) text = new TextDecoder().decode(raw);
-    else if (typeof raw === 'string')   text = raw;
+    if(raw instanceof ArrayBuffer)    text=new TextDecoder().decode(raw);
+    else if(raw instanceof Uint8Array) text=new TextDecoder().decode(raw);
+    else if(typeof raw==='string')     text=raw;
     else return null;
-    var t = text.trim();
-    return t.charAt(0) === '{' ? JSON.parse(t) : null;
-  } catch(e) { return null; }
+    var t=text.trim();
+    return t.charAt(0)==='{' ? JSON.parse(t) : null;
+  } catch(e){ return null; }
 }
 
+// enableDrop: always active once in room; banner shown only when no peers yet
 function enableDrop(yes) {
-  var dz = document.getElementById('drop-zone');
-  var wb = document.getElementById('wait-banner');
-  var sb = document.getElementById('send-txt-btn');
-  if (yes) { dz.classList.remove('off'); wb.style.display='none'; if(sb) sb.disabled=false; }
-  else     { dz.classList.add('off');    wb.style.display='flex'; if(sb) sb.disabled=true;  }
+  var wb=document.getElementById('wait-banner');
+  var sb=document.getElementById('send-txt-btn');
+  var dz=document.getElementById('drop-zone');
+  dz.classList.remove('off');
+  if(sb) sb.disabled=false;
+  wb.style.display=yes?'none':'flex';
 }
 
 function updateStats() {
-  document.getElementById('s-sent').textContent = sSent;
-  document.getElementById('s-recv').textContent = sRecv;
-  document.getElementById('s-out').textContent  = sMbOut.toFixed(1);
-  document.getElementById('s-in').textContent   = sMbIn.toFixed(1);
+  document.getElementById('s-sent').textContent=sSent;
+  document.getElementById('s-recv').textContent=sRecv;
+  document.getElementById('s-out').textContent=sMbOut.toFixed(1);
+  document.getElementById('s-in').textContent=sMbIn.toFixed(1);
 }
 
 // ═══════════════════════════════════════════════════════
 //  CREATE ROOM (hub)
 // ═══════════════════════════════════════════════════════
 function createRoom(code) {
-  roomCode = code || randCode();
-  role = 'hub';
-  if (myPeer && !myPeer.destroyed) myPeer.destroy();
-  myPeer = null;
-  setStat('connecting', 'Creating room\u2026');
-  document.getElementById('code-display').textContent = roomCode;
+  roomCode=code||randCode();
+  role='hub';
+  if(myPeer&&!myPeer.destroyed) myPeer.destroy();
+  myPeer=null;
+  setStat('connecting','Creating room\u2026');
+  document.getElementById('code-display').textContent=roomCode;
 
-  myPeer = new Peer(NS + roomCode, { debug: 0, config: ICE });
+  myPeer=new Peer(NS+roomCode,{debug:0,config:ICE});
 
-  myPeer.on('open', function() {
-    setStat('ready', 'Room ' + roomCode);
+  myPeer.on('open',function(){
+    setStat('ready','Room '+roomCode);
     generateQR(roomCode);
-    document.getElementById('hub-panel').style.display  = 'flex';
-    document.getElementById('peer-panel').style.display = 'none';
+    document.getElementById('hub-panel').style.display='flex';
+    document.getElementById('peer-panel').style.display='none';
     enableDrop(false);
     goTo('page-room');
   });
 
-  myPeer.on('connection', function(conn) { acceptPeer(conn); });
+  myPeer.on('connection',function(conn){ acceptPeer(conn); });
 
-  myPeer.on('error', function(err) {
-    if (err.type === 'unavailable-id') {
-      toast('Code taken \u2014 trying another');
-      createRoom(randCode());
-    } else {
-      setStat('error', 'Error');
-      toast('Error: ' + err.type, 4000);
-    }
+  myPeer.on('error',function(err){
+    if(err.type==='unavailable-id'){ toast('Code taken \u2014 trying another'); createRoom(randCode()); }
+    else { setStat('error','Error'); toast('Error: '+err.type,4000); }
   });
 
-  myPeer.on('disconnected', function() {
-    if (myPeer && !myPeer.destroyed) myPeer.reconnect();
+  myPeer.on('disconnected',function(){
+    if(myPeer&&!myPeer.destroyed) myPeer.reconnect();
   });
 }
 
 function acceptPeer(conn) {
-  var id = conn.peer;
-  conn.on('open', function() {
-    peerConns[id] = conn;
+  var id=conn.peer;
+  conn.on('open',function(){
+    peerConns[id]=conn;
     addMember(id);
     updateMemberCount();
     enableDrop(true);
-    document.getElementById('dz-hint').textContent = 'Sends to everyone in the room';
+    document.getElementById('dz-hint').textContent='Sends to everyone in the room';
     toast('Someone joined the room');
-    conn.send(enc({ type: 'WELCOME' }));
+    conn.send(enc({type:'WELCOME'}));
+    replayShelf(conn);   // send everything from shelf to the new joiner
   });
-  conn.on('data', function(raw) {
-    var msg = tryParse(raw);
-    if (msg) handleControl(msg, id);
-    else     handleChunk(raw, id);
+  conn.on('data',function(raw){
+    var msg=tryParse(raw);
+    if(msg) handleControl(msg,id);
+    else    handleChunk(raw,id);
   });
-  conn.on('close', function() { removeMember(id); });
-  conn.on('error', function() { removeMember(id); });
+  conn.on('close',function(){ removeMember(id); });
+  conn.on('error',function(){ removeMember(id); });
 }
 
 function addMember(id) {
-  var empty = document.getElementById('members-empty');
-  if (empty) empty.style.display = 'none';
-  var list = document.getElementById('members-list');
-  var d = document.createElement('div');
-  d.className = 'member-item';
-  d.id = 'mi-' + id;
-  d.innerHTML =
-    '<div class="member-dot"></div>' +
-    '<div class="member-name">' + esc(id.slice(0,22)) + '&hellip;</div>' +
-    '<button class="member-kick" onclick="kickMember(\'' + esc(id) + '\')">&#10005;</button>';
+  var empty=document.getElementById('members-empty');
+  if(empty) empty.style.display='none';
+  var list=document.getElementById('members-list');
+  var d=document.createElement('div');
+  d.className='member-item'; d.id='mi-'+id;
+  d.innerHTML=
+    '<div class="member-dot"></div>'+
+    '<div class="member-name">'+esc(id.slice(0,22))+'&hellip;</div>'+
+    '<button class="member-kick" onclick="kickMember(\''+esc(id)+'\')">&#10005;</button>';
   list.appendChild(d);
 }
 
 function removeMember(id) {
   delete peerConns[id];
-  var el = document.getElementById('mi-' + id);
-  if (el) el.remove();
+  var el=document.getElementById('mi-'+id);
+  if(el) el.remove();
   updateMemberCount();
-  if (!Object.keys(peerConns).length) enableDrop(false);
+  if(!Object.keys(peerConns).length) enableDrop(false);
   toast('A member left');
 }
 
 function kickMember(id) {
-  if (peerConns[id]) { peerConns[id].close(); removeMember(id); }
+  if(peerConns[id]){ peerConns[id].close(); removeMember(id); }
 }
 
 function updateMemberCount() {
-  var n = Object.keys(peerConns).length;
-  document.getElementById('member-count').textContent = n;
-  var empty = document.getElementById('members-empty');
-  if (empty) empty.style.display = n === 0 ? '' : 'none';
+  var n=Object.keys(peerConns).length;
+  document.getElementById('member-count').textContent=n;
+  var empty=document.getElementById('members-empty');
+  if(empty) empty.style.display=n===0?'':'none';
 }
 
 // ═══════════════════════════════════════════════════════
 //  JOIN ROOM (peer)
 // ═══════════════════════════════════════════════════════
 function joinRoom(code) {
-  roomCode = code; role = 'peer';
-  if (myPeer && !myPeer.destroyed) myPeer.destroy();
-  myPeer = null;
+  roomCode=code; role='peer';
+  if(myPeer&&!myPeer.destroyed) myPeer.destroy();
+  myPeer=null;
 
-  var joinBtn = document.getElementById('join-btn');
-  var joinMsg = document.getElementById('join-msg');
-  var spinner = document.getElementById('join-spinner');
-  joinBtn.disabled = true;
-  joinMsg.textContent = '';
-  joinMsg.className = 'join-msg';
+  var joinBtn=document.getElementById('join-btn');
+  var spinner=document.getElementById('join-spinner');
+  var joinMsg=document.getElementById('join-msg');
+  joinBtn.disabled=true;
+  joinMsg.textContent=''; joinMsg.className='join-msg';
   spinner.classList.add('on');
-  document.getElementById('join-spinner-sub').textContent = 'Reaching room ' + code;
-  setStat('connecting', 'Joining ' + code + '\u2026');
+  document.getElementById('join-spinner-sub').textContent='Reaching room '+code;
+  setStat('connecting','Joining '+code+'\u2026');
 
-  myPeer = new Peer({ debug: 0, config: ICE });
+  myPeer=new Peer({debug:0,config:ICE});
 
-  myPeer.on('open', function() {
-    hubConn = myPeer.connect(NS + code, { reliable: true, serialization: 'raw' });
+  myPeer.on('open',function(){
+    hubConn=myPeer.connect(NS+code,{reliable:true,serialization:'raw'});
 
-    hubConn.on('open', function() {
-      setStat('paired', 'Room ' + code);
-      document.getElementById('room-label').textContent = 'Room ' + code;
-      document.getElementById('hub-panel').style.display  = 'none';
-      document.getElementById('peer-panel').style.display = 'flex';
+    hubConn.on('open',function(){
+      setStat('paired','Room '+code);
+      document.getElementById('room-label').textContent='Room '+code;
+      document.getElementById('hub-panel').style.display='none';
+      document.getElementById('peer-panel').style.display='flex';
       enableDrop(true);
-      document.getElementById('dz-hint').textContent = 'Sends to everyone in the room';
-      document.getElementById('wait-banner').style.display = 'none';
+      document.getElementById('dz-hint').textContent='Sends to everyone in the room';
+      document.getElementById('wait-banner').style.display='none';
       spinner.classList.remove('on');
       goTo('page-room');
-      toast('Joined room ' + code + '!');
+      toast('Joined room '+code+'!');
     });
 
-    hubConn.on('data', function(raw) {
-      var msg = tryParse(raw);
-      if (msg) handleControl(msg, 'hub');
-      else     handleChunk(raw, 'hub');
+    hubConn.on('data',function(raw){
+      var msg=tryParse(raw);
+      if(msg) handleControl(msg,'hub');
+      else    handleChunk(raw,'hub');
     });
 
-    hubConn.on('close', function() { onPeerDisc(); });
-    hubConn.on('error', function() { onJoinFail({ type: 'network' }); });
+    hubConn.on('close',function(){ onPeerDisc(); });
+    hubConn.on('error',function(){ onJoinFail({type:'network'}); });
 
-    setTimeout(function() {
-      if (!hubConn || !hubConn.open) onJoinFail({ type: 'peer-unavailable' });
-    }, 8000);
+    setTimeout(function(){
+      if(!hubConn||!hubConn.open) onJoinFail({type:'peer-unavailable'});
+    },8000);
   });
 
-  myPeer.on('error', function(err) {
-    if (err.type !== 'peer-unavailable') onJoinFail(err);
+  myPeer.on('error',function(err){
+    if(err.type!=='peer-unavailable') onJoinFail(err);
   });
 }
 
 function onJoinFail(err) {
   document.getElementById('join-spinner').classList.remove('on');
-  document.getElementById('join-btn').disabled = false;
-  var ci = document.getElementById('code-input');
+  document.getElementById('join-btn').disabled=false;
+  var ci=document.getElementById('code-input');
   ci.classList.add('err');
-  setTimeout(function() { ci.classList.remove('err'); }, 600);
-  var m = (err && err.type === 'peer-unavailable') ? 'Room not found \u2014 check the code' : 'Could not connect \u2014 try again';
-  document.getElementById('join-msg').textContent = m;
-  document.getElementById('join-msg').className = 'join-msg err';
-  setStat('error', 'Failed');
-  if (myPeer && !myPeer.destroyed) { myPeer.destroy(); myPeer = null; }
+  setTimeout(function(){ ci.classList.remove('err'); },600);
+  var m=(err&&err.type==='peer-unavailable')?'Room not found \u2014 check the code':'Could not connect \u2014 try again';
+  document.getElementById('join-msg').textContent=m;
+  document.getElementById('join-msg').className='join-msg err';
+  setStat('error','Failed');
+  if(myPeer&&!myPeer.destroyed){ myPeer.destroy(); myPeer=null; }
 }
 
 function onPeerDisc() {
-  hubConn = null;
-  setStat('ready', 'Disconnected');
+  hubConn=null;
+  setStat('ready','Disconnected');
   enableDrop(false);
   toast('Disconnected from room');
   leaveRoom();
@@ -884,20 +870,21 @@ function onPeerDisc() {
 //  LEAVE
 // ═══════════════════════════════════════════════════════
 function leaveRoom() {
-  if (myPeer && !myPeer.destroyed) myPeer.destroy();
-  myPeer = null; hubConn = null;
-  Object.keys(peerConns).forEach(function(k) {
-    try { peerConns[k].close(); } catch(e){}
+  if(myPeer&&!myPeer.destroyed) myPeer.destroy();
+  myPeer=null; hubConn=null;
+  Object.keys(peerConns).forEach(function(k){
+    try{ peerConns[k].close(); }catch(e){}
     delete peerConns[k];
   });
-  roomCode = null; role = null;
+  roomCode=null; role=null;
   sSent=0; sRecv=0; sMbOut=0; sMbIn=0; updateStats();
-  document.getElementById('members-list').innerHTML = '<span class="members-empty" id="members-empty">No one connected yet</span>';
-  document.getElementById('member-count').textContent = '0';
-  document.getElementById('tf-list').innerHTML = '';
-  document.getElementById('tf-wrap').style.display = 'none';
+  shelf=[];
+  document.getElementById('members-list').innerHTML='<span class="members-empty" id="members-empty">No one connected yet</span>';
+  document.getElementById('member-count').textContent='0';
+  document.getElementById('tf-list').innerHTML='';
+  document.getElementById('tf-wrap').style.display='none';
   enableDrop(false);
-  setStat('', '');
+  setStat('','');
   goTo('page-welcome');
 }
 
@@ -905,9 +892,9 @@ function leaveRoom() {
 //  QR
 // ═══════════════════════════════════════════════════════
 function generateQR(code) {
-  var url = location.href.split('?')[0] + '?code=' + code;
-  QRCode.toCanvas(document.getElementById('qr-canvas'), url, {
-    width: 140, margin: 1, color: { dark: '#07070d', light: '#ffffff' }
+  var url=location.href.split('?')[0]+'?code='+code;
+  QRCode.toCanvas(document.getElementById('qr-canvas'),url,{
+    width:140,margin:1,color:{dark:'#07070d',light:'#ffffff'}
   });
 }
 
@@ -915,39 +902,58 @@ function generateQR(code) {
 //  SEND FILES
 // ═══════════════════════════════════════════════════════
 function sendFiles(files) {
-  var targets = role === 'hub'
-    ? Object.values(peerConns).filter(function(c) { return c.open; })
-    : (hubConn && hubConn.open ? [hubConn] : []);
-  if (!targets.length) { toast('No one else in the room'); return; }
+  var targets=role==='hub'
+    ? Object.values(peerConns).filter(function(c){ return c.open; })
+    : (hubConn&&hubConn.open?[hubConn]:[]);
+  // proceed even with no targets — store in shelf for later replay
 
-  Array.prototype.forEach.call(files, function(file) {
-    var tfId  = crypto.randomUUID();
-    var total = Math.ceil(file.size / CHUNK);
-    addTf({ id:tfId, name:file.name, size:file.size, mime:file.type, dir:'send' });
-    var metaBytes = enc({ type:'FILE_META', transferId:tfId, name:file.name, size:file.size, mime:file.type||'application/octet-stream', chunks:total });
-    targets.forEach(function(t) { try { t.send(metaBytes); } catch(e){} });
+  Array.prototype.forEach.call(files,function(file){
+    var tfId=crypto.randomUUID();
+    var total=Math.ceil(file.size/CHUNK);
+    addTf({id:tfId,name:file.name,size:file.size,mime:file.type,dir:'send'});
+    var metaBytes=enc({type:'FILE_META',transferId:tfId,name:file.name,size:file.size,
+                       mime:file.type||'application/octet-stream',chunks:total});
+    targets.forEach(function(t){ try{ t.send(metaBytes); }catch(e){} });
 
-    var reader = new FileReader();
-    reader.onload = function() {
-      var buf = reader.result, i = 0;
-      function next() {
-        if (!targets.some(function(t){return t.open;})) return;
-        var hdr   = encHdr({ type:'CHUNK', transferId:tfId, index:i });
-        var slice = buf.slice(i*CHUNK, (i+1)*CHUNK);
-        var msg   = new Uint8Array(hdr.byteLength + slice.byteLength);
-        msg.set(hdr); msg.set(new Uint8Array(slice), hdr.byteLength);
-        targets.forEach(function(t) { try { t.send(msg.buffer); } catch(e){} });
-        updateTf(tfId, { pct: Math.round(++i/total*100) });
-        if (i < total) setTimeout(next, 0);
-        else {
-          var doneBytes = enc({ type:'FILE_DONE', transferId:tfId });
-          targets.forEach(function(t) { try { t.send(doneBytes); } catch(e){} });
-          updateTf(tfId, { done: true });
-          sSent++; sMbOut += file.size/1048576; updateStats();
-          toast('Sent: ' + file.name);
+    var reader=new FileReader();
+    reader.onload=function(){
+      var buf=reader.result, i=0;
+      function next(){
+        if(!targets.some(function(t){return t.open;})){
+          // no live targets — finish progress bar anyway
+          updateTf(tfId,{pct:100});
+          finishFile();
+          return;
+        }
+        var hdr=encHdr({type:'CHUNK',transferId:tfId,index:i});
+        var slice=buf.slice(i*CHUNK,(i+1)*CHUNK);
+        var msg=new Uint8Array(hdr.byteLength+slice.byteLength);
+        msg.set(hdr); msg.set(new Uint8Array(slice),hdr.byteLength);
+        targets.forEach(function(t){ try{ t.send(msg.buffer); }catch(e){} });
+        updateTf(tfId,{pct:Math.round(++i/total*100)});
+        if(i<total) setTimeout(next,0);
+        else{
+          var doneBytes=enc({type:'FILE_DONE',transferId:tfId});
+          targets.forEach(function(t){ try{ t.send(doneBytes); }catch(e){} });
+          finishFile();
         }
       }
-      next();
+      function finishFile(){
+        updateTf(tfId,{done:true});
+        sSent++; sMbOut+=file.size/1048576; updateStats();
+        // keep raw buffer in shelf so late-joiners can receive it
+        shelf.push({type:'file',tfId:tfId,name:file.name,size:file.size,
+                    mime:file.type||'application/octet-stream',buf:buf,total:total});
+        if(targets.length) toast('Sent: '+file.name);
+        else toast('Saved locally \u2014 will send when someone joins');
+      }
+      if(!targets.length){
+        // no peers right now — still finish for UI
+        updateTf(tfId,{pct:100});
+        finishFile();
+      } else {
+        next();
+      }
     };
     reader.readAsArrayBuffer(file);
   });
@@ -957,102 +963,139 @@ function sendFiles(files) {
 //  SEND TEXT
 // ═══════════════════════════════════════════════════════
 function sendText() {
-  var ta = document.getElementById('text-input');
-  var txt = ta.value.trim();
-  if (!txt) return;
-  var targets = role === 'hub'
-    ? Object.values(peerConns).filter(function(c) { return c.open; })
-    : (hubConn && hubConn.open ? [hubConn] : []);
-  if (!targets.length) { toast('No one else in the room'); return; }
-  var msgId = crypto.randomUUID();
-  var msgBytes = enc({ type: 'TEXT_MSG', msgId: msgId, text: txt });
-  targets.forEach(function(t) { try { t.send(msgBytes); } catch(e){} });
-  addTextItem(msgId, txt, true);
-  ta.value = '';
-  ta.style.height = '';
-  toast('Text sent');
+  var ta=document.getElementById('text-input');
+  var txt=ta.value.trim();
+  if(!txt) return;
+  var targets=role==='hub'
+    ? Object.values(peerConns).filter(function(c){ return c.open; })
+    : (hubConn&&hubConn.open?[hubConn]:[]);
+  var msgId=crypto.randomUUID();
+  var msgBytes=enc({type:'TEXT_MSG',msgId:msgId,text:txt});
+  targets.forEach(function(t){ try{ t.send(msgBytes); }catch(e){} });
+  shelf.push({type:'text',msgId:msgId,text:txt});
+  addTextItem(msgId,txt,true);
+  ta.value=''; ta.style.height='';
+  if(targets.length) toast('Text sent');
+  else toast('Saved locally \u2014 will send when someone joins');
 }
 
-function handleTextMsg(msg, fromId) {
-  addTextItem(msg.msgId, msg.text, false);
-  if (role === 'hub') relayExcept(enc(msg), fromId);
+function handleTextMsg(msg,fromId) {
+  if(shelf.some(function(s){ return s.msgId===msg.msgId; })) return;
+  shelf.push({type:'text',msgId:msg.msgId,text:msg.text});
+  addTextItem(msg.msgId,msg.text,false);
+  if(role==='hub') relayExcept(enc(msg),fromId);
 }
 
-function addTextItem(id, text, isMine) {
-  document.getElementById('tf-wrap').style.display = 'block';
-  var div = document.createElement('div');
-  div.className = 'tf-item'; div.id = 'tf-' + id;
-  div.innerHTML =
-    '<div class="tf-ico">&#128172;</div>' +
-    '<div class="tf-info">' +
-      '<div class="tf-name" style="font-size:11px;font-weight:500;color:var(--muted2);">' +
-        (isMine ? 'You' : 'Room') +
-      '</div>' +
-      '<div class="tf-text-body">' + esc(text) + '</div>' +
-    '</div>' +
-    '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;">' +
-      '<div class="tf-tag ' + (isMine ? 'tt-s' : 'tt-r') + '">' + (isMine ? 'Sent' : 'Rcvd') + '</div>' +
-      '<button class="copy-btn" onclick="copyText(this,' + JSON.stringify(text) + ')">Copy</button>' +
+function addTextItem(id,text,isMine) {
+  document.getElementById('tf-wrap').style.display='block';
+  var div=document.createElement('div');
+  div.className='tf-item'; div.id='tf-'+id;
+  div.innerHTML=
+    '<div class="tf-ico">&#128172;</div>'+
+    '<div class="tf-info">'+
+      '<div class="tf-name" style="font-size:11px;font-weight:500;color:var(--muted2);">'+
+        (isMine?'You':'Room')+
+      '</div>'+
+      '<div class="tf-text-body">'+esc(text)+'</div>'+
+    '</div>'+
+    '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;">'+
+      '<div class="tf-tag '+(isMine?'tt-s':'tt-r')+'">'+(isMine?'Sent':'Rcvd')+'</div>'+
+      '<button class="copy-btn" onclick="copyText(this,'+JSON.stringify(text)+')">Copy</button>'+
     '</div>';
   document.getElementById('tf-list').prepend(div);
 }
 
-function copyText(btn, text) {
-  navigator.clipboard.writeText(text).then(function() {
-    btn.textContent = 'Copied!'; btn.classList.add('copied');
-    setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
-  }).catch(function() {
-    var ta = document.createElement('textarea'); ta.value = text;
-    ta.style.cssText = 'position:fixed;opacity:0';
+function copyText(btn,text) {
+  navigator.clipboard.writeText(text).then(function(){
+    btn.textContent='Copied!'; btn.classList.add('copied');
+    setTimeout(function(){ btn.textContent='Copy'; btn.classList.remove('copied'); },2000);
+  }).catch(function(){
+    var ta=document.createElement('textarea'); ta.value=text;
+    ta.style.cssText='position:fixed;opacity:0';
     document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-    btn.textContent = 'Copied!'; btn.classList.add('copied');
-    setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    btn.textContent='Copied!'; btn.classList.add('copied');
+    setTimeout(function(){ btn.textContent='Copy'; btn.classList.remove('copied'); },2000);
   });
 }
 
 // ═══════════════════════════════════════════════════════
 //  RECEIVE
 // ═══════════════════════════════════════════════════════
-function handleChunk(raw, fromId) {
+function handleChunk(raw,fromId) {
   var buf;
-  if (raw instanceof ArrayBuffer) buf = new Uint8Array(raw);
-  else if (raw instanceof Blob) { raw.arrayBuffer().then(function(ab){ handleChunk(ab,fromId); }); return; }
+  if(raw instanceof ArrayBuffer) buf=new Uint8Array(raw);
+  else if(raw instanceof Blob){ raw.arrayBuffer().then(function(ab){ handleChunk(ab,fromId); }); return; }
   else return;
   try {
-    var hdr = JSON.parse(new TextDecoder().decode(buf.slice(0,256)).trim());
-    if (hdr.type === 'CHUNK') {
-      var tf = incoming[hdr.transferId]; if (!tf) return;
-      tf.chunks[hdr.index] = buf.slice(256); tf.received++;
-      updateTf(hdr.transferId, { pct: Math.round(tf.received/tf.total*100) });
-      if (role === 'hub') relayExcept(buf.buffer, fromId);
+    var hdr=JSON.parse(new TextDecoder().decode(buf.slice(0,256)).trim());
+    if(hdr.type==='CHUNK'){
+      var tf=incoming[hdr.transferId]; if(!tf) return;
+      tf.chunks[hdr.index]=buf.slice(256); tf.received++;
+      updateTf(hdr.transferId,{pct:Math.round(tf.received/tf.total*100)});
+      if(role==='hub') relayExcept(buf.buffer,fromId);
     }
   } catch(e){}
 }
 
-function handleControl(msg, fromId) {
-  if (msg.type === 'WELCOME') return;
-  if (msg.type === 'TEXT_MSG') { handleTextMsg(msg, fromId); return; }
-  if (msg.type === 'FILE_META') {
-    incoming[msg.transferId] = { name:msg.name, size:msg.size, mime:msg.mime, total:msg.chunks, chunks:new Array(msg.chunks), received:0 };
-    addTf({ id:msg.transferId, name:msg.name, size:msg.size, mime:msg.mime, dir:'recv' });
-    if (role === 'hub') relayExcept(enc(msg), fromId);
+function handleControl(msg,fromId) {
+  if(msg.type==='WELCOME') return;
+  if(msg.type==='TEXT_MSG'){ handleTextMsg(msg,fromId); return; }
+  if(msg.type==='FILE_META'){
+    incoming[msg.transferId]={name:msg.name,size:msg.size,mime:msg.mime,
+                               total:msg.chunks,chunks:new Array(msg.chunks),received:0};
+    addTf({id:msg.transferId,name:msg.name,size:msg.size,mime:msg.mime,dir:'recv'});
+    if(role==='hub') relayExcept(enc(msg),fromId);
   }
-  if (msg.type === 'FILE_DONE') {
-    var tf = incoming[msg.transferId]; if (!tf) return;
-    var blob = new Blob(tf.chunks.map(function(c){return new Uint8Array(c);}), { type:tf.mime||'application/octet-stream' });
-    var url  = URL.createObjectURL(blob);
-    updateTf(msg.transferId, { done:true, dlUrl:url, dlName:tf.name });
+  if(msg.type==='FILE_DONE'){
+    var tf=incoming[msg.transferId]; if(!tf) return;
+    var blob=new Blob(tf.chunks.map(function(c){return new Uint8Array(c);}),
+                      {type:tf.mime||'application/octet-stream'});
+    var url=URL.createObjectURL(blob);
+    updateTf(msg.transferId,{done:true,dlUrl:url,dlName:tf.name});
     delete incoming[msg.transferId];
-    sRecv++; sMbIn += tf.size/1048576; updateStats();
-    toast('Received: ' + tf.name);
-    if (role === 'hub') relayExcept(enc(msg), fromId);
+    sRecv++; sMbIn+=tf.size/1048576; updateStats();
+    toast('Received: '+tf.name);
+    if(role==='hub') relayExcept(enc(msg),fromId);
   }
 }
 
-function relayExcept(data, exceptId) {
-  Object.entries(peerConns).forEach(function(entry) {
-    var id = entry[0], conn = entry[1];
-    if (id !== exceptId && conn.open) { try { conn.send(data); } catch(e){} }
+function relayExcept(data,exceptId) {
+  Object.entries(peerConns).forEach(function(entry){
+    var id=entry[0],conn=entry[1];
+    if(id!==exceptId&&conn.open){ try{ conn.send(data); }catch(e){} }
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+//  REPLAY SHELF to a newly joined peer
+// ═══════════════════════════════════════════════════════
+function replayShelf(conn) {
+  if(!shelf.length) return;
+  shelf.forEach(function(item){
+    if(item.type==='text'){
+      try{ conn.send(enc({type:'TEXT_MSG',msgId:item.msgId,text:item.text})); }catch(e){}
+    } else if(item.type==='file'){
+      var total=item.total;
+      try{ conn.send(enc({type:'FILE_META',transferId:item.tfId,
+                          name:item.name,size:item.size,mime:item.mime,chunks:total})); }
+      catch(e){ return; }
+      // send all chunks, then FILE_DONE
+      var buf=item.buf, i=0;
+      (function sendNext(){
+        if(!conn.open) return;
+        if(i>=total){
+          try{ conn.send(enc({type:'FILE_DONE',transferId:item.tfId})); }catch(e){}
+          return;
+        }
+        var hdr=encHdr({type:'CHUNK',transferId:item.tfId,index:i});
+        var slice=buf.slice(i*CHUNK,(i+1)*CHUNK);
+        var msg=new Uint8Array(hdr.byteLength+slice.byteLength);
+        msg.set(hdr); msg.set(new Uint8Array(slice),hdr.byteLength);
+        try{ conn.send(msg.buffer); }catch(e){ return; }
+        i++;
+        setTimeout(sendNext,0);
+      })();
+    }
   });
 }
 
@@ -1060,26 +1103,26 @@ function relayExcept(data, exceptId) {
 //  TRANSFER LIST UI
 // ═══════════════════════════════════════════════════════
 function fileIcon(m) {
-  if (!m) return '\uD83D\uDCC4';
-  if (m.startsWith('image/')) return '\uD83D\uDDBC';
-  if (m.startsWith('video/')) return '\uD83C\uDFAC';
-  if (m.startsWith('audio/')) return '\uD83C\uDFB5';
-  if (m.includes('pdf'))      return '\uD83D\uDCD5';
-  if (m.includes('zip')||m.includes('tar')) return '\uD83D\uDCE6';
-  if (m.includes('text'))     return '\uD83D\uDCDD';
+  if(!m) return '\uD83D\uDCC4';
+  if(m.startsWith('image/')) return '\uD83D\uDDBC';
+  if(m.startsWith('video/')) return '\uD83C\uDFAC';
+  if(m.startsWith('audio/')) return '\uD83C\uDFB5';
+  if(m.includes('pdf'))      return '\uD83D\uDCD5';
+  if(m.includes('zip')||m.includes('tar')) return '\uD83D\uDCE6';
+  if(m.includes('text'))     return '\uD83D\uDCDD';
   return '\uD83D\uDCC4';
 }
 function fmtSize(b) {
-  if (b<1024) return b+' B';
-  if (b<1048576) return (b/1024).toFixed(1)+' KB';
+  if(b<1024) return b+' B';
+  if(b<1048576) return (b/1024).toFixed(1)+' KB';
   return (b/1048576).toFixed(1)+' MB';
 }
 
 function addTf(tf) {
-  document.getElementById('tf-wrap').style.display = 'block';
-  var div = document.createElement('div');
+  document.getElementById('tf-wrap').style.display='block';
+  var div=document.createElement('div');
   div.className='tf-item'; div.id='tf-'+tf.id;
-  div.innerHTML =
+  div.innerHTML=
     '<div class="tf-ico">'+fileIcon(tf.mime)+'</div>'+
     '<div class="tf-info">'+
       '<div class="tf-name">'+esc(tf.name)+'</div>'+
@@ -1090,16 +1133,16 @@ function addTf(tf) {
   document.getElementById('tf-list').prepend(div);
 }
 
-function updateTf(id, ch) {
-  var el = document.getElementById('tf-'+id); if (!el) return;
-  if (ch.pct !== undefined) {
+function updateTf(id,ch) {
+  var el=document.getElementById('tf-'+id); if(!el) return;
+  if(ch.pct!==undefined){
     var b=document.getElementById('tb-'+id), p=document.getElementById('tp-'+id);
     if(b) b.style.width=ch.pct+'%';
     if(p) p.textContent=ch.pct+'%';
   }
-  if (ch.done) {
+  if(ch.done){
     var tag=document.getElementById('tt-'+id), wrap=el.querySelector('.tf-bar-wrap');
-    if(tag){tag.textContent='Done';tag.className='tf-tag tt-d';}
+    if(tag){ tag.textContent='Done'; tag.className='tf-tag tt-d'; }
     if(wrap) wrap.style.display='none';
     if(ch.dlUrl){
       var a=document.createElement('a'); a.href=ch.dlUrl; a.download=ch.dlName||'file';
@@ -1110,58 +1153,55 @@ function updateTf(id, ch) {
 }
 
 function clearDone() {
-  document.querySelectorAll('.tf-item').forEach(function(el) {
-    if (el.querySelector('.tt-d')) el.remove();
+  document.querySelectorAll('.tf-item').forEach(function(el){
+    if(el.querySelector('.tt-d')) el.remove();
   });
-  if (!document.getElementById('tf-list').children.length)
+  if(!document.getElementById('tf-list').children.length)
     document.getElementById('tf-wrap').style.display='none';
 }
 
 // ═══════════════════════════════════════════════════════
-//  BOOT — wire everything once DOM is ready
+//  BOOT
 // ═══════════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded',function(){
 
-  // Welcome
-  document.getElementById('btn-create').addEventListener('click', function() { createRoom(); });
-  document.getElementById('btn-join').addEventListener('click', function() { goTo('page-join'); });
+  document.getElementById('btn-create').addEventListener('click',function(){ createRoom(); });
+  document.getElementById('btn-join').addEventListener('click',function(){ goTo('page-join'); });
 
-  // Join page
-  var ci = document.getElementById('code-input');
-  var jb = document.getElementById('join-btn');
+  var ci=document.getElementById('code-input');
+  var jb=document.getElementById('join-btn');
 
-  ci.addEventListener('input', function() {
+  ci.addEventListener('input',function(){
     ci.classList.remove('err','ok');
-    document.getElementById('join-msg').textContent = '';
-    var v = ci.value.replace(/\D/g,'');
-    ci.value = v;
-    jb.disabled = v.length !== 4;
-    if (v.length === 4) ci.classList.add('ok');
+    document.getElementById('join-msg').textContent='';
+    var v=ci.value.replace(/\D/g,'');
+    ci.value=v;
+    jb.disabled=v.length!==4;
+    if(v.length===4) ci.classList.add('ok');
   });
 
-  ci.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && !jb.disabled) jb.click();
+  ci.addEventListener('keydown',function(e){
+    if(e.key==='Enter'&&!jb.disabled) jb.click();
   });
 
-  jb.addEventListener('click', function() {
-    var code = ci.value.trim();
-    if (code.length === 4) joinRoom(code);
+  jb.addEventListener('click',function(){
+    var code=ci.value.trim();
+    if(code.length===4) joinRoom(code);
   });
 
-  document.getElementById('join-back').addEventListener('click', function() {
+  document.getElementById('join-back').addEventListener('click',function(){
     document.getElementById('join-spinner').classList.remove('on');
-    ci.value = ''; jb.disabled = true;
-    document.getElementById('join-msg').textContent = '';
-    if (myPeer && !myPeer.destroyed) { myPeer.destroy(); myPeer = null; }
+    ci.value=''; jb.disabled=true;
+    document.getElementById('join-msg').textContent='';
+    if(myPeer&&!myPeer.destroyed){ myPeer.destroy(); myPeer=null; }
     goTo('page-welcome');
   });
 
-  // Room page
-  document.getElementById('room-back').addEventListener('click', leaveRoom);
-  document.getElementById('peer-leave').addEventListener('click', leaveRoom);
-  document.getElementById('clear-btn').addEventListener('click', clearDone);
+  document.getElementById('room-back').addEventListener('click',leaveRoom);
+  document.getElementById('peer-leave').addEventListener('click',leaveRoom);
+  document.getElementById('clear-btn').addEventListener('click',clearDone);
 
-  document.getElementById('regen-btn').addEventListener('click', function() {
+  document.getElementById('regen-btn').addEventListener('click',function(){
     Object.values(peerConns).forEach(function(c){try{c.close();}catch(e){}});
     Object.keys(peerConns).forEach(function(k){delete peerConns[k];});
     document.getElementById('members-list').innerHTML='<span class="members-empty" id="members-empty">No one connected yet</span>';
@@ -1169,46 +1209,43 @@ document.addEventListener('DOMContentLoaded', function() {
     createRoom(randCode());
   });
 
-  // Drop zone
-  var dz = document.getElementById('drop-zone');
-  dz.addEventListener('dragover', function(e) {
+  var dz=document.getElementById('drop-zone');
+  dz.addEventListener('dragover',function(e){
     e.preventDefault();
-    if (!dz.classList.contains('off')) dz.classList.add('over');
+    if(!dz.classList.contains('off')) dz.classList.add('over');
   });
-  dz.addEventListener('dragleave', function() { dz.classList.remove('over'); });
-  dz.addEventListener('drop', function(e) {
+  dz.addEventListener('dragleave',function(){ dz.classList.remove('over'); });
+  dz.addEventListener('drop',function(e){
     e.preventDefault(); dz.classList.remove('over');
-    if (!dz.classList.contains('off')) sendFiles(e.dataTransfer.files);
+    if(!dz.classList.contains('off')) sendFiles(e.dataTransfer.files);
   });
-  dz.addEventListener('click', function() {
-    if (!dz.classList.contains('off')) document.getElementById('file-input').click();
+  dz.addEventListener('click',function(){
+    if(!dz.classList.contains('off')) document.getElementById('file-input').click();
   });
-  document.getElementById('file-input').addEventListener('change', function(e) {
-    if (e.target.files.length) sendFiles(e.target.files);
-    e.target.value = '';
+  document.getElementById('file-input').addEventListener('change',function(e){
+    if(e.target.files.length) sendFiles(e.target.files);
+    e.target.value='';
   });
 
-  // Text send strip — auto-grow + Ctrl+Enter
-  var txtArea = document.getElementById('text-input');
-  var sendBtn = document.getElementById('send-txt-btn');
-  txtArea.addEventListener('input', function() {
-    txtArea.style.height = '';
-    txtArea.style.height = Math.min(txtArea.scrollHeight, 100) + 'px';
+  var txtArea=document.getElementById('text-input');
+  var sendBtn=document.getElementById('send-txt-btn');
+  txtArea.addEventListener('input',function(){
+    txtArea.style.height='';
+    txtArea.style.height=Math.min(txtArea.scrollHeight,100)+'px';
   });
-  txtArea.addEventListener('keydown', function(e) {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+  txtArea.addEventListener('keydown',function(e){
+    if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){
       e.preventDefault();
-      if (!sendBtn.disabled) sendText();
+      if(!sendBtn.disabled) sendText();
     }
   });
-  sendBtn.addEventListener('click', sendText);
+  sendBtn.addEventListener('click',sendText);
 
-  // Auto-join from QR scan (?code=1234)
-  var code = new URLSearchParams(location.search).get('code');
-  if (code && /^\d{4}$/.test(code)) {
-    ci.value = code; ci.classList.add('ok'); jb.disabled = false;
+  var code=new URLSearchParams(location.search).get('code');
+  if(code&&/^\d{4}$/.test(code)){
+    ci.value=code; ci.classList.add('ok'); jb.disabled=false;
     goTo('page-join');
-    setTimeout(function() { joinRoom(code); }, 350);
+    setTimeout(function(){ joinRoom(code); },350);
   }
 
 });
