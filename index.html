@@ -22,7 +22,6 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 .page{min-height:100dvh;display:flex;flex-direction:column;opacity:0;pointer-events:none;
   position:absolute;top:0;left:0;right:0;transition:opacity .22s ease}
 .page.active{opacity:1;pointer-events:all;position:relative}
-/* TOPBAR */
 .topbar{display:flex;align-items:center;gap:14px;padding:0 20px;height:54px;
   border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0}
 .logo{width:30px;height:30px;background:var(--accent);border-radius:8px;
@@ -43,7 +42,6 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 .back-btn{display:flex;align-items:center;gap:5px;font-size:11px;font-family:var(--mono);
   color:var(--muted);background:none;border:none;cursor:pointer;padding:4px 0;transition:color .2s}
 .back-btn:hover{color:var(--text)}
-/* WELCOME */
 #page-welcome .body{flex:1;display:flex;flex-direction:column;align-items:center;
   justify-content:center;padding:40px 20px;gap:12px;text-align:center}
 .welcome-title{font-size:36px;font-weight:800;letter-spacing:-.04em;line-height:1.1}
@@ -60,7 +58,6 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 .choice-icon{font-size:32px;margin-bottom:12px}
 .choice-label{font-size:16px;font-weight:700;margin-bottom:4px}
 .choice-desc{font-size:11px;color:var(--muted2);font-family:var(--mono);line-height:1.5}
-/* JOIN */
 #page-join .body{flex:1;display:flex;flex-direction:column;align-items:center;
   justify-content:center;padding:32px 20px;gap:14px}
 .join-card{width:100%;max-width:360px;display:flex;flex-direction:column;gap:14px}
@@ -89,7 +86,9 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 @keyframes spin{to{transform:rotate(360deg)}}
 .spinner-txt{font-size:13px;font-weight:700}
 .spinner-sub{font-size:11px;color:var(--muted2);font-family:var(--mono)}
-/* ROOM LAYOUT */
+</style>
+</head>
+<style>
 #page-room .room-layout{flex:1;display:grid;grid-template-columns:260px 1fr}
 @media(max-width:680px){#page-room .room-layout{grid-template-columns:1fr}}
 .room-sidebar{background:var(--bg2);border-right:1px solid var(--border);
@@ -103,21 +102,16 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
   .role-badge{padding:10px 12px}
 }
 .code-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center}
-.code-card-lbl{font-size:10px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;
-  letter-spacing:.08em;margin-bottom:10px}
-.code-big{font-size:48px;font-weight:800;letter-spacing:.2em;color:var(--accent);
-  font-family:var(--mono);line-height:1;margin-bottom:6px}
+.code-card-lbl{font-size:10px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.code-big{font-size:48px;font-weight:800;letter-spacing:.2em;color:var(--accent);font-family:var(--mono);line-height:1;margin-bottom:6px}
 .code-note{font-size:11px;color:var(--muted2);font-family:var(--mono);line-height:1.6;margin-bottom:12px}
-.regen-btn{font-size:11px;font-family:var(--mono);color:var(--muted);background:none;
-  border:1px solid var(--border2);border-radius:6px;padding:5px 10px;cursor:pointer;transition:color .2s,border-color .2s}
+.regen-btn{font-size:11px;font-family:var(--mono);color:var(--muted);background:none;border:1px solid var(--border2);border-radius:6px;padding:5px 10px;cursor:pointer;transition:color .2s,border-color .2s}
 .regen-btn:hover{color:var(--accent);border-color:var(--accent)}
 .qr-wrap{text-align:center}
 .qr-lbl{font-size:10px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
-#qr-canvas{width:140px!important;height:140px!important;border-radius:8px;display:block;
-  margin:0 auto;background:#fff;padding:5px}
+#qr-canvas{width:140px!important;height:140px!important;border-radius:8px;display:block;margin:0 auto;background:#fff;padding:5px}
 .qr-note{margin-top:6px;font-size:10px;color:var(--muted);font-family:var(--mono);line-height:1.5}
-.role-badge{background:rgba(106,180,245,.07);border:1px solid rgba(106,180,245,.2);
-  border-radius:12px;padding:14px;display:flex;align-items:center;gap:10px}
+.role-badge{background:rgba(106,180,245,.07);border:1px solid rgba(106,180,245,.2);border-radius:12px;padding:14px;display:flex;align-items:center;gap:10px}
 .role-badge.is-host{background:rgba(240,160,69,.07);border-color:rgba(240,160,69,.2)}
 .role-dot{width:8px;height:8px;border-radius:50%;background:var(--blue);flex-shrink:0}
 .role-badge.is-host .role-dot{background:var(--warn)}
@@ -125,18 +119,14 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 .role-name{font-size:13px;font-weight:700;color:var(--blue)}
 .role-badge.is-host .role-name{color:var(--warn)}
 .role-sub{font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:1px}
-.leave-btn{background:none;border:1px solid var(--border2);border-radius:5px;padding:4px 8px;
-  font-size:10px;font-family:var(--mono);color:var(--muted2);cursor:pointer;transition:color .2s,border-color .2s}
+.leave-btn{background:none;border:1px solid var(--border2);border-radius:5px;padding:4px 8px;font-size:10px;font-family:var(--mono);color:var(--muted2);cursor:pointer;transition:color .2s,border-color .2s}
 .leave-btn:hover{color:var(--danger);border-color:var(--danger)}
-.members-hdr{font-size:10px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;
-  letter-spacing:.08em;display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.members-hdr{font-size:10px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;display:flex;align-items:center;gap:6px;margin-bottom:8px}
 .member-count{background:var(--accentd);color:var(--accent);border-radius:10px;padding:1px 7px;font-size:10px}
 .members-list{display:flex;flex-direction:column;gap:5px}
-.member-item{background:var(--bg3);border:1px solid var(--border);border-radius:8px;
-  padding:8px 11px;display:flex;align-items:center;gap:7px}
+.member-item{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 11px;display:flex;align-items:center;gap:7px}
 .member-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0}
-.member-name{font-size:11px;font-family:var(--mono);color:var(--text);flex:1;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.member-name{font-size:11px;font-family:var(--mono);color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .member-kick{background:none;border:none;font-size:11px;color:var(--muted);cursor:pointer;padding:0 2px;transition:color .2s}
 .member-kick:hover{color:var(--danger)}
 .members-empty{font-size:11px;color:var(--muted);font-family:var(--mono)}
@@ -145,22 +135,17 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 .stat-lbl{font-size:9px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
 .stat-val{font-size:18px;font-weight:700;line-height:1}
 .sv-g{color:var(--accent)}
-.sidebar-foot{margin-top:auto;padding-top:12px;border-top:1px solid var(--border);
-  font-size:10px;color:var(--muted);font-family:var(--mono);line-height:1.7}
-/* ROOM MAIN */
+.sidebar-foot{margin-top:auto;padding-top:12px;border-top:1px solid var(--border);font-size:10px;color:var(--muted);font-family:var(--mono);line-height:1.7}
 .room-main{display:flex;flex-direction:column}
 .drop-zone{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:16px;
   margin:14px 20px 0;border:2px dashed var(--border2);border-radius:14px;cursor:pointer;
   padding:14px 20px;transition:border-color .2s,background .2s;text-align:left;position:relative}
 .drop-zone.over{border-color:var(--accent);background:rgba(126,232,162,.04)}
 .drop-zone.off{opacity:.4;cursor:default}
-@media(max-width:680px){
-  .drop-zone{margin:10px 12px 0;border-radius:12px;flex-direction:column;align-items:center;text-align:center;padding:14px}
-}
+@media(max-width:680px){.drop-zone{margin:10px 12px 0;border-radius:12px;flex-direction:column;align-items:center;text-align:center;padding:14px}}
 .dz-inner{pointer-events:none;display:flex;flex-direction:row;align-items:center;gap:14px}
 @media(max-width:680px){.dz-inner{flex-direction:column;gap:6px}}
-.dz-icon{width:44px;height:44px;flex-shrink:0;border-radius:12px;background:var(--bg3);
-  border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;transition:transform .2s}
+.dz-icon{width:44px;height:44px;flex-shrink:0;border-radius:12px;background:var(--bg3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;transition:transform .2s}
 .drop-zone.over .dz-icon{transform:scale(1.08)}
 .dz-icon svg{width:20px;height:20px}
 .dz-text{display:flex;flex-direction:column;gap:2px}
@@ -168,28 +153,17 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 .dz-sub{font-size:11px;color:var(--muted2);font-family:var(--mono)}
 .dz-hint{font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:2px}
 .file-input{display:none}
-.wait-banner{margin-top:10px;padding:6px 14px;background:var(--bg3);border:1px solid var(--border);
-  border-radius:7px;font-size:11px;font-family:var(--mono);color:var(--warn);
-  display:inline-flex;align-items:center;gap:6px;pointer-events:none}
-/* HOST TAKEOVER NOTICE */
-.host-notice{margin:8px 20px 0;padding:8px 14px;background:rgba(240,160,69,.08);
-  border:1px solid rgba(240,160,69,.25);border-radius:8px;
-  font-size:11px;font-family:var(--mono);color:var(--warn);display:none;align-items:center;gap:8px}
+.wait-banner{margin-top:10px;padding:6px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;font-size:11px;font-family:var(--mono);color:var(--warn);display:inline-flex;align-items:center;gap:6px;pointer-events:none}
+.host-notice{margin:8px 20px 0;padding:8px 14px;background:rgba(240,160,69,.08);border:1px solid rgba(240,160,69,.25);border-radius:8px;font-size:11px;font-family:var(--mono);color:var(--warn);display:none;align-items:center;gap:8px}
 .host-notice.on{display:flex}
-/* TEXT STRIP */
 .text-strip{border-top:1px solid var(--border);padding:10px 14px;display:flex;gap:8px;align-items:flex-end;background:var(--bg)}
-.text-strip textarea{flex:1;min-height:36px;max-height:100px;background:var(--bg3);
-  border:1px solid var(--border2);border-radius:9px;padding:8px 11px;
-  font-family:var(--mono);font-size:12px;color:var(--text);resize:none;outline:none;
-  line-height:1.5;transition:border-color .2s;overflow-y:auto}
+.text-strip textarea{flex:1;min-height:36px;max-height:100px;background:var(--bg3);border:1px solid var(--border2);border-radius:9px;padding:8px 11px;font-family:var(--mono);font-size:12px;color:var(--text);resize:none;outline:none;line-height:1.5;transition:border-color .2s;overflow-y:auto}
 .text-strip textarea:focus{border-color:var(--accent)}
 .text-strip textarea::placeholder{color:var(--muted)}
-.send-txt-btn{padding:8px 13px;background:var(--accent);color:#05140c;border:none;border-radius:9px;
-  font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer;transition:background .15s;white-space:nowrap;flex-shrink:0}
+.send-txt-btn{padding:8px 13px;background:var(--accent);color:#05140c;border:none;border-radius:9px;font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer;transition:background .15s;white-space:nowrap;flex-shrink:0}
 .send-txt-btn:hover{background:#9ef5b8}
 .send-txt-btn:active{transform:scale(.97)}
 .send-txt-btn:disabled{background:var(--bg4);color:var(--muted);cursor:default}
-/* SHARED LIST */
 .tf-wrap{border-top:1px solid var(--border);max-height:300px;overflow-y:auto}
 .tf-hdr{display:flex;align-items:center;padding:10px 20px 7px;gap:8px}
 .tf-hdr h3{font-size:13px;font-weight:600;flex:1}
@@ -197,11 +171,9 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 .clear-btn:hover{color:var(--danger)}
 .tf-list{padding:0 20px 12px;display:flex;flex-direction:column;gap:7px}
 @media(max-width:680px){.tf-hdr{padding:9px 12px 6px}.tf-list{padding:0 12px 10px}}
-.tf-item{background:var(--bg3);border:1px solid var(--border);border-radius:10px;
-  padding:10px 12px;display:flex;align-items:flex-start;gap:10px;animation:up .2s ease}
+.tf-item{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;align-items:flex-start;gap:10px;animation:up .2s ease}
 @keyframes up{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
-.tf-ico{width:32px;height:32px;border-radius:8px;background:var(--bg4);border:1px solid var(--border2);
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;margin-top:1px}
+.tf-ico{width:32px;height:32px;border-radius:8px;background:var(--bg4);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;margin-top:1px}
 .tf-info{flex:1;min-width:0}
 .tf-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
 .tf-meta{font-size:11px;color:var(--muted2);font-family:var(--mono);display:flex;gap:8px;align-items:center}
@@ -212,35 +184,25 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 .tt-r{background:rgba(126,232,162,.1);color:var(--accent)}
 .tt-d{background:rgba(126,232,162,.12);color:var(--accent2)}
 .tt-e{background:rgba(224,90,90,.12);color:var(--danger)}
-.dl-btn{padding:3px 8px;background:var(--bg4);border:1px solid var(--border2);border-radius:5px;
-  font-size:11px;font-family:var(--mono);color:var(--accent);text-decoration:none;display:inline-block;
-  transition:background .15s;white-space:nowrap}
+.dl-btn{padding:3px 8px;background:var(--bg4);border:1px solid var(--border2);border-radius:5px;font-size:11px;font-family:var(--mono);color:var(--accent);text-decoration:none;display:inline-block;transition:background .15s;white-space:nowrap}
 .dl-btn:hover{background:var(--accentd)}
-.copy-btn{padding:3px 8px;background:var(--bg4);border:1px solid var(--border2);border-radius:5px;
-  font-size:11px;font-family:var(--mono);color:var(--muted2);cursor:pointer;transition:color .2s,border-color .2s;white-space:nowrap}
+.copy-btn{padding:3px 8px;background:var(--bg4);border:1px solid var(--border2);border-radius:5px;font-size:11px;font-family:var(--mono);color:var(--muted2);cursor:pointer;transition:color .2s,border-color .2s;white-space:nowrap}
 .copy-btn:hover{color:var(--accent);border-color:var(--accent)}
 .copy-btn.copied{color:var(--accent2);border-color:var(--accent2);background:var(--accentd)}
-.tf-text-body{margin-top:6px;padding:8px 10px;background:var(--bg4);border-radius:7px;
-  font-family:var(--mono);font-size:12px;color:var(--text);white-space:pre-wrap;
-  word-break:break-word;line-height:1.6;max-height:120px;overflow-y:auto}
-.mobile-stats-bar{display:none;background:var(--bg2);border-top:1px solid var(--border);
-  padding:7px 14px;gap:0;justify-content:space-around;flex-shrink:0}
+.tf-text-body{margin-top:6px;padding:8px 10px;background:var(--bg4);border-radius:7px;font-family:var(--mono);font-size:12px;color:var(--text);white-space:pre-wrap;word-break:break-word;line-height:1.6;max-height:120px;overflow-y:auto}
+.mobile-stats-bar{display:none;background:var(--bg2);border-top:1px solid var(--border);padding:7px 14px;gap:0;justify-content:space-around;flex-shrink:0}
 .msb-stat{display:flex;flex-direction:column;align-items:center;gap:1px}
 .msb-lbl{font-size:8px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 .msb-val{font-size:13px;font-weight:700;line-height:1}
-.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(14px);
-  background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 18px;
-  font-size:12px;font-family:var(--mono);opacity:0;transition:opacity .22s,transform .22s;
-  pointer-events:none;z-index:9999;white-space:nowrap;max-width:90vw;text-overflow:ellipsis;overflow:hidden}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 18px;font-size:12px;font-family:var(--mono);opacity:0;transition:opacity .22s,transform .22s;pointer-events:none;z-index:9999;white-space:nowrap;max-width:90vw;text-overflow:ellipsis;overflow:hidden}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 </style>
-</head>
 <body>
 
-<!-- PAGE: WELCOME -->
+<!-- WELCOME -->
 <div class="page active" id="page-welcome">
   <header class="topbar">
     <div class="logo"><svg viewBox="0 0 15 15" fill="none"><path d="M1 7.5h13M7.5 1l6.5 6.5-6.5 6.5" stroke="#05140c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
@@ -264,7 +226,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
   </div>
 </div>
 
-<!-- PAGE: JOIN -->
+<!-- JOIN -->
 <div class="page" id="page-join">
   <header class="topbar">
     <div class="logo"><svg viewBox="0 0 15 15" fill="none"><path d="M1 7.5h13M7.5 1l6.5 6.5-6.5 6.5" stroke="#05140c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
@@ -287,7 +249,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
   </div>
 </div>
 
-<!-- PAGE: ROOM -->
+<!-- ROOM -->
 <div class="page" id="page-room">
   <header class="topbar">
     <div class="logo"><svg viewBox="0 0 15 15" fill="none"><path d="M1 7.5h13M7.5 1l6.5 6.5-6.5 6.5" stroke="#05140c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
@@ -299,7 +261,6 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
   </header>
   <div class="room-layout">
     <aside class="room-sidebar">
-      <!-- Dynamic role panel — filled by JS -->
       <div id="role-panel" style="display:flex;flex-direction:column;gap:14px;">
         <div id="code-card-wrap" class="code-card" style="display:none;">
           <div class="code-card-lbl">Room code</div>
@@ -320,7 +281,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
           </div>
           <button class="leave-btn" id="peer-leave">Leave</button>
         </div>
-        <div style="font-size:11px;color:var(--muted);font-family:var(--mono);line-height:1.7;" id="room-tip">
+        <div style="font-size:11px;color:var(--muted);font-family:var(--mono);line-height:1.7;">
           Drop files or send text to <strong style="color:var(--muted2)">everyone</strong> in the room.
         </div>
         <div>
@@ -330,7 +291,6 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
           </div>
         </div>
       </div>
-      <!-- Desktop stats -->
       <div class="stats-row" style="margin-top:auto;">
         <div class="stat"><div class="stat-lbl">Sent</div><div class="stat-val sv-g" id="s-sent">0</div></div>
         <div class="stat"><div class="stat-lbl">Rcvd</div><div class="stat-val sv-g" id="s-recv">0</div></div>
@@ -340,11 +300,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
       <div class="sidebar-foot">P2P &middot; No server sees your files</div>
     </aside>
     <div class="room-main">
-      <!-- Host-takeover notice -->
-      <div class="host-notice" id="host-notice">
-        &#9733;&nbsp; You are now the room host &mdash; new members can still join
-      </div>
-      <!-- Drop zone -->
+      <div class="host-notice" id="host-notice">&#9733;&nbsp; You are now the room host &mdash; new members can still join</div>
       <div class="drop-zone off" id="drop-zone">
         <input type="file" class="file-input" id="file-input" multiple>
         <div class="dz-inner">
@@ -360,25 +316,17 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
             <div class="dz-hint" id="dz-hint">Waiting for others to join&hellip;</div>
           </div>
         </div>
-        <div class="wait-banner" id="wait-banner">
-          &#9888;&nbsp; No one else here yet &mdash; files will send when someone joins
-        </div>
+        <div class="wait-banner" id="wait-banner">&#9888;&nbsp; No one else here yet &mdash; files will send when someone joins</div>
       </div>
-      <!-- Text strip -->
       <div class="text-strip">
         <textarea id="text-input" placeholder="Send a note, link, or password&hellip; Ctrl+Enter to send" rows="1"></textarea>
         <button class="send-txt-btn" id="send-txt-btn" disabled>Send</button>
       </div>
-      <!-- Shared items -->
       <div class="tf-wrap" id="tf-wrap" style="display:none">
-        <div class="tf-hdr">
-          <h3>Shared</h3>
-          <button class="clear-btn" id="clear-btn">Clear done</button>
-        </div>
+        <div class="tf-hdr"><h3>Shared</h3><button class="clear-btn" id="clear-btn">Clear done</button></div>
         <div class="tf-list" id="tf-list"></div>
       </div>
-      <!-- Mobile stats footer -->
-      <div class="mobile-stats-bar" id="mobile-stats-bar">
+      <div class="mobile-stats-bar">
         <div class="msb-stat"><div class="msb-lbl">Sent</div><div class="msb-val sv-g" id="ms-sent">0</div></div>
         <div class="msb-stat"><div class="msb-lbl">Rcvd</div><div class="msb-val sv-g" id="ms-recv">0</div></div>
         <div class="msb-stat"><div class="msb-lbl">MB out</div><div class="msb-val" id="ms-out">0</div></div>
@@ -393,225 +341,198 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 
 <script>
 // ═══════════════════════════════════════════════════════════════════
-//  FILESHARE — Full-mesh P2P, host-election, creator-leaves safe
+//  FileShare — Full P2P mesh, host election, persistent shelf
 //
-//  Architecture:
-//  • One peer holds the PeerJS "room ID" (NS+code) — the HOST.
-//  • All others form a full mesh: everyone connects to everyone.
-//  • When the host leaves, remaining peers elect a new host:
-//      - The peer with the lexicographically smallest myPeer.id
-//        re-registers under the room ID so new joiners can still find the room.
-//  • The shelf (file/text history) is replicated to every peer on
-//    receipt, so any peer can replay it to late joiners.
-//  • Files and text broadcast directly to all open mesh peers.
+//  KEY DESIGN:
+//  ─ Every peer connects directly to every other peer (full mesh).
+//  ─ One peer holds the PeerJS NS+code identity (the "host") so new
+//    joiners have a stable entry point.
+//  ─ When the host leaves, the peer with the smallest PeerJS ID
+//    registers a second Peer under NS+code and becomes the new host.
+//  ─ The SHELF (all files & texts ever shared) is accumulated by
+//    EVERY peer, not just the host. Any peer can replay it to a
+//    new joiner — so history survives host rotation.
+//  ─ PEER_LIST messages include the sender's own ID so every peer
+//    learns about everyone else and forms direct connections.
 // ═══════════════════════════════════════════════════════════════════
 
-var NS           = 'fshr2-';
-var CHUNK        = 65536;
-var HEARTBEAT_MS = 8000;
-var HEARTBEAT_TIMEOUT = 25000;
-var ICE = { iceServers: [
-  { urls: 'stun:stun.l.google.com:19302' },
-  { urls: 'stun:global.stun.twilio.com:3478' }
+var NS    = 'fshr2-';
+var CHUNK = 65536;
+var HB_MS = 8000;
+var HB_TO = 25000;
+var ICE   = { iceServers:[
+  {urls:'stun:stun.l.google.com:19302'},
+  {urls:'stun:global.stun.twilio.com:3478'}
 ]};
 
 // ── STATE ──────────────────────────────────────────────────────────
-var myPeer    = null;   // our PeerJS instance
-var hostPeer  = null;   // secondary PeerJS instance used when we are elected host
-var roomCode  = null;
-var isOriginalCreator = false;
-var isHost    = false;  // true when we hold the NS+roomCode PeerJS id
+var myPeer   = null;   // our regular PeerJS identity
+var hostPeer = null;   // second Peer, only when we are elected host
+var roomCode = null;
+var isHost   = false;
+var isCreator= false;
 
-var peers       = {};  // peerId -> { conn, open, lastSeen, name }
-var incoming    = {};  // transferId -> { ... }
-var seenTexts   = {};
-var seenTransfers = {};
-var shelf       = [];  // replicated history: [{type,…}]
+// peers map: peerId → { conn, open, lastSeen }
+var peers    = {};
+var incoming = {};          // transferId → { name, size, mime, total, chunks[], received, fromId }
+var seenTxt  = {};          // msgId → true  (dedup text msgs)
+var seenFile = {};          // transferId → true  (dedup completed files)
+
+// SHELF: every peer keeps the full history so any peer can replay it.
+// Entry: { type:'text', msgId, text }
+//      | { type:'file', tfId, name, size, mime, total, buf }
+var shelf    = [];
 
 var sSent=0, sRecv=0, sMbOut=0, sMbIn=0;
-var heartbeatTimer = null;
+var hbTimer  = null;
 
-// ── NAVIGATION / STATUS / TOAST ────────────────────────────────────
-function goTo(pageId) {
-  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
-  var t = document.getElementById(pageId);
-  if (t) { t.classList.add('active'); window.scrollTo(0,0); }
-}
-function setStat(state, txt) {
-  var d = document.getElementById('sdot'), t = document.getElementById('stext');
-  if (d) d.className = 'sdot ' + state;
-  if (t) t.textContent = txt;
-}
-function toast(msg, dur) {
-  var el = document.getElementById('toast');
-  el.textContent = msg; el.classList.add('on');
-  clearTimeout(el._t);
-  el._t = setTimeout(function(){ el.classList.remove('on'); }, dur || 2500);
-}
+// ── UTILS ──────────────────────────────────────────────────────────
+function randCode(){ return String(Math.floor(1000+Math.random()*9000)); }
+function esc(s)    { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function enc(o)    { return new TextEncoder().encode(JSON.stringify(o)); }
+function encHdr(o) { return new TextEncoder().encode(JSON.stringify(o).padEnd(256,' ')); }
 
-// ── HELPERS ────────────────────────────────────────────────────────
-function randCode()  { return String(Math.floor(1000 + Math.random()*9000)); }
-function esc(s)      { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function enc(obj)    { return new TextEncoder().encode(JSON.stringify(obj)); }
-function encHdr(obj) { return new TextEncoder().encode(JSON.stringify(obj).padEnd(256,' ')); }
-
-function tryParse(raw) {
-  try {
-    var text;
-    if (raw instanceof ArrayBuffer)     text = new TextDecoder().decode(raw);
-    else if (raw instanceof Uint8Array) text = new TextDecoder().decode(raw);
-    else if (typeof raw === 'string')   text = raw;
+function tryParse(raw){
+  try{
+    var t;
+    if(raw instanceof ArrayBuffer)    t=new TextDecoder().decode(raw);
+    else if(raw instanceof Uint8Array)t=new TextDecoder().decode(raw);
+    else if(typeof raw==='string')    t=raw;
     else return null;
-    var t = text.trim();
-    return t.charAt(0) === '{' ? JSON.parse(t) : null;
-  } catch(e){ return null; }
+    t=t.trim();
+    return t[0]==='{' ? JSON.parse(t) : null;
+  }catch(e){return null;}
 }
 
-function getOpenPeers() {
-  return Object.values(peers).filter(function(p){ return p.open && p.conn && p.conn.open; });
+function openPeers(){ return Object.values(peers).filter(function(p){return p.open&&p.conn&&p.conn.open;}); }
+function openIds()  { return Object.keys(peers).filter(function(id){return peers[id]&&peers[id].open&&peers[id].conn&&peers[id].conn.open;}); }
+
+// Send data to every connected peer
+function broadcast(data){ openPeers().forEach(function(p){try{p.conn.send(data);}catch(e){}}); }
+
+// ── NAV / STATUS / TOAST ───────────────────────────────────────────
+function goTo(id){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  var t=document.getElementById(id); if(t){t.classList.add('active');window.scrollTo(0,0);}
 }
-function getOpenPeerIds() {
-  return Object.keys(peers).filter(function(id){
-    return peers[id] && peers[id].open && peers[id].conn && peers[id].conn.open;
-  });
+function setStat(cls,txt){
+  var d=document.getElementById('sdot'),t=document.getElementById('stext');
+  if(d)d.className='sdot '+cls; if(t)t.textContent=txt;
 }
-function broadcastData(data) {
-  getOpenPeers().forEach(function(p){ try{ p.conn.send(data); }catch(e){} });
+function toast(msg,dur){
+  var el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('on');
+  clearTimeout(el._t); el._t=setTimeout(function(){el.classList.remove('on');},dur||2500);
 }
 
-// ── UI HELPERS ────────────────────────────────────────────────────
-function enableDrop(hasPeers) {
-  var dz  = document.getElementById('drop-zone');
-  var wb  = document.getElementById('wait-banner');
-  var sb  = document.getElementById('send-txt-btn');
+// ── UI ─────────────────────────────────────────────────────────────
+function enableDrop(hasPeers){
+  var dz=document.getElementById('drop-zone');
+  var wb=document.getElementById('wait-banner');
+  var sb=document.getElementById('send-txt-btn');
   dz.classList.remove('off');
-  if (sb) sb.disabled = false;
-  wb.style.display = hasPeers ? 'none' : 'flex';
+  if(sb)sb.disabled=false;
+  wb.style.display=hasPeers?'none':'flex';
 }
-function updateStats() {
-  document.getElementById('s-sent').textContent = sSent;
-  document.getElementById('s-recv').textContent = sRecv;
-  document.getElementById('s-out').textContent  = sMbOut.toFixed(1);
-  document.getElementById('s-in').textContent   = sMbIn.toFixed(1);
-  var ms = document.getElementById('ms-sent'); if(ms) ms.textContent = sSent;
-  var mr = document.getElementById('ms-recv'); if(mr) mr.textContent = sRecv;
-  var mo = document.getElementById('ms-out');  if(mo) mo.textContent = sMbOut.toFixed(1);
-  var mi = document.getElementById('ms-in');   if(mi) mi.textContent = sMbIn.toFixed(1);
-  var mp = document.getElementById('ms-peers'); if(mp) mp.textContent = getOpenPeers().length;
+function updateStats(){
+  function s(id,v){var el=document.getElementById(id);if(el)el.textContent=v;}
+  s('s-sent',sSent); s('s-recv',sRecv);
+  s('s-out',sMbOut.toFixed(1)); s('s-in',sMbIn.toFixed(1));
+  s('ms-sent',sSent); s('ms-recv',sRecv);
+  s('ms-out',sMbOut.toFixed(1)); s('ms-in',sMbIn.toFixed(1));
+  s('ms-peers',openPeers().length);
 }
-function updatePeerUI() {
-  var n = getOpenPeers().length;
-  enableDrop(n > 0);
-  var mc = document.getElementById('member-count'); if(mc) mc.textContent = n;
-  var empty = document.getElementById('members-empty');
-  if (empty) empty.style.display = n === 0 ? '' : 'none';
+function updatePeerUI(){
+  var n=openPeers().length;
+  enableDrop(n>0);
+  var mc=document.getElementById('member-count'); if(mc)mc.textContent=n;
+  var em=document.getElementById('members-empty'); if(em)em.style.display=n===0?'':'none';
   updateStats();
 }
-function renderRoleUI() {
-  var badge   = document.getElementById('role-badge');
-  var roleName= document.getElementById('role-name');
-  var roleSub = document.getElementById('role-sub');
-  var codeWrap= document.getElementById('code-card-wrap');
-  var qrWrap  = document.getElementById('qr-wrap');
-  var notice  = document.getElementById('host-notice');
-  if (isHost) {
+function renderRoleUI(){
+  var badge=document.getElementById('role-badge');
+  var rn=document.getElementById('role-name');
+  var rs=document.getElementById('role-sub');
+  var cw=document.getElementById('code-card-wrap');
+  var qw=document.getElementById('qr-wrap');
+  var hn=document.getElementById('host-notice');
+  if(isHost){
     badge.classList.add('is-host');
-    roleName.textContent = isOriginalCreator ? 'Room Creator' : 'Room Host ★';
-    roleSub.textContent  = 'Room ' + roomCode;
-    codeWrap.style.display = 'block';
-    qrWrap.style.display   = 'block';
-    document.getElementById('code-display').textContent = roomCode;
+    rn.textContent=isCreator?'Room Creator':'Room Host \u2605';
+    rs.textContent='Room '+roomCode;
+    cw.style.display='block'; qw.style.display='block';
+    document.getElementById('code-display').textContent=roomCode;
     generateQR(roomCode);
-    if (!isOriginalCreator) { notice.classList.add('on'); setStat('host', 'Host ' + roomCode); }
-    else { setStat('ready', 'Room ' + roomCode); }
-  } else {
+    if(!isCreator){hn.classList.add('on');setStat('host','Host '+roomCode);}
+    else setStat('ready','Room '+roomCode);
+  }else{
     badge.classList.remove('is-host');
-    roleName.textContent = 'Connected';
-    roleSub.textContent  = 'Room ' + roomCode;
-    codeWrap.style.display = 'none';
-    qrWrap.style.display   = 'none';
-    notice.classList.remove('on');
-    setStat('paired', 'Room ' + roomCode);
+    rn.textContent='Connected'; rs.textContent='Room '+roomCode;
+    cw.style.display='none'; qw.style.display='none';
+    hn.classList.remove('on');
+    setStat('paired','Room '+roomCode);
   }
 }
-
-function resetRoomState() {
-  peers = {}; incoming = {}; seenTexts = {}; seenTransfers = {}; shelf = [];
-  sSent=0; sRecv=0; sMbOut=0; sMbIn=0;
-  updateStats();
-  var ml = document.getElementById('members-list');
-  if (ml) ml.innerHTML = '<span class="members-empty" id="members-empty">No one else here yet</span>';
-  document.getElementById('member-count').textContent = '0';
-  document.getElementById('tf-list').innerHTML = '';
-  document.getElementById('tf-wrap').style.display = 'none';
+function resetRoomState(){
+  peers={}; incoming={}; seenTxt={}; seenFile={}; shelf=[];
+  sSent=0; sRecv=0; sMbOut=0; sMbIn=0; updateStats();
+  var ml=document.getElementById('members-list');
+  if(ml)ml.innerHTML='<span class="members-empty" id="members-empty">No one else here yet</span>';
+  document.getElementById('member-count').textContent='0';
+  document.getElementById('tf-list').innerHTML='';
+  document.getElementById('tf-wrap').style.display='none';
   document.getElementById('host-notice').classList.remove('on');
 }
-
-function startHeartbeatLoop() {
-  if (heartbeatTimer) return;
-  heartbeatTimer = setInterval(function(){
-    var now = Date.now();
+function startHB(){
+  if(hbTimer)return;
+  hbTimer=setInterval(function(){
+    var now=Date.now();
     Object.keys(peers).forEach(function(id){
-      var peer = peers[id]; if (!peer || !peer.conn) return;
-      if (peer.open && peer.conn.open) {
-        if (now - (peer.lastSeen||0) > HEARTBEAT_TIMEOUT) {
-          try{ peer.conn.close(); }catch(e){}
-          dropPeer(id, peer.conn); return;
-        }
-        try{ peer.conn.send(enc({type:'PING'})); }catch(e){}
+      var p=peers[id]; if(!p||!p.conn)return;
+      if(p.open&&p.conn.open){
+        if(now-(p.lastSeen||0)>HB_TO){try{p.conn.close();}catch(e){}dropPeer(id,p.conn);return;}
+        try{p.conn.send(enc({type:'PING'}));}catch(e){}
       }
     });
-  }, HEARTBEAT_MS);
+  },HB_MS);
 }
 
 // ═══════════════════════════════════════════════════════════════════
-//  HOST ELECTION — when the previous host leaves, the peer with the
-//  smallest ID takes over and re-registers the room PeerJS identity.
+//  HOST ELECTION
+//  Called whenever a peer drops. If the host just left and we have
+//  the smallest ID among remaining peers, we register as the new host.
 // ═══════════════════════════════════════════════════════════════════
-function attemptHostTakeover() {
-  if (isHost) return; // already host
-  var openIds = getOpenPeerIds();
-  // All IDs in the room: open peers + self
-  var allIds = openIds.concat([myPeer.id]);
-  allIds.sort();
-  // We take over only if we have the smallest ID
-  if (allIds[0] !== myPeer.id) return;
+function attemptHostTakeover(){
+  if(isHost||!myPeer||myPeer.destroyed)return;
+  // Gather all live IDs including our own
+  var all=openIds().concat([myPeer.id]).sort();
+  if(all[0]!==myPeer.id)return; // someone else has smaller ID — they'll take over
 
-  // Try to register as the room host peer
-  isHost = true;
-  hostPeer = new Peer(NS + roomCode, { debug: 0, config: ICE });
+  isHost=true;
+  hostPeer=new Peer(NS+roomCode,{debug:0,config:ICE});
 
-  hostPeer.on('open', function() {
-    // Accept new joiners through the host identity
-    hostPeer.on('connection', function(conn) {
-      wireConn(conn, false);
-    });
-    hostPeer.on('error', function(err) {
-      // If registration fails, another peer already took over — that's fine
-      if (err.type === 'unavailable-id') {
-        isHost = false;
-        if (hostPeer && !hostPeer.destroyed) hostPeer.destroy();
-        hostPeer = null;
+  hostPeer.on('open',function(){
+    hostPeer.on('connection',function(conn){wireConn(conn,false);});
+    hostPeer.on('disconnected',function(){if(hostPeer&&!hostPeer.destroyed)hostPeer.reconnect();});
+    hostPeer.on('error',function(err){
+      if(err.type==='unavailable-id'){
+        // Another peer already registered — step down
+        isHost=false;
+        if(hostPeer&&!hostPeer.destroyed){hostPeer.destroy();hostPeer=null;}
         renderRoleUI();
       }
     });
-    hostPeer.on('disconnected', function(){
-      if (hostPeer && !hostPeer.destroyed) hostPeer.reconnect();
-    });
-    isOriginalCreator = false;
+    isCreator=false;
     renderRoleUI();
-    // Tell all peers we are the new host
-    broadcastData(enc({ type: 'NEW_HOST', hostId: myPeer.id, roomCode: roomCode }));
-    toast('You are now the room host — new members can still join', 4000);
+    broadcast(enc({type:'NEW_HOST',hostId:myPeer.id}));
     announcePeers();
+    toast('You are now the room host \u2014 new members can still join',4000);
   });
 
-  hostPeer.on('error', function(err) {
-    if (err.type === 'unavailable-id') {
-      // Someone else registered first — still host from their side
-      isHost = false;
-      if (hostPeer && !hostPeer.destroyed) hostPeer.destroy();
-      hostPeer = null;
+  hostPeer.on('error',function(err){
+    if(err.type==='unavailable-id'){
+      isHost=false;
+      if(hostPeer&&!hostPeer.destroyed){hostPeer.destroy();hostPeer=null;}
     }
   });
 }
@@ -619,266 +540,229 @@ function attemptHostTakeover() {
 // ═══════════════════════════════════════════════════════════════════
 //  CREATE ROOM
 // ═══════════════════════════════════════════════════════════════════
-function createRoom(code) {
-  roomCode = code || randCode();
-  isOriginalCreator = true;
-  isHost = true;
-  if (myPeer && !myPeer.destroyed) myPeer.destroy(); myPeer = null;
-  if (hostPeer && !hostPeer.destroyed) hostPeer.destroy(); hostPeer = null;
+function createRoom(code){
+  roomCode=code||randCode(); isHost=true; isCreator=true;
+  if(myPeer&&!myPeer.destroyed){myPeer.destroy();myPeer=null;}
+  if(hostPeer&&!hostPeer.destroyed){hostPeer.destroy();hostPeer=null;}
   resetRoomState();
-  setStat('connecting', 'Creating room\u2026');
-
-  myPeer = new Peer(NS + roomCode, { debug: 0, config: ICE });
-
-  myPeer.on('open', function() {
-    renderRoleUI();
-    enableDrop(false);
-    goTo('page-room');
+  setStat('connecting','Creating room\u2026');
+  myPeer=new Peer(NS+roomCode,{debug:0,config:ICE});
+  myPeer.on('open',function(){renderRoleUI();enableDrop(false);goTo('page-room');});
+  myPeer.on('connection',function(conn){wireConn(conn,false);});
+  myPeer.on('error',function(err){
+    if(err.type==='unavailable-id'){toast('Code taken \u2014 trying another');createRoom(randCode());}
+    else{setStat('error','Error');toast('Error: '+err.type,4000);}
   });
-  myPeer.on('connection', function(conn) { wireConn(conn, false); });
-  myPeer.on('error', function(err) {
-    if (err.type === 'unavailable-id') { toast('Code taken \u2014 trying another'); createRoom(randCode()); }
-    else { setStat('error', 'Error'); toast('Error: ' + err.type, 4000); }
-  });
-  myPeer.on('disconnected', function(){ if(myPeer&&!myPeer.destroyed) myPeer.reconnect(); });
+  myPeer.on('disconnected',function(){if(myPeer&&!myPeer.destroyed)myPeer.reconnect();});
 }
 
 // ═══════════════════════════════════════════════════════════════════
 //  JOIN ROOM
 // ═══════════════════════════════════════════════════════════════════
-function joinRoom(code) {
-  roomCode = code; isHost = false; isOriginalCreator = false;
-  if (myPeer && !myPeer.destroyed) myPeer.destroy(); myPeer = null;
-  if (hostPeer && !hostPeer.destroyed) hostPeer.destroy(); hostPeer = null;
+function joinRoom(code){
+  roomCode=code; isHost=false; isCreator=false;
+  if(myPeer&&!myPeer.destroyed){myPeer.destroy();myPeer=null;}
+  if(hostPeer&&!hostPeer.destroyed){hostPeer.destroy();hostPeer=null;}
   resetRoomState();
-
-  var joinBtn = document.getElementById('join-btn');
-  var spinner = document.getElementById('join-spinner');
-  var joinMsg = document.getElementById('join-msg');
-  var joined  = false;
-  joinBtn.disabled = true; joinMsg.textContent = ''; joinMsg.className = 'join-msg';
-  spinner.classList.add('on');
-  document.getElementById('join-spinner-sub').textContent = 'Reaching room ' + code;
-  setStat('connecting', 'Joining ' + code + '\u2026');
-
-  myPeer = new Peer({ debug: 0, config: ICE });
-
-  myPeer.on('open', function() {
-    var hubConn = myPeer.connect(NS + code, { reliable: true, serialization: 'raw' });
-
-    hubConn.on('open', function() {
-      joined = true;
-      wireConn(hubConn, true);
-      renderRoleUI();
-      enableDrop(true);
-      document.getElementById('dz-hint').textContent = 'Sends to everyone in the room';
-      document.getElementById('wait-banner').style.display = 'none';
-      spinner.classList.remove('on');
-      goTo('page-room');
-      toast('Joined room ' + code + '!');
+  var jb=document.getElementById('join-btn'),sp=document.getElementById('join-spinner');
+  var jm=document.getElementById('join-msg'),joined=false;
+  jb.disabled=true; jm.textContent=''; jm.className='join-msg';
+  sp.classList.add('on');
+  document.getElementById('join-spinner-sub').textContent='Reaching room '+code;
+  setStat('connecting','Joining '+code+'\u2026');
+  myPeer=new Peer({debug:0,config:ICE});
+  myPeer.on('open',function(){
+    var hc=myPeer.connect(NS+code,{reliable:true,serialization:'raw'});
+    hc.on('open',function(){
+      joined=true;
+      wireConn(hc,true);
+      renderRoleUI(); enableDrop(true);
+      document.getElementById('dz-hint').textContent='Sends to everyone in the room';
+      document.getElementById('wait-banner').style.display='none';
+      sp.classList.remove('on'); goTo('page-room');
+      toast('Joined room '+code+'!');
     });
-
-    hubConn.on('error', function() { if (!joined) onJoinFail({ type: 'network' }); });
-
-    setTimeout(function(){
-      if (!joined && (!hubConn || !hubConn.open)) onJoinFail({ type: 'peer-unavailable' });
-    }, 8000);
+    hc.on('error',function(){if(!joined)onJoinFail({type:'network'});});
+    setTimeout(function(){if(!joined&&(!hc||!hc.open))onJoinFail({type:'peer-unavailable'});},8000);
   });
-
-  // Accept direct connections from other mesh peers
-  myPeer.on('connection', function(conn) { wireConn(conn, false); });
-
-  myPeer.on('error', function(err) {
-    if (!joined && err.type !== 'peer-unavailable') onJoinFail(err);
-  });
+  // Accept direct peer connections once in the mesh
+  myPeer.on('connection',function(conn){wireConn(conn,false);});
+  myPeer.on('error',function(err){if(!joined&&err.type!=='peer-unavailable')onJoinFail(err);});
 }
-
-function onJoinFail(err) {
+function onJoinFail(err){
   document.getElementById('join-spinner').classList.remove('on');
-  document.getElementById('join-btn').disabled = false;
-  var ci = document.getElementById('code-input');
-  ci.classList.add('err'); setTimeout(function(){ ci.classList.remove('err'); }, 600);
-  var m = (err && err.type === 'peer-unavailable') ? 'Room not found \u2014 check the code' : 'Could not connect \u2014 try again';
-  document.getElementById('join-msg').textContent = m;
-  document.getElementById('join-msg').className = 'join-msg err';
-  setStat('error', 'Failed');
-  if (myPeer && !myPeer.destroyed){ myPeer.destroy(); myPeer = null; }
+  document.getElementById('join-btn').disabled=false;
+  var ci=document.getElementById('code-input');
+  ci.classList.add('err'); setTimeout(function(){ci.classList.remove('err');},600);
+  var m=(err&&err.type==='peer-unavailable')?'Room not found \u2014 check the code':'Could not connect \u2014 try again';
+  document.getElementById('join-msg').textContent=m;
+  document.getElementById('join-msg').className='join-msg err';
+  setStat('error','Failed');
+  if(myPeer&&!myPeer.destroyed){myPeer.destroy();myPeer=null;}
 }
 
 // ═══════════════════════════════════════════════════════════════════
 //  MESH WIRING
 // ═══════════════════════════════════════════════════════════════════
-function connectToPeer(peerId) {
-  if (!peerId || !myPeer || myPeer.destroyed) return;
-  if (peerId === myPeer.id) return;
-  if (hostPeer && peerId === hostPeer.id) return;
-  if (peers[peerId] && peers[peerId].conn && peers[peerId].conn.open) return;
-  var c = myPeer.connect(peerId, { reliable: true, serialization: 'raw' });
-  wireConn(c, true);
+function connectToPeer(peerId){
+  if(!peerId||!myPeer||myPeer.destroyed)return;
+  if(peerId===myPeer.id)return;
+  if(hostPeer&&peerId===hostPeer.id)return;
+  if(peers[peerId]&&peers[peerId].conn&&peers[peerId].conn.open)return;
+  var c=myPeer.connect(peerId,{reliable:true,serialization:'raw'});
+  wireConn(c,true);
 }
 
-function announcePeers() {
-  var openIds = getOpenPeerIds();
-  openIds.forEach(function(id){
-    var peer = peers[id]; if (!peer || !peer.conn || !peer.conn.open) return;
-    var others = openIds.filter(function(oid){ return oid !== id; });
-    if (myPeer) others = others.filter(function(oid){ return oid !== myPeer.id; });
-    try {
-      peer.conn.send(enc({ type: 'PEER_LIST', peers: others.concat([myPeer ? myPeer.id : '']).filter(Boolean), roomCode: roomCode }));
-    } catch(e){}
+// Broadcast full peer list (including ourselves) so every peer can
+// form direct connections to everyone — this is the critical fix for
+// "non-host peers can only reach the host".
+function announcePeers(){
+  var ids=openIds();
+  // Full list for each peer = all other open peers + our own ID
+  var myId=myPeer?myPeer.id:'';
+  ids.forEach(function(id){
+    var p=peers[id]; if(!p||!p.conn||!p.conn.open)return;
+    // "others" = every live peer except this recipient, plus ourselves
+    var others=ids.filter(function(oid){return oid!==id;});
+    if(myId&&others.indexOf(myId)===-1)others.push(myId);
+    try{p.conn.send(enc({type:'PEER_LIST',peers:others,roomCode:roomCode}));}catch(e){}
   });
 }
 
-function wireConn(conn, isOutbound) {
-  var id = conn.peer;
-  if (peers[id]) {
-    if (peers[id].conn === conn) return;
-    try{ peers[id].conn.close(); }catch(e){}
+function wireConn(conn,isOutbound){
+  var id=conn.peer;
+  if(peers[id]){
+    if(peers[id].conn===conn)return;
+    try{peers[id].conn.close();}catch(e){}
     delete peers[id];
   }
-  peers[id] = { conn: conn, open: false, lastSeen: Date.now() };
+  peers[id]={conn:conn,open:false,lastSeen:Date.now()};
 
-  function markConnOpen() {
-    if (!peers[id] || peers[id].conn !== conn) return;
-    if (peers[id].open) return;
-    peers[id].open = true;
-    peers[id].lastSeen = Date.now();
-    addMemberUI(id);
-    updatePeerUI();
-    if (!isOutbound) {
-      // Send peer list to new joiner (so they can mesh with everyone)
-      var peerList = getOpenPeerIds().filter(function(k){ return k !== id; });
-      if (myPeer) peerList.push(myPeer.id);
-      try{ conn.send(enc({ type: 'PEER_LIST', peers: peerList, roomCode: roomCode })); }catch(e){}
-      // Replay history
+  function markOpen(){
+    if(!peers[id]||peers[id].conn!==conn)return;
+    if(peers[id].open)return;
+    peers[id].open=true; peers[id].lastSeen=Date.now();
+    addMemberUI(id); updatePeerUI();
+    // Every peer that accepts an inbound connection sends the peer list
+    // AND replays the shelf — not just the host.
+    if(!isOutbound){
+      var myId=myPeer?myPeer.id:'';
+      var others=openIds().filter(function(k){return k!==id;});
+      if(myId&&others.indexOf(myId)===-1)others.push(myId);
+      try{conn.send(enc({type:'PEER_LIST',peers:others,roomCode:roomCode}));}catch(e){}
       replayShelf(conn);
+      toast('Someone joined the room');
     }
     announcePeers();
-    toast('Someone joined the room');
   }
 
-  conn.on('open', markConnOpen);
-  conn.on('data', function(raw) {
-    if (peers[id] && peers[id].conn === conn) peers[id].lastSeen = Date.now();
-    var msg = tryParse(raw);
-    if (msg) handleControl(msg, id);
-    else     handleChunk(raw, id);
+  conn.on('open',markOpen);
+  conn.on('data',function(raw){
+    if(peers[id]&&peers[id].conn===conn)peers[id].lastSeen=Date.now();
+    var msg=tryParse(raw);
+    if(msg)handleControl(msg,id);
+    else   handleChunk(raw,id);
   });
-  conn.on('close', function() { dropPeer(id, conn); });
-  conn.on('error', function() { dropPeer(id, conn); });
-  if (conn.open) markConnOpen();
+  conn.on('close',function(){dropPeer(id,conn);});
+  conn.on('error',function(){dropPeer(id,conn);});
+  if(conn.open)markOpen();
 }
 
-function addMemberUI(id) {
-  var list = document.getElementById('members-list'); if (!list) return;
-  if (document.getElementById('mi-' + id)) return;
-  var empty = list.querySelector('.members-empty');
-  if (empty) empty.style.display = 'none';
-  var d = document.createElement('div');
-  d.className = 'member-item'; d.id = 'mi-' + id;
-  var shortId = id.replace(NS, '').slice(0, 12);
-  var actions = isHost ? '<button class="member-kick" onclick="kickPeer(\'' + esc(id) + '\')">&#10005;</button>' : '';
-  d.innerHTML =
-    '<div class="member-dot"></div>' +
-    '<div class="member-name">' + esc(shortId) + '\u2026</div>' +
-    actions;
+function addMemberUI(id){
+  var list=document.getElementById('members-list'); if(!list)return;
+  if(document.getElementById('mi-'+id))return;
+  var em=list.querySelector('.members-empty'); if(em)em.style.display='none';
+  var d=document.createElement('div');
+  d.className='member-item'; d.id='mi-'+id;
+  var short=id.replace(NS,'').slice(0,12);
+  var kick=isHost?'<button class="member-kick" onclick="kickPeer(\''+esc(id)+'\')">&#10005;</button>':'';
+  d.innerHTML='<div class="member-dot"></div><div class="member-name">'+esc(short)+'\u2026</div>'+kick;
   list.appendChild(d);
 }
 
-function dropPeer(id, conn) {
-  if (conn && peers[id] && peers[id].conn !== conn) return;
-  if (!peers[id] && !document.getElementById('mi-' + id)) return;
-  // Mark in-progress transfers from this peer as errored
+function dropPeer(id,conn){
+  if(conn&&peers[id]&&peers[id].conn!==conn)return;
+  if(!peers[id]&&!document.getElementById('mi-'+id))return;
   Object.keys(incoming).forEach(function(tfId){
-    var tf = incoming[tfId];
-    if (tf && tf.fromId === id) { updateTf(tfId, { error: 'Sender left' }); delete incoming[tfId]; }
+    var tf=incoming[tfId];
+    if(tf&&tf.fromId===id){updateTf(tfId,{error:'Sender left'});delete incoming[tfId];}
   });
-  if (peers[id]) peers[id].open = false;
+  if(peers[id])peers[id].open=false;
   delete peers[id];
-  var el = document.getElementById('mi-' + id); if (el) el.remove();
+  var el=document.getElementById('mi-'+id); if(el)el.remove();
   updatePeerUI();
-  // Check if we should become the new host
-  attemptHostTakeover();
+  attemptHostTakeover(); // only fires if host just left and we win election
   announcePeers();
   toast('A member left');
 }
 
-function kickPeer(id) {
-  var conn = peers[id] && peers[id].conn;
-  if (conn) conn.close();
-  dropPeer(id, conn);
+function kickPeer(id){
+  var conn=peers[id]&&peers[id].conn;
+  if(conn)conn.close();
+  dropPeer(id,conn);
 }
 
 // ═══════════════════════════════════════════════════════════════════
 //  LEAVE
 // ═══════════════════════════════════════════════════════════════════
-function leaveRoom() {
-  if (myPeer && !myPeer.destroyed) myPeer.destroy(); myPeer = null;
-  if (hostPeer && !hostPeer.destroyed) hostPeer.destroy(); hostPeer = null;
-  Object.keys(peers).forEach(function(k){ try{ peers[k].conn.close(); }catch(e){} });
-  roomCode = null; isHost = false; isOriginalCreator = false;
-  resetRoomState();
-  enableDrop(false);
-  setStat('', '');
-  goTo('page-welcome');
+function leaveRoom(){
+  if(myPeer&&!myPeer.destroyed){myPeer.destroy();myPeer=null;}
+  if(hostPeer&&!hostPeer.destroyed){hostPeer.destroy();hostPeer=null;}
+  Object.keys(peers).forEach(function(k){try{peers[k].conn.close();}catch(e){}});
+  roomCode=null; isHost=false; isCreator=false;
+  resetRoomState(); enableDrop(false); setStat('',''); goTo('page-welcome');
 }
 
 // ═══════════════════════════════════════════════════════════════════
-//  QR CODE
+//  QR
 // ═══════════════════════════════════════════════════════════════════
-function generateQR(code) {
-  var url = location.href.split('?')[0] + '?code=' + code;
-  QRCode.toCanvas(document.getElementById('qr-canvas'), url, {
-    width: 140, margin: 1, color: { dark: '#07070d', light: '#ffffff' }
-  });
+function generateQR(code){
+  var url=location.href.split('?')[0]+'?code='+code;
+  QRCode.toCanvas(document.getElementById('qr-canvas'),url,{width:140,margin:1,color:{dark:'#07070d',light:'#ffffff'}});
 }
 
 // ═══════════════════════════════════════════════════════════════════
 //  SEND FILES
+//  Files are added to the local shelf immediately on send so every
+//  peer (not just the original sender/host) builds a full history.
 // ═══════════════════════════════════════════════════════════════════
-function sendFiles(files) {
-  Array.prototype.forEach.call(files, function(file) {
-    var tfId  = crypto.randomUUID();
-    var total = Math.ceil(file.size / CHUNK);
-    addTf({ id: tfId, name: file.name, size: file.size, mime: file.type, dir: 'send' });
-
-    var reader = new FileReader();
-    reader.onload = function() {
-      var buf  = reader.result;
-      var meta = { type: 'FILE_META', transferId: tfId, name: file.name,
-                   size: file.size, mime: file.type || 'application/octet-stream', chunks: total };
-      broadcastData(enc(meta));
-
-      var live = getOpenPeers();
-      if (!live.length) {
-        // No peers yet — store and send when someone joins
-        updateTf(tfId, { pct: 100, done: true });
-        sSent++; sMbOut += file.size / 1048576; updateStats();
-        shelf.push({ type: 'file', tfId: tfId, name: file.name, size: file.size,
-                     mime: file.type || 'application/octet-stream', buf: buf, total: total });
+function sendFiles(files){
+  Array.prototype.forEach.call(files,function(file){
+    var tfId=crypto.randomUUID();
+    var total=Math.ceil(file.size/CHUNK)||1;
+    addTf({id:tfId,name:file.name,size:file.size,mime:file.type,dir:'send'});
+    var reader=new FileReader();
+    reader.onload=function(){
+      var buf=reader.result;
+      // Store in shelf immediately — before we know who's connected
+      shelf.push({type:'file',tfId:tfId,name:file.name,size:file.size,
+                  mime:file.type||'application/octet-stream',buf:buf,total:total});
+      var live=openPeers();
+      if(!live.length){
+        updateTf(tfId,{pct:100,done:true});
+        sSent++; sMbOut+=file.size/1048576; updateStats();
         toast('Saved \u2014 will send when someone joins');
         return;
       }
-
-      var i = 0;
-      function next() {
-        var live2 = getOpenPeers();
-        if (i >= total) {
-          live2.forEach(function(p){ try{ p.conn.send(enc({ type: 'FILE_DONE', transferId: tfId })); }catch(e){} });
-          updateTf(tfId, { done: true });
-          sSent++; sMbOut += file.size / 1048576; updateStats();
-          shelf.push({ type: 'file', tfId: tfId, name: file.name, size: file.size,
-                       mime: file.type || 'application/octet-stream', buf: buf, total: total });
-          toast('Sent: ' + file.name);
+      broadcast(enc({type:'FILE_META',transferId:tfId,name:file.name,
+                     size:file.size,mime:file.type||'application/octet-stream',chunks:total}));
+      var i=0;
+      function next(){
+        var live2=openPeers();
+        if(i>=total){
+          live2.forEach(function(p){try{p.conn.send(enc({type:'FILE_DONE',transferId:tfId}));}catch(e){}});
+          updateTf(tfId,{done:true});
+          sSent++; sMbOut+=file.size/1048576; updateStats();
+          toast('Sent: '+file.name);
           return;
         }
-        var hdr   = encHdr({ type: 'CHUNK', transferId: tfId, index: i });
-        var slice = buf.slice(i * CHUNK, (i + 1) * CHUNK);
-        var msg   = new Uint8Array(hdr.byteLength + slice.byteLength);
-        msg.set(hdr); msg.set(new Uint8Array(slice), hdr.byteLength);
-        live2.forEach(function(p){ try{ p.conn.send(msg.buffer); }catch(e){} });
-        updateTf(tfId, { pct: Math.round(++i / total * 100) });
-        setTimeout(next, 0);
+        var hdr=encHdr({type:'CHUNK',transferId:tfId,index:i});
+        var sl=buf.slice(i*CHUNK,(i+1)*CHUNK);
+        var msg=new Uint8Array(hdr.byteLength+sl.byteLength);
+        msg.set(hdr); msg.set(new Uint8Array(sl),hdr.byteLength);
+        live2.forEach(function(p){try{p.conn.send(msg.buffer);}catch(e){}});
+        updateTf(tfId,{pct:Math.round(++i/total*100)});
+        setTimeout(next,0);
       }
       next();
     };
@@ -889,160 +773,128 @@ function sendFiles(files) {
 // ═══════════════════════════════════════════════════════════════════
 //  SEND TEXT
 // ═══════════════════════════════════════════════════════════════════
-function sendText() {
-  var ta  = document.getElementById('text-input');
-  var txt = ta.value.trim(); if (!txt) return;
-  var msgId = crypto.randomUUID();
-  seenTexts[msgId] = true;
-  broadcastData(enc({ type: 'TEXT_MSG', msgId: msgId, text: txt }));
-  shelf.push({ type: 'text', msgId: msgId, text: txt });
-  addTextItem(msgId, txt, true);
-  ta.value = ''; ta.style.height = '';
-  toast(getOpenPeers().length ? 'Text sent' : 'Saved \u2014 will send when someone joins');
-}
-
-function handleTextMsg(msg) {
-  if (seenTexts[msg.msgId]) return;
-  seenTexts[msg.msgId] = true;
-  shelf.push({ type: 'text', msgId: msg.msgId, text: msg.text });
-  addTextItem(msg.msgId, msg.text, false);
-  sRecv++; updateStats();
-}
-
-function addTextItem(id, text, isMine) {
-  document.getElementById('tf-wrap').style.display = 'block';
-  var div = document.createElement('div');
-  div.className = 'tf-item'; div.id = 'tf-' + id;
-  div.innerHTML =
-    '<div class="tf-ico">&#128172;</div>' +
-    '<div class="tf-info">' +
-      '<div class="tf-name" style="font-size:11px;font-weight:500;color:var(--muted2);">' + (isMine ? 'You' : 'Room') + '</div>' +
-      '<div class="tf-text-body">' + esc(text) + '</div>' +
-    '</div>' +
-    '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;">' +
-      '<div class="tf-tag ' + (isMine ? 'tt-s' : 'tt-r') + '">' + (isMine ? 'Sent' : 'Rcvd') + '</div>' +
-      '<button class="copy-btn" onclick="copyText(this,' + JSON.stringify(text) + ')">Copy</button>' +
-    '</div>';
-  document.getElementById('tf-list').prepend(div);
-}
-
-function copyText(btn, text) {
-  navigator.clipboard.writeText(text).then(function(){
-    btn.textContent = 'Copied!'; btn.classList.add('copied');
-    setTimeout(function(){ btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
-  }).catch(function(){
-    var ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
-    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-    btn.textContent = 'Copied!'; btn.classList.add('copied');
-    setTimeout(function(){ btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
-  });
+function sendText(){
+  var ta=document.getElementById('text-input');
+  var txt=ta.value.trim(); if(!txt)return;
+  var msgId=crypto.randomUUID();
+  seenTxt[msgId]=true;
+  var payload=enc({type:'TEXT_MSG',msgId:msgId,text:txt});
+  broadcast(payload);
+  shelf.push({type:'text',msgId:msgId,text:txt});
+  addTextItem(msgId,txt,true);
+  ta.value=''; ta.style.height='';
+  toast(openPeers().length?'Text sent':'Saved \u2014 will send when someone joins');
 }
 
 // ═══════════════════════════════════════════════════════════════════
-//  RECEIVE (chunks + control)
+//  RECEIVE — CHUNKS
 // ═══════════════════════════════════════════════════════════════════
-function handleChunk(raw, fromId) {
+function handleChunk(raw,fromId){
   var buf;
-  if (raw instanceof ArrayBuffer)    buf = new Uint8Array(raw);
-  else if (raw instanceof Blob)      { raw.arrayBuffer().then(function(ab){ handleChunk(ab, fromId); }); return; }
+  if(raw instanceof ArrayBuffer)    buf=new Uint8Array(raw);
+  else if(raw instanceof Blob)      {raw.arrayBuffer().then(function(ab){handleChunk(ab,fromId);});return;}
   else return;
-  try {
-    var hdr = JSON.parse(new TextDecoder().decode(buf.slice(0, 256)).trim());
-    if (hdr.type === 'CHUNK') {
-      var tf = incoming[hdr.transferId]; if (!tf) return;
-      tf.chunks[hdr.index] = buf.slice(256);
-      tf.received++;
-      updateTf(hdr.transferId, { pct: Math.round(tf.received / tf.total * 100) });
+  try{
+    var hdr=JSON.parse(new TextDecoder().decode(buf.slice(0,256)).trim());
+    if(hdr.type==='CHUNK'){
+      var tf=incoming[hdr.transferId]; if(!tf)return;
+      tf.chunks[hdr.index]=buf.slice(256); tf.received++;
+      updateTf(hdr.transferId,{pct:Math.round(tf.received/tf.total*100)});
     }
-  } catch(e){}
+  }catch(e){}
 }
 
-function handleControl(msg, fromId) {
-  if (msg.type === 'PING') {
-    if (peers[fromId] && peers[fromId].conn && peers[fromId].conn.open)
-      try{ peers[fromId].conn.send(enc({ type: 'PONG' })); }catch(e){}
+// ═══════════════════════════════════════════════════════════════════
+//  RECEIVE — CONTROL MESSAGES
+// ═══════════════════════════════════════════════════════════════════
+function handleControl(msg,fromId){
+  if(msg.type==='PING'){
+    var p=peers[fromId];
+    if(p&&p.conn&&p.conn.open)try{p.conn.send(enc({type:'PONG'}));}catch(e){}
     return;
   }
-  if (msg.type === 'PONG') return;
+  if(msg.type==='PONG')return;
+  if(msg.type==='NEW_HOST')return; // informational only
 
-  if (msg.type === 'PEER_LIST') {
-    msg.peers.forEach(function(peerId){ connectToPeer(peerId); });
-    return;
-  }
-
-  // Another peer became the host — update our UI
-  if (msg.type === 'NEW_HOST') {
-    // No UI change needed for non-host peers; host handles itself
-    return;
-  }
-
-  if (msg.type === 'TEXT_MSG') { handleTextMsg(msg); return; }
-
-  if (msg.type === 'FILE_META') {
-    if (seenTransfers[msg.transferId] || incoming[msg.transferId]) return;
-    incoming[msg.transferId] = {
-      name: msg.name, size: msg.size, mime: msg.mime,
-      total: msg.chunks, chunks: new Array(msg.chunks), received: 0, fromId: fromId
-    };
-    addTf({ id: msg.transferId, name: msg.name, size: msg.size, mime: msg.mime, dir: 'recv' });
+  // ── PEER_LIST: connect to every peer we don't already know ──────
+  // This is what enables the full mesh — every peer in the list is
+  // reachable directly regardless of who originally sent this message.
+  if(msg.type==='PEER_LIST'){
+    msg.peers.forEach(function(pid){connectToPeer(pid);});
     return;
   }
 
-  if (msg.type === 'FILE_DONE') {
-    if (seenTransfers[msg.transferId]) return;
-    var tf = incoming[msg.transferId]; if (!tf) return;
-    var blob = new Blob(tf.chunks.map(function(c){ return new Uint8Array(c); }), { type: tf.mime || 'application/octet-stream' });
-    var url  = URL.createObjectURL(blob);
-    updateTf(msg.transferId, { done: true, dlUrl: url, dlName: tf.name });
-    seenTransfers[msg.transferId] = true;
-    delete incoming[msg.transferId];
-    sRecv++; sMbIn += tf.size / 1048576; updateStats();
-    toast('Received: ' + tf.name);
+  // ── TEXT ────────────────────────────────────────────────────────
+  if(msg.type==='TEXT_MSG'){
+    if(seenTxt[msg.msgId])return;
+    seenTxt[msg.msgId]=true;
+    shelf.push({type:'text',msgId:msg.msgId,text:msg.text});
+    addTextItem(msg.msgId,msg.text,false);
+    sRecv++; updateStats();
     return;
   }
 
-  // Shelf sync: peers share their shelf so any peer can relay to new joiners
-  if (msg.type === 'SHELF_SYNC') {
-    if (!Array.isArray(msg.items)) return;
-    msg.items.forEach(function(item){
-      if (item.type === 'text' && !seenTexts[item.msgId]) {
-        seenTexts[item.msgId] = true;
-        shelf.push(item);
-        addTextItem(item.msgId, item.text, false);
-        sRecv++; updateStats();
+  // ── FILE META ───────────────────────────────────────────────────
+  if(msg.type==='FILE_META'){
+    if(seenFile[msg.transferId]||incoming[msg.transferId])return;
+    incoming[msg.transferId]={name:msg.name,size:msg.size,mime:msg.mime,
+      total:msg.chunks,chunks:new Array(msg.chunks),received:0,fromId:fromId};
+    addTf({id:msg.transferId,name:msg.name,size:msg.size,mime:msg.mime,dir:'recv'});
+    return;
+  }
+
+  // ── FILE DONE ───────────────────────────────────────────────────
+  if(msg.type==='FILE_DONE'){
+    if(seenFile[msg.transferId])return;
+    var tf=incoming[msg.transferId]; if(!tf)return;
+    var blob=new Blob(tf.chunks.map(function(c){return new Uint8Array(c);}),{type:tf.mime||'application/octet-stream'});
+    var url=URL.createObjectURL(blob);
+    updateTf(msg.transferId,{done:true,dlUrl:url,dlName:tf.name});
+    seenFile[msg.transferId]=true;
+
+    // Add to shelf so THIS peer can replay the file to future joiners
+    // We reconstruct a shelf entry from the assembled blob's buffer
+    blob.arrayBuffer().then(function(ab){
+      if(!shelf.some(function(s){return s.type==='file'&&s.tfId===msg.transferId;})){
+        shelf.push({type:'file',tfId:msg.transferId,name:tf.name,size:tf.size,
+                    mime:tf.mime||'application/octet-stream',buf:ab,total:tf.total});
       }
-      // File blobs can't be transferred via JSON, so only text is synced this way.
-      // File buffers in shelf come from replayShelf which the new joiner's host sends.
     });
+
+    delete incoming[msg.transferId];
+    sRecv++; sMbIn+=tf.size/1048576; updateStats();
+    toast('Received: '+tf.name);
     return;
   }
 }
 
 // ═══════════════════════════════════════════════════════════════════
-//  REPLAY SHELF to a newly connected peer (called by whoever they connected to)
+//  REPLAY SHELF
+//  Called by ANY peer when a new connection opens (inbound).
+//  Because every peer accumulates the full shelf, whoever the new
+//  joiner connects to first can deliver the complete history.
 // ═══════════════════════════════════════════════════════════════════
-function replayShelf(conn) {
-  if (!shelf.length) return;
+function replayShelf(conn){
+  if(!shelf.length)return;
   shelf.forEach(function(item){
-    if (item.type === 'text') {
-      try{ conn.send(enc({ type: 'TEXT_MSG', msgId: item.msgId, text: item.text })); }catch(e){}
-    } else if (item.type === 'file' && item.buf) {
-      try{ conn.send(enc({ type: 'FILE_META', transferId: item.tfId,
-                           name: item.name, size: item.size, mime: item.mime, chunks: item.total })); }
-      catch(e){ return; }
-      var buf = item.buf, i = 0;
+    if(item.type==='text'){
+      try{conn.send(enc({type:'TEXT_MSG',msgId:item.msgId,text:item.text}));}catch(e){}
+    }else if(item.type==='file'&&item.buf){
+      try{conn.send(enc({type:'FILE_META',transferId:item.tfId,name:item.name,
+                         size:item.size,mime:item.mime,chunks:item.total}));}catch(e){return;}
+      var buf=item.buf,i=0;
       (function sendNext(){
-        if (!conn.open) return;
-        if (i >= item.total) {
-          try{ conn.send(enc({ type: 'FILE_DONE', transferId: item.tfId })); }catch(e){}
+        if(!conn.open)return;
+        if(i>=item.total){
+          try{conn.send(enc({type:'FILE_DONE',transferId:item.tfId}));}catch(e){}
           return;
         }
-        var hdr   = encHdr({ type: 'CHUNK', transferId: item.tfId, index: i });
-        var slice = buf.slice(i * CHUNK, (i + 1) * CHUNK);
-        var msg   = new Uint8Array(hdr.byteLength + slice.byteLength);
-        msg.set(hdr); msg.set(new Uint8Array(slice), hdr.byteLength);
-        try{ conn.send(msg.buffer); }catch(e){ return; }
-        i++; setTimeout(sendNext, 0);
+        var hdr=encHdr({type:'CHUNK',transferId:item.tfId,index:i});
+        var sl=buf.slice(i*CHUNK,(i+1)*CHUNK);
+        var msg=new Uint8Array(hdr.byteLength+sl.byteLength);
+        msg.set(hdr); msg.set(new Uint8Array(sl),hdr.byteLength);
+        try{conn.send(msg.buffer);}catch(e){return;}
+        i++; setTimeout(sendNext,0);
       })();
     }
   });
@@ -1051,123 +903,148 @@ function replayShelf(conn) {
 // ═══════════════════════════════════════════════════════════════════
 //  TRANSFER LIST UI
 // ═══════════════════════════════════════════════════════════════════
-function fileIcon(m) {
-  if (!m) return '\uD83D\uDCC4';
-  if (m.startsWith('image/')) return '\uD83D\uDDBC';
-  if (m.startsWith('video/')) return '\uD83C\uDFAC';
-  if (m.startsWith('audio/')) return '\uD83C\uDFB5';
-  if (m.includes('pdf'))      return '\uD83D\uDCD5';
-  if (m.includes('zip') || m.includes('tar')) return '\uD83D\uDCE6';
-  if (m.includes('text'))     return '\uD83D\uDCDD';
-  return '\uD83D\uDCC4';
+function fileIcon(m){
+  if(!m)return'\uD83D\uDCC4';
+  if(m.startsWith('image/'))return'\uD83D\uDDBC';
+  if(m.startsWith('video/'))return'\uD83C\uDFAC';
+  if(m.startsWith('audio/'))return'\uD83C\uDFB5';
+  if(m.includes('pdf'))return'\uD83D\uDCD5';
+  if(m.includes('zip')||m.includes('tar'))return'\uD83D\uDCE6';
+  if(m.includes('text'))return'\uD83D\uDCDD';
+  return'\uD83D\uDCC4';
 }
-function fmtSize(b) {
-  if (b < 1024)    return b + ' B';
-  if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
-  return (b / 1048576).toFixed(1) + ' MB';
+function fmtSize(b){
+  if(b<1024)return b+' B';
+  if(b<1048576)return(b/1024).toFixed(1)+' KB';
+  return(b/1048576).toFixed(1)+' MB';
 }
-function addTf(tf) {
-  document.getElementById('tf-wrap').style.display = 'block';
-  var existing = document.getElementById('tf-' + tf.id); if (existing) existing.remove();
-  var div = document.createElement('div');
-  div.className = 'tf-item'; div.id = 'tf-' + tf.id;
-  div.innerHTML =
-    '<div class="tf-ico">' + fileIcon(tf.mime) + '</div>' +
-    '<div class="tf-info">' +
-      '<div class="tf-name">' + esc(tf.name) + '</div>' +
-      '<div class="tf-meta"><span>' + fmtSize(tf.size) + '</span><span id="tp-' + tf.id + '">0%</span></div>' +
-      '<div class="tf-bar-wrap"><div class="tf-bar" id="tb-' + tf.id + '" style="width:0%"></div></div>' +
-    '</div>' +
-    '<div class="tf-tag ' + (tf.dir === 'send' ? 'tt-s' : 'tt-r') + '" id="tt-' + tf.id + '">' + (tf.dir === 'send' ? 'Sending' : 'Receiving') + '</div>';
+function addTf(tf){
+  document.getElementById('tf-wrap').style.display='block';
+  var ex=document.getElementById('tf-'+tf.id); if(ex)ex.remove();
+  var div=document.createElement('div');
+  div.className='tf-item'; div.id='tf-'+tf.id;
+  div.innerHTML=
+    '<div class="tf-ico">'+fileIcon(tf.mime)+'</div>'+
+    '<div class="tf-info">'+
+      '<div class="tf-name">'+esc(tf.name)+'</div>'+
+      '<div class="tf-meta"><span>'+fmtSize(tf.size)+'</span><span id="tp-'+tf.id+'">0%</span></div>'+
+      '<div class="tf-bar-wrap"><div class="tf-bar" id="tb-'+tf.id+'" style="width:0%"></div></div>'+
+    '</div>'+
+    '<div class="tf-tag '+(tf.dir==='send'?'tt-s':'tt-r')+'" id="tt-'+tf.id+'">'+(tf.dir==='send'?'Sending':'Receiving')+'</div>';
   document.getElementById('tf-list').prepend(div);
 }
-function updateTf(id, ch) {
-  var el = document.getElementById('tf-' + id); if (!el) return;
-  if (ch.pct !== undefined) {
-    var b = document.getElementById('tb-' + id), p = document.getElementById('tp-' + id);
-    if (b) b.style.width = ch.pct + '%'; if (p) p.textContent = ch.pct + '%';
+function updateTf(id,ch){
+  var el=document.getElementById('tf-'+id); if(!el)return;
+  if(ch.pct!==undefined){
+    var b=document.getElementById('tb-'+id),p=document.getElementById('tp-'+id);
+    if(b)b.style.width=ch.pct+'%'; if(p)p.textContent=ch.pct+'%';
   }
-  if (ch.done) {
-    var tag = document.getElementById('tt-' + id), wrap = el.querySelector('.tf-bar-wrap');
-    if (tag) { tag.textContent = 'Done'; tag.className = 'tf-tag tt-d'; }
-    if (wrap) wrap.style.display = 'none';
-    if (ch.dlUrl) {
-      var a = document.createElement('a'); a.href = ch.dlUrl; a.download = ch.dlName || 'file';
-      a.className = 'dl-btn'; a.textContent = 'Save'; el.appendChild(a);
+  if(ch.done){
+    var tag=document.getElementById('tt-'+id),wrap=el.querySelector('.tf-bar-wrap');
+    if(tag){tag.textContent='Done';tag.className='tf-tag tt-d';}
+    if(wrap)wrap.style.display='none';
+    if(ch.dlUrl){
+      var a=document.createElement('a'); a.href=ch.dlUrl; a.download=ch.dlName||'file';
+      a.className='dl-btn'; a.textContent='Save'; el.appendChild(a);
     }
   }
-  if (ch.error) {
-    var tag2 = document.getElementById('tt-' + id), wrap2 = el.querySelector('.tf-bar-wrap');
-    if (tag2) { tag2.textContent = ch.error; tag2.className = 'tf-tag tt-e'; }
-    if (wrap2) wrap2.style.display = 'none';
+  if(ch.error){
+    var tag2=document.getElementById('tt-'+id),wrap2=el.querySelector('.tf-bar-wrap');
+    if(tag2){tag2.textContent=ch.error;tag2.className='tf-tag tt-e';}
+    if(wrap2)wrap2.style.display='none';
   }
 }
-function clearDone() {
-  document.querySelectorAll('.tf-item').forEach(function(el){ if (el.querySelector('.tt-d')) el.remove(); });
-  if (!document.getElementById('tf-list').children.length) document.getElementById('tf-wrap').style.display = 'none';
+function clearDone(){
+  document.querySelectorAll('.tf-item').forEach(function(el){if(el.querySelector('.tt-d'))el.remove();});
+  if(!document.getElementById('tf-list').children.length)document.getElementById('tf-wrap').style.display='none';
+}
+
+// ── text item ──
+function addTextItem(id,text,isMine){
+  document.getElementById('tf-wrap').style.display='block';
+  var div=document.createElement('div'); div.className='tf-item'; div.id='tf-'+id;
+  div.innerHTML=
+    '<div class="tf-ico">&#128172;</div>'+
+    '<div class="tf-info">'+
+      '<div class="tf-name" style="font-size:11px;font-weight:500;color:var(--muted2);">'+(isMine?'You':'Room')+'</div>'+
+      '<div class="tf-text-body">'+esc(text)+'</div>'+
+    '</div>'+
+    '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;">'+
+      '<div class="tf-tag '+(isMine?'tt-s':'tt-r')+'">'+(isMine?'Sent':'Rcvd')+'</div>'+
+      '<button class="copy-btn" onclick="copyText(this,'+JSON.stringify(text)+')">Copy</button>'+
+    '</div>';
+  document.getElementById('tf-list').prepend(div);
+}
+function copyText(btn,text){
+  navigator.clipboard.writeText(text).then(function(){
+    btn.textContent='Copied!'; btn.classList.add('copied');
+    setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied');},2000);
+  }).catch(function(){
+    var ta=document.createElement('textarea'); ta.value=text; ta.style.cssText='position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    btn.textContent='Copied!'; btn.classList.add('copied');
+    setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied');},2000);
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════════
 //  BOOT
 // ═══════════════════════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', function(){
-  startHeartbeatLoop();
+document.addEventListener('DOMContentLoaded',function(){
+  startHB();
 
-  document.getElementById('btn-create').addEventListener('click', function(){ createRoom(); });
-  document.getElementById('btn-join').addEventListener('click', function(){ goTo('page-join'); });
+  document.getElementById('btn-create').addEventListener('click',function(){createRoom();});
+  document.getElementById('btn-join').addEventListener('click',function(){goTo('page-join');});
 
-  var ci = document.getElementById('code-input'), jb = document.getElementById('join-btn');
-  ci.addEventListener('input', function(){
-    ci.classList.remove('err', 'ok');
-    document.getElementById('join-msg').textContent = '';
-    var v = ci.value.replace(/\D/g, ''); ci.value = v;
-    jb.disabled = v.length !== 4; if (v.length === 4) ci.classList.add('ok');
+  var ci=document.getElementById('code-input'),jb=document.getElementById('join-btn');
+  ci.addEventListener('input',function(){
+    ci.classList.remove('err','ok');
+    document.getElementById('join-msg').textContent='';
+    var v=ci.value.replace(/\D/g,''); ci.value=v;
+    jb.disabled=v.length!==4; if(v.length===4)ci.classList.add('ok');
   });
-  ci.addEventListener('keydown', function(e){ if (e.key === 'Enter' && !jb.disabled) jb.click(); });
-  jb.addEventListener('click', function(){ var code = ci.value.trim(); if (code.length === 4) joinRoom(code); });
+  ci.addEventListener('keydown',function(e){if(e.key==='Enter'&&!jb.disabled)jb.click();});
+  jb.addEventListener('click',function(){var c=ci.value.trim();if(c.length===4)joinRoom(c);});
 
-  document.getElementById('join-back').addEventListener('click', function(){
+  document.getElementById('join-back').addEventListener('click',function(){
     document.getElementById('join-spinner').classList.remove('on');
-    ci.value = ''; jb.disabled = true;
-    document.getElementById('join-msg').textContent = '';
-    if (myPeer && !myPeer.destroyed){ myPeer.destroy(); myPeer = null; }
+    ci.value=''; jb.disabled=true;
+    document.getElementById('join-msg').textContent='';
+    if(myPeer&&!myPeer.destroyed){myPeer.destroy();myPeer=null;}
     goTo('page-welcome');
   });
+  document.getElementById('room-back').addEventListener('click',leaveRoom);
+  document.getElementById('peer-leave').addEventListener('click',leaveRoom);
+  document.getElementById('clear-btn').addEventListener('click',clearDone);
 
-  document.getElementById('room-back').addEventListener('click', leaveRoom);
-  document.getElementById('peer-leave').addEventListener('click', leaveRoom);
-  document.getElementById('clear-btn').addEventListener('click', clearDone);
-
-  document.getElementById('regen-btn').addEventListener('click', function(){
-    if (!isHost) return;
-    getOpenPeers().forEach(function(p){ try{ p.conn.close(); }catch(e){} });
-    peers = {};
-    document.getElementById('members-list').innerHTML = '<span class="members-empty" id="members-empty">No one else here yet</span>';
-    document.getElementById('member-count').textContent = '0';
-    if (hostPeer && !hostPeer.destroyed){ hostPeer.destroy(); hostPeer = null; }
-    // destroy the main peer and recreate with new code
-    if (myPeer && !myPeer.destroyed){ myPeer.destroy(); myPeer = null; }
+  document.getElementById('regen-btn').addEventListener('click',function(){
+    if(!isHost)return;
+    openPeers().forEach(function(p){try{p.conn.close();}catch(e){}});
+    peers={};
+    document.getElementById('members-list').innerHTML='<span class="members-empty" id="members-empty">No one else here yet</span>';
+    document.getElementById('member-count').textContent='0';
+    if(hostPeer&&!hostPeer.destroyed){hostPeer.destroy();hostPeer=null;}
+    if(myPeer&&!myPeer.destroyed){myPeer.destroy();myPeer=null;}
     createRoom(randCode());
   });
 
-  var dz = document.getElementById('drop-zone');
-  dz.addEventListener('dragover', function(e){ e.preventDefault(); if (!dz.classList.contains('off')) dz.classList.add('over'); });
-  dz.addEventListener('dragleave', function(){ dz.classList.remove('over'); });
-  dz.addEventListener('drop', function(e){ e.preventDefault(); dz.classList.remove('over'); if (!dz.classList.contains('off')) sendFiles(e.dataTransfer.files); });
-  dz.addEventListener('click', function(){ if (!dz.classList.contains('off')) document.getElementById('file-input').click(); });
-  document.getElementById('file-input').addEventListener('change', function(e){ if (e.target.files.length) sendFiles(e.target.files); e.target.value = ''; });
+  var dz=document.getElementById('drop-zone');
+  dz.addEventListener('dragover',function(e){e.preventDefault();if(!dz.classList.contains('off'))dz.classList.add('over');});
+  dz.addEventListener('dragleave',function(){dz.classList.remove('over');});
+  dz.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('over');if(!dz.classList.contains('off'))sendFiles(e.dataTransfer.files);});
+  dz.addEventListener('click',function(){if(!dz.classList.contains('off'))document.getElementById('file-input').click();});
+  document.getElementById('file-input').addEventListener('change',function(e){if(e.target.files.length)sendFiles(e.target.files);e.target.value='';});
 
-  var txtArea = document.getElementById('text-input'), sendBtn = document.getElementById('send-txt-btn');
-  txtArea.addEventListener('input', function(){ txtArea.style.height = ''; txtArea.style.height = Math.min(txtArea.scrollHeight, 100) + 'px'; });
-  txtArea.addEventListener('keydown', function(e){ if ((e.ctrlKey || e.metaKey) && e.key === 'Enter'){ e.preventDefault(); if (!sendBtn.disabled) sendText(); } });
-  sendBtn.addEventListener('click', sendText);
+  var ta=document.getElementById('text-input'),sb=document.getElementById('send-txt-btn');
+  ta.addEventListener('input',function(){ta.style.height='';ta.style.height=Math.min(ta.scrollHeight,100)+'px';});
+  ta.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();if(!sb.disabled)sendText();}});
+  sb.addEventListener('click',sendText);
 
-  // Auto-join from QR scan URL
-  var code = new URLSearchParams(location.search).get('code');
-  if (code && /^\d{4}$/.test(code)) {
-    ci.value = code; ci.classList.add('ok'); jb.disabled = false;
-    goTo('page-join');
-    setTimeout(function(){ joinRoom(code); }, 350);
+  // Auto-join from QR scan
+  var code=new URLSearchParams(location.search).get('code');
+  if(code&&/^\d{4}$/.test(code)){
+    ci.value=code; ci.classList.add('ok'); jb.disabled=false;
+    goTo('page-join'); setTimeout(function(){joinRoom(code);},350);
   }
 });
 </script>
