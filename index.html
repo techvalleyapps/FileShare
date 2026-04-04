@@ -50,7 +50,6 @@ body {
   top: 0; left: 0; right: 0;
   transition: opacity .22s ease;
 }
-
 .page.active {
   opacity: 1;
   pointer-events: all;
@@ -59,32 +58,21 @@ body {
 
 /* ── TOPBAR ── */
 .topbar {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 0 20px;
-  height: 54px;
+  display: flex; align-items: center; gap: 14px;
+  padding: 0 20px; height: 54px;
   border-bottom: 1px solid var(--border);
-  background: var(--bg);
-  flex-shrink: 0;
+  background: var(--bg); flex-shrink: 0;
 }
-
 .logo {
-  width: 30px; height: 30px;
-  background: var(--accent);
-  border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
+  width: 30px; height: 30px; background: var(--accent);
+  border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .logo svg { width: 15px; height: 15px; }
 .brand { font-size: 15px; font-weight: 800; letter-spacing: -.03em; }
-
 .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
-
 .status-pill {
   display: flex; align-items: center; gap: 5px;
-  padding: 4px 10px;
-  background: var(--bg3); border: 1px solid var(--border2);
+  padding: 4px 10px; background: var(--bg3); border: 1px solid var(--border2);
   border-radius: 20px; font-family: var(--mono); font-size: 11px; color: var(--muted2);
 }
 .sdot {
@@ -96,7 +84,6 @@ body {
 .sdot.paired     { background: var(--blue); box-shadow: 0 0 5px var(--blue); }
 .sdot.error      { background: var(--danger); }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
-
 .back-btn {
   display: flex; align-items: center; gap: 5px;
   font-size: 11px; font-family: var(--mono); color: var(--muted);
@@ -104,95 +91,59 @@ body {
 }
 .back-btn:hover { color: var(--text); }
 
-/* ── WELCOME PAGE ── */
+/* ── WELCOME ── */
 #page-welcome .body {
-  flex: 1;
-  display: flex; flex-direction: column;
+  flex: 1; display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  padding: 40px 20px;
-  gap: 12px; text-align: center;
+  padding: 40px 20px; gap: 12px; text-align: center;
 }
-
 .welcome-title { font-size: 36px; font-weight: 800; letter-spacing: -.04em; line-height: 1.1; }
 .welcome-sub   { font-size: 13px; color: var(--muted2); font-family: var(--mono); line-height: 1.7; margin-bottom: 10px; }
-
-.choice-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  width: 100%;
-  max-width: 400px;
-}
-@media (max-width: 400px) {
-  .choice-grid { grid-template-columns: 1fr; }
-  .welcome-title { font-size: 28px; }
-}
-
+.choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 400px; }
+@media (max-width: 400px) { .choice-grid { grid-template-columns: 1fr; } .welcome-title { font-size: 28px; } }
 .choice-card {
-  padding: 24px 16px;
-  border: 1.5px solid var(--border2);
-  border-radius: 16px;
-  background: var(--bg3);
-  cursor: pointer;
-  transition: border-color .2s, background .2s, transform .12s;
-  text-align: center;
-  user-select: none;
+  padding: 24px 16px; border: 1.5px solid var(--border2);
+  border-radius: 16px; background: var(--bg3); cursor: pointer;
+  transition: border-color .2s, background .2s, transform .12s; text-align: center; user-select: none;
 }
 .choice-card:hover  { background: var(--bg4); }
 .choice-card:active { transform: scale(.97); }
 .choice-card.create:hover { border-color: var(--accent); }
 .choice-card.join:hover   { border-color: var(--blue); }
-
 .choice-icon  { font-size: 32px; margin-bottom: 12px; }
 .choice-label { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
 .choice-desc  { font-size: 11px; color: var(--muted2); font-family: var(--mono); line-height: 1.5; }
 
-/* ── JOIN PAGE ── */
+/* ── JOIN ── */
 #page-join .body {
-  flex: 1;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 32px 20px;
-  gap: 14px;
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; padding: 32px 20px; gap: 14px;
 }
-
-.join-card {
-  width: 100%; max-width: 360px;
-  display: flex; flex-direction: column; gap: 14px;
-}
-
+.join-card { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 14px; }
 .join-title    { font-size: 24px; font-weight: 800; letter-spacing: -.03em; text-align: center; }
 .join-subtitle { font-size: 12px; color: var(--muted2); font-family: var(--mono); text-align: center; line-height: 1.6; }
-
 .code-input {
-  width: 100%;
-  background: var(--bg3); border: 2px solid var(--border2);
+  width: 100%; background: var(--bg3); border: 2px solid var(--border2);
   border-radius: 14px; padding: 20px 16px;
   font-family: var(--mono); font-size: 44px; font-weight: 700;
   color: var(--accent); text-align: center; letter-spacing: .26em;
-  outline: none; transition: border-color .2s;
-  -webkit-appearance: none;
+  outline: none; transition: border-color .2s; -webkit-appearance: none;
 }
-.code-input:focus   { border-color: var(--accent); }
-.code-input.err     { border-color: var(--danger); color: var(--danger); animation: shake .3s ease; }
-.code-input.ok      { border-color: var(--accent2); }
+.code-input:focus { border-color: var(--accent); }
+.code-input.err   { border-color: var(--danger); color: var(--danger); animation: shake .3s ease; }
+.code-input.ok    { border-color: var(--accent2); }
 @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-7px)} 40%,80%{transform:translateX(7px)} }
-
 .big-btn {
-  width: 100%; padding: 16px;
-  background: var(--accent); color: #05140c;
-  border: none; border-radius: 12px;
-  font-family: var(--sans); font-size: 15px; font-weight: 700;
+  width: 100%; padding: 16px; background: var(--accent); color: #05140c;
+  border: none; border-radius: 12px; font-family: var(--sans); font-size: 15px; font-weight: 700;
   cursor: pointer; transition: background .15s, transform .1s;
 }
 .big-btn:hover  { background: #9ef5b8; }
 .big-btn:active { transform: scale(.98); }
 .big-btn:disabled { background: var(--bg4); color: var(--muted); cursor: default; }
-
 .join-msg { font-size: 12px; font-family: var(--mono); text-align: center; min-height: 16px; }
 .join-msg.err  { color: var(--danger); }
 .join-msg.info { color: var(--muted2); }
-
 .spinner-wrap { display: none; flex-direction: column; align-items: center; gap: 12px; padding: 10px 0; }
 .spinner-wrap.on { display: flex; }
 .spinner { width: 38px; height: 38px; border: 3px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
@@ -200,34 +151,19 @@ body {
 .spinner-txt { font-size: 13px; font-weight: 700; }
 .spinner-sub { font-size: 11px; color: var(--muted2); font-family: var(--mono); }
 
-/* ── ROOM PAGE ── */
-#page-room .room-layout {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 260px 1fr;
-}
-
-@media (max-width: 680px) {
-  #page-room .room-layout { grid-template-columns: 1fr; }
-}
+/* ── ROOM LAYOUT ── */
+#page-room .room-layout { flex: 1; display: grid; grid-template-columns: 260px 1fr; }
+@media (max-width: 680px) { #page-room .room-layout { grid-template-columns: 1fr; } }
 
 .room-sidebar {
-  background: var(--bg2);
-  border-right: 1px solid var(--border);
-  padding: 18px 16px;
-  display: flex; flex-direction: column; gap: 16px;
-  overflow-y: auto;
+  background: var(--bg2); border-right: 1px solid var(--border);
+  padding: 18px 16px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto;
 }
-
 @media (max-width: 680px) {
-  .room-sidebar {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-    padding: 10px 12px;
-    gap: 8px;
-  }
+  .room-sidebar { border-right: none; border-bottom: 1px solid var(--border); padding: 10px 12px; gap: 8px; }
   .qr-wrap { display: none; }
   .stats-row { display: none; }
+  .mobile-stats-bar { display: flex; }
   .sidebar-foot { display: none; }
   .code-card { padding: 10px 12px; }
   .code-big { font-size: 34px; letter-spacing: .15em; }
@@ -239,70 +175,30 @@ body {
   .member-item { padding: 5px 9px; }
 }
 
-.code-card {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 16px;
-  text-align: center;
-}
-.code-card-lbl {
-  font-size: 10px; font-family: var(--mono); color: var(--muted);
-  text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px;
-}
-.code-big {
-  font-size: 48px; font-weight: 800; letter-spacing: .2em;
-  color: var(--accent); font-family: var(--mono); line-height: 1; margin-bottom: 6px;
-}
+.code-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 14px; padding: 16px; text-align: center; }
+.code-card-lbl { font-size: 10px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px; }
+.code-big { font-size: 48px; font-weight: 800; letter-spacing: .2em; color: var(--accent); font-family: var(--mono); line-height: 1; margin-bottom: 6px; }
 .code-note { font-size: 11px; color: var(--muted2); font-family: var(--mono); line-height: 1.6; margin-bottom: 12px; }
-.regen-btn {
-  font-size: 11px; font-family: var(--mono); color: var(--muted);
-  background: none; border: 1px solid var(--border2); border-radius: 6px;
-  padding: 5px 10px; cursor: pointer; transition: color .2s, border-color .2s;
-}
+.regen-btn { font-size: 11px; font-family: var(--mono); color: var(--muted); background: none; border: 1px solid var(--border2); border-radius: 6px; padding: 5px 10px; cursor: pointer; transition: color .2s, border-color .2s; }
 .regen-btn:hover { color: var(--accent); border-color: var(--accent); }
 
 .qr-wrap { text-align: center; }
-.qr-lbl {
-  font-size: 10px; font-family: var(--mono); color: var(--muted);
-  text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px;
-}
-#qr-canvas {
-  width: 140px !important; height: 140px !important;
-  border-radius: 8px; display: block; margin: 0 auto;
-  background: #fff; padding: 5px;
-}
+.qr-lbl { font-size: 10px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+#qr-canvas { width: 140px !important; height: 140px !important; border-radius: 8px; display: block; margin: 0 auto; background: #fff; padding: 5px; }
 .qr-note { margin-top: 6px; font-size: 10px; color: var(--muted); font-family: var(--mono); line-height: 1.5; }
 
-.role-badge {
-  background: rgba(106,180,245,.07);
-  border: 1px solid rgba(106,180,245,.2);
-  border-radius: 12px; padding: 14px;
-  display: flex; align-items: center; gap: 10px;
-}
-.role-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); flex-shrink: 0; }
+.role-badge { background: rgba(106,180,245,.07); border: 1px solid rgba(106,180,245,.2); border-radius: 12px; padding: 14px; display: flex; align-items: center; gap: 10px; }
+.role-dot  { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); flex-shrink: 0; }
 .role-info { flex: 1; min-width: 0; }
 .role-name { font-size: 13px; font-weight: 700; color: var(--blue); }
 .role-sub  { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-top: 1px; }
-.leave-btn {
-  background: none; border: 1px solid var(--border2); border-radius: 5px;
-  padding: 4px 8px; font-size: 10px; font-family: var(--mono); color: var(--muted2);
-  cursor: pointer; transition: color .2s, border-color .2s;
-}
+.leave-btn { background: none; border: 1px solid var(--border2); border-radius: 5px; padding: 4px 8px; font-size: 10px; font-family: var(--mono); color: var(--muted2); cursor: pointer; transition: color .2s, border-color .2s; }
 .leave-btn:hover { color: var(--danger); border-color: var(--danger); }
 
-.members-hdr {
-  font-size: 10px; font-family: var(--mono); color: var(--muted);
-  text-transform: uppercase; letter-spacing: .08em;
-  display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
-}
+.members-hdr { font-size: 10px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
 .member-count { background: var(--accentd); color: var(--accent); border-radius: 10px; padding: 1px 7px; font-size: 10px; }
 .members-list { display: flex; flex-direction: column; gap: 5px; }
-.member-item {
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 8px; padding: 8px 11px;
-  display: flex; align-items: center; gap: 7px;
-}
+.member-item { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 8px 11px; display: flex; align-items: center; gap: 7px; }
 .member-dot  { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
 .member-name { font-size: 11px; font-family: var(--mono); color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .member-kick { background: none; border: none; font-size: 11px; color: var(--muted); cursor: pointer; padding: 0 2px; transition: color .2s; }
@@ -315,84 +211,68 @@ body {
 .stat-val { font-size: 18px; font-weight: 700; line-height: 1; }
 .sv-g { color: var(--accent); }
 
-.sidebar-foot {
-  margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border);
-  font-size: 10px; color: var(--muted); font-family: var(--mono); line-height: 1.7;
-}
+.sidebar-foot { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border); font-size: 10px; color: var(--muted); font-family: var(--mono); line-height: 1.7; }
 
+/* ── ROOM MAIN ── */
 .room-main { display: flex; flex-direction: column; }
 
+/* Compact horizontal drop zone on desktop */
 .drop-zone {
-  flex: 1;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  margin: 20px; border: 2px dashed var(--border2);
-  border-radius: 20px; cursor: pointer;
+  display: flex; flex-direction: row;
+  align-items: center; justify-content: flex-start;
+  gap: 16px;
+  margin: 14px 20px 0; border: 2px dashed var(--border2);
+  border-radius: 14px; cursor: pointer; padding: 14px 20px;
   transition: border-color .2s, background .2s;
-  min-height: 160px; text-align: center;
-  position: relative;
+  text-align: left; position: relative;
 }
 .drop-zone.over { border-color: var(--accent); background: rgba(126,232,162,.04); }
 .drop-zone.off  { opacity: .4; cursor: default; }
 
 @media (max-width: 680px) {
-  .drop-zone { margin: 10px 12px 0; border-radius: 12px; min-height: 110px; }
+  .drop-zone { margin: 10px 12px 0; border-radius: 12px; flex-direction: column; align-items: center; text-align: center; padding: 14px; }
 }
 
-.dz-inner { pointer-events: none; }
+.dz-inner { pointer-events: none; display: flex; flex-direction: row; align-items: center; gap: 14px; }
+@media (max-width: 680px) { .dz-inner { flex-direction: column; gap: 6px; } }
 .dz-icon {
-  width: 48px; height: 48px; margin: 0 auto 12px;
-  border-radius: 14px; background: var(--bg3); border: 1px solid var(--border2);
+  width: 44px; height: 44px; flex-shrink: 0;
+  border-radius: 12px; background: var(--bg3); border: 1px solid var(--border2);
   display: flex; align-items: center; justify-content: center; transition: transform .2s;
 }
 .drop-zone.over .dz-icon { transform: scale(1.08); }
-.dz-icon svg { width: 22px; height: 22px; }
-.dz-title { font-size: 18px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 4px; }
-.dz-sub   { font-size: 12px; color: var(--muted2); font-family: var(--mono); }
-.dz-hint  { margin-top: 6px; font-size: 11px; color: var(--muted); font-family: var(--mono); }
+.dz-icon svg { width: 20px; height: 20px; }
+.dz-text { display: flex; flex-direction: column; gap: 2px; }
+.dz-title { font-size: 15px; font-weight: 700; letter-spacing: -.02em; }
+.dz-sub   { font-size: 11px; color: var(--muted2); font-family: var(--mono); }
+.dz-hint  { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
 .file-input { display: none; }
-
-@media (max-width: 680px) {
-  .dz-title { font-size: 15px; }
-  .dz-icon  { width: 38px; height: 38px; margin-bottom: 8px; }
-  .dz-sub   { font-size: 11px; }
-}
+@media (max-width: 680px) { .dz-title { font-size: 14px; } .dz-icon { width: 36px; height: 36px; } }
 
 .wait-banner {
   margin-top: 10px; padding: 6px 14px;
   background: var(--bg3); border: 1px solid var(--border);
   border-radius: 7px; font-size: 11px; font-family: var(--mono); color: var(--warn);
-  display: inline-flex; align-items: center; gap: 6px;
-  pointer-events: none;
+  display: inline-flex; align-items: center; gap: 6px; pointer-events: none;
 }
 
-/* Text input strip */
-.text-strip {
-  border-top: 1px solid var(--border);
-  padding: 10px 14px;
-  display: flex; gap: 8px; align-items: flex-end;
-  background: var(--bg);
-}
+/* Text strip */
+.text-strip { border-top: 1px solid var(--border); padding: 10px 14px; display: flex; gap: 8px; align-items: flex-end; background: var(--bg); }
 .text-strip textarea {
   flex: 1; min-height: 36px; max-height: 100px;
   background: var(--bg3); border: 1px solid var(--border2);
   border-radius: 9px; padding: 8px 11px;
   font-family: var(--mono); font-size: 12px; color: var(--text);
-  resize: none; outline: none; line-height: 1.5; transition: border-color .2s;
-  overflow-y: auto;
+  resize: none; outline: none; line-height: 1.5; transition: border-color .2s; overflow-y: auto;
 }
 .text-strip textarea:focus { border-color: var(--accent); }
 .text-strip textarea::placeholder { color: var(--muted); }
-.send-txt-btn {
-  padding: 8px 13px; background: var(--accent); color: #05140c;
-  border: none; border-radius: 9px; font-family: var(--sans);
-  font-size: 12px; font-weight: 700; cursor: pointer;
-  transition: background .15s; white-space: nowrap; flex-shrink: 0;
-}
+.send-txt-btn { padding: 8px 13px; background: var(--accent); color: #05140c; border: none; border-radius: 9px; font-family: var(--sans); font-size: 12px; font-weight: 700; cursor: pointer; transition: background .15s; white-space: nowrap; flex-shrink: 0; }
 .send-txt-btn:hover  { background: #9ef5b8; }
 .send-txt-btn:active { transform: scale(.97); }
 .send-txt-btn:disabled { background: var(--bg4); color: var(--muted); cursor: default; }
 
+/* Shared list */
 .tf-wrap { border-top: 1px solid var(--border); max-height: 300px; overflow-y: auto; }
 .tf-hdr  { display: flex; align-items: center; padding: 10px 20px 7px; gap: 8px; }
 .tf-hdr h3 { font-size: 13px; font-weight: 600; flex: 1; }
@@ -400,7 +280,6 @@ body {
 .clear-btn:hover { color: var(--danger); }
 .tf-list { padding: 0 20px 12px; display: flex; flex-direction: column; gap: 7px; }
 @media (max-width: 680px) { .tf-hdr { padding: 9px 12px 6px; } .tf-list { padding: 0 12px 10px; } }
-
 .tf-item { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; align-items: flex-start; gap: 10px; animation: up .2s ease; }
 @keyframes up { from{opacity:0;transform:translateY(-5px)} to{opacity:1;transform:translateY(0)} }
 .tf-ico  { width: 32px; height: 32px; border-radius: 8px; background: var(--bg4); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; margin-top: 1px; }
@@ -421,6 +300,16 @@ body {
 .copy-btn.copied { color: var(--accent2); border-color: var(--accent2); background: var(--accentd); }
 .tf-text-body { margin-top: 6px; padding: 8px 10px; background: var(--bg4); border-radius: 7px; font-family: var(--mono); font-size: 12px; color: var(--text); white-space: pre-wrap; word-break: break-word; line-height: 1.6; max-height: 120px; overflow-y: auto; }
 
+/* Mobile stats footer */
+.mobile-stats-bar {
+  display: none;
+  background: var(--bg2); border-top: 1px solid var(--border);
+  padding: 7px 14px; gap: 0; justify-content: space-around; flex-shrink: 0;
+}
+.msb-stat { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.msb-lbl  { font-size: 8px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.msb-val  { font-size: 13px; font-weight: 700; line-height: 1; }
+
 .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%) translateY(14px); background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; padding: 9px 18px; font-size: 12px; font-family: var(--mono); opacity: 0; transition: opacity .22s, transform .22s; pointer-events: none; z-index: 9999; white-space: nowrap; max-width: 90vw; text-overflow: ellipsis; overflow: hidden; }
 .toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -434,19 +323,12 @@ body {
 <!-- PAGE: WELCOME -->
 <div class="page active" id="page-welcome">
   <header class="topbar">
-    <div class="logo">
-      <svg viewBox="0 0 15 15" fill="none">
-        <path d="M1 7.5h13M7.5 1l6.5 6.5-6.5 6.5" stroke="#05140c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
+    <div class="logo"><svg viewBox="0 0 15 15" fill="none"><path d="M1 7.5h13M7.5 1l6.5 6.5-6.5 6.5" stroke="#05140c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     <span class="brand">FileShare</span>
   </header>
   <div class="body">
     <div class="welcome-title">Share files<br>instantly</div>
-    <div class="welcome-sub">
-      No account &middot; No cloud &middot; Any browser<br>
-      Everyone in a room can send &amp; receive
-    </div>
+    <div class="welcome-sub">No account &middot; No cloud &middot; Any browser<br>Everyone in a room can send &amp; receive</div>
     <div class="choice-grid">
       <div class="choice-card create" id="btn-create">
         <div class="choice-icon">&#128279;</div>
@@ -462,27 +344,18 @@ body {
   </div>
 </div>
 
-
 <!-- PAGE: JOIN -->
 <div class="page" id="page-join">
   <header class="topbar">
-    <div class="logo">
-      <svg viewBox="0 0 15 15" fill="none">
-        <path d="M1 7.5h13M7.5 1l6.5 6.5-6.5 6.5" stroke="#05140c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
+    <div class="logo"><svg viewBox="0 0 15 15" fill="none"><path d="M1 7.5h13M7.5 1l6.5 6.5-6.5 6.5" stroke="#05140c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     <span class="brand">FileShare</span>
-    <div class="topbar-right">
-      <button class="back-btn" id="join-back">&#8592; Back</button>
-    </div>
+    <div class="topbar-right"><button class="back-btn" id="join-back">&#8592; Back</button></div>
   </header>
   <div class="body">
     <div class="join-card">
       <div class="join-title">Join a room</div>
       <div class="join-subtitle">Enter the 4-digit code from the room creator</div>
-      <input class="code-input" id="code-input" type="text"
-             inputmode="numeric" maxlength="4" placeholder="0000"
-             autocomplete="off" spellcheck="false">
+      <input class="code-input" id="code-input" type="text" inputmode="numeric" maxlength="4" placeholder="0000" autocomplete="off" spellcheck="false">
       <button class="big-btn" id="join-btn" disabled>Connect</button>
       <div class="join-msg" id="join-msg"></div>
       <div class="spinner-wrap" id="join-spinner">
@@ -494,55 +367,39 @@ body {
   </div>
 </div>
 
-
 <!-- PAGE: ROOM -->
 <div class="page" id="page-room">
   <header class="topbar">
-    <div class="logo">
-      <svg viewBox="0 0 15 15" fill="none">
-        <path d="M1 7.5h13M7.5 1l6.5 6.5-6.5 6.5" stroke="#05140c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
+    <div class="logo"><svg viewBox="0 0 15 15" fill="none"><path d="M1 7.5h13M7.5 1l6.5 6.5-6.5 6.5" stroke="#05140c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     <span class="brand">FileShare</span>
     <div class="topbar-right">
-      <div class="status-pill">
-        <div class="sdot" id="sdot"></div>
-        <span id="stext">Ready</span>
-      </div>
+      <div class="status-pill"><div class="sdot" id="sdot"></div><span id="stext">Ready</span></div>
       <button class="back-btn" id="room-back">&#8592; Leave</button>
     </div>
   </header>
 
   <div class="room-layout">
-
     <aside class="room-sidebar">
 
       <!-- HUB panel -->
       <div id="hub-panel" style="display:none;flex-direction:column;gap:14px;">
-
         <div class="code-card">
           <div class="code-card-lbl">Room code</div>
           <div class="code-big" id="code-display">----</div>
           <div class="code-note">Share this with anyone who wants to join</div>
           <button class="regen-btn" id="regen-btn">&#8635; New code</button>
         </div>
-
         <div class="qr-wrap">
           <div class="qr-lbl">Or scan to join</div>
           <canvas id="qr-canvas"></canvas>
           <div class="qr-note">Scans auto-join<br>without typing</div>
         </div>
-
         <div>
-          <div class="members-hdr">
-            Members
-            <span class="member-count" id="member-count">0</span>
-          </div>
+          <div class="members-hdr">Members <span class="member-count" id="member-count">0</span></div>
           <div class="members-list" id="members-list">
             <span class="members-empty" id="members-empty">No one connected yet</span>
           </div>
         </div>
-
       </div>
 
       <!-- PEER panel -->
@@ -558,22 +415,24 @@ body {
         <div style="font-size:11px;color:var(--muted);font-family:var(--mono);line-height:1.7;">
           Drop files or send text<br>to <strong style="color:var(--muted2)">everyone</strong> in the room.
         </div>
+        <div>
+          <div class="members-hdr">Others here <span class="member-count" id="member-count-peer">0</span></div>
+          <div class="members-list" id="members-list-peer"></div>
+        </div>
       </div>
 
-      <!-- Stats (desktop only) -->
+      <!-- Desktop stats -->
       <div class="stats-row" style="margin-top:auto;">
         <div class="stat"><div class="stat-lbl">Sent</div><div class="stat-val sv-g" id="s-sent">0</div></div>
         <div class="stat"><div class="stat-lbl">Rcvd</div><div class="stat-val sv-g" id="s-recv">0</div></div>
         <div class="stat"><div class="stat-lbl">MB out</div><div class="stat-val" id="s-out">0</div></div>
         <div class="stat"><div class="stat-lbl">MB in</div><div class="stat-val" id="s-in">0</div></div>
       </div>
-
       <div class="sidebar-foot">P2P &middot; No server sees your files</div>
     </aside>
 
     <div class="room-main">
-
-      <!-- Drop zone -->
+      <!-- Compact drop zone -->
       <div class="drop-zone off" id="drop-zone">
         <input type="file" class="file-input" id="file-input" multiple>
         <div class="dz-inner">
@@ -583,22 +442,24 @@ body {
               <path d="M4 21h18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
             </svg>
           </div>
-          <div class="dz-title">Drop files to send</div>
-          <div class="dz-sub">or tap to browse</div>
-          <div class="dz-hint" id="dz-hint">Waiting for others to join&hellip;</div>
+          <div class="dz-text">
+            <div class="dz-title">Drop files or tap to browse</div>
+            <div class="dz-sub">Shared with everyone in the room</div>
+            <div class="dz-hint" id="dz-hint">Waiting for others to join&hellip;</div>
+          </div>
         </div>
         <div class="wait-banner" id="wait-banner">
-          &#9888;&nbsp; No one else here yet &mdash; your items will send when they join
+          &#9888;&nbsp; No one else here yet &mdash; items will send when they join
         </div>
       </div>
 
-      <!-- Text input strip -->
-      <div class="text-strip" id="text-strip">
+      <!-- Text strip -->
+      <div class="text-strip">
         <textarea id="text-input" placeholder="Send a note, link, or password… Ctrl+Enter to send" rows="1"></textarea>
         <button class="send-txt-btn" id="send-txt-btn" disabled>Send</button>
       </div>
 
-      <!-- Transfers & text history -->
+      <!-- Shared items -->
       <div class="tf-wrap" id="tf-wrap" style="display:none">
         <div class="tf-hdr">
           <h3>Shared</h3>
@@ -607,11 +468,17 @@ body {
         <div class="tf-list" id="tf-list"></div>
       </div>
 
+      <!-- Mobile stats footer -->
+      <div class="mobile-stats-bar" id="mobile-stats-bar">
+        <div class="msb-stat"><div class="msb-lbl">Sent</div><div class="msb-val sv-g" id="ms-sent">0</div></div>
+        <div class="msb-stat"><div class="msb-lbl">Rcvd</div><div class="msb-val sv-g" id="ms-recv">0</div></div>
+        <div class="msb-stat"><div class="msb-lbl">MB out</div><div class="msb-val" id="ms-out">0</div></div>
+        <div class="msb-stat"><div class="msb-lbl">MB in</div><div class="msb-val" id="ms-in">0</div></div>
+        <div class="msb-stat"><div class="msb-lbl">Peers</div><div class="msb-val sv-g" id="ms-peers">0</div></div>
+      </div>
     </div>
-
   </div>
 </div>
-
 
 <div class="toast" id="toast"></div>
 
@@ -629,37 +496,30 @@ var ICE   = { iceServers: [
 // ═══════════════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════════════
-var role     = null;
 var myPeer   = null;
 var roomCode = null;
-var peerConns = {};
-var hubConn   = null;
-var incoming  = {};
+var isHub    = false;
+
+// MESH: every connected peer — keyed by peer ID
+var peers = {};   // { id -> { conn, open } }
+
+var incoming = {};
 var sSent=0, sRecv=0, sMbOut=0, sMbIn=0;
-var shelf = [];  // everything sent/received — replayed to late-joiners
+var shelf = [];  // all items sent — replayed to late-joiners
 
 // ═══════════════════════════════════════════════════════
-//  NAVIGATION
+//  NAVIGATION / STATUS / TOAST
 // ═══════════════════════════════════════════════════════
 function goTo(pageId) {
-  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
-  var target = document.getElementById(pageId);
-  if (target) { target.classList.add('active'); window.scrollTo(0,0); }
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  var t=document.getElementById(pageId);
+  if(t){ t.classList.add('active'); window.scrollTo(0,0); }
 }
-
-// ═══════════════════════════════════════════════════════
-//  STATUS
-// ═══════════════════════════════════════════════════════
-function setStat(state, txt) {
+function setStat(state,txt) {
   var d=document.getElementById('sdot'), t=document.getElementById('stext');
-  if(d) d.className='sdot '+state;
-  if(t) t.textContent=txt;
+  if(d) d.className='sdot '+state; if(t) t.textContent=txt;
 }
-
-// ═══════════════════════════════════════════════════════
-//  TOAST
-// ═══════════════════════════════════════════════════════
-function toast(msg, dur) {
+function toast(msg,dur) {
   var el=document.getElementById('toast');
   el.textContent=msg; el.classList.add('on');
   clearTimeout(el._t);
@@ -669,15 +529,15 @@ function toast(msg, dur) {
 // ═══════════════════════════════════════════════════════
 //  HELPERS
 // ═══════════════════════════════════════════════════════
-function randCode() { return String(Math.floor(1000+Math.random()*9000)); }
-function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function enc(obj) { return new TextEncoder().encode(JSON.stringify(obj)); }
+function randCode()  { return String(Math.floor(1000+Math.random()*9000)); }
+function esc(s)      { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function enc(obj)    { return new TextEncoder().encode(JSON.stringify(obj)); }
 function encHdr(obj) { return new TextEncoder().encode(JSON.stringify(obj).padEnd(256,' ')); }
 
 function tryParse(raw) {
   try {
     var text;
-    if(raw instanceof ArrayBuffer)    text=new TextDecoder().decode(raw);
+    if(raw instanceof ArrayBuffer)     text=new TextDecoder().decode(raw);
     else if(raw instanceof Uint8Array) text=new TextDecoder().decode(raw);
     else if(typeof raw==='string')     text=raw;
     else return null;
@@ -686,14 +546,21 @@ function tryParse(raw) {
   } catch(e){ return null; }
 }
 
-// enableDrop: always active once in room; banner shown only when no peers yet
-function enableDrop(yes) {
+function getOpenPeers() {
+  return Object.values(peers).filter(function(p){ return p.open&&p.conn&&p.conn.open; });
+}
+
+function broadcastData(data) {
+  getOpenPeers().forEach(function(p){ try{ p.conn.send(data); }catch(e){} });
+}
+
+function enableDrop(hasPeers) {
+  var dz=document.getElementById('drop-zone');
   var wb=document.getElementById('wait-banner');
   var sb=document.getElementById('send-txt-btn');
-  var dz=document.getElementById('drop-zone');
   dz.classList.remove('off');
   if(sb) sb.disabled=false;
-  wb.style.display=yes?'none':'flex';
+  wb.style.display=hasPeers?'none':'flex';
 }
 
 function updateStats() {
@@ -701,22 +568,37 @@ function updateStats() {
   document.getElementById('s-recv').textContent=sRecv;
   document.getElementById('s-out').textContent=sMbOut.toFixed(1);
   document.getElementById('s-in').textContent=sMbIn.toFixed(1);
+  var ms=document.getElementById('ms-sent'); if(ms) ms.textContent=sSent;
+  var mr=document.getElementById('ms-recv'); if(mr) mr.textContent=sRecv;
+  var mo=document.getElementById('ms-out');  if(mo) mo.textContent=sMbOut.toFixed(1);
+  var mi=document.getElementById('ms-in');   if(mi) mi.textContent=sMbIn.toFixed(1);
+  var mp=document.getElementById('ms-peers'); if(mp) mp.textContent=getOpenPeers().length;
+}
+
+function updatePeerUI() {
+  var n=getOpenPeers().length;
+  enableDrop(n>0);
+  // Update both hub and peer member counts
+  var mc=document.getElementById('member-count');       if(mc) mc.textContent=n;
+  var mcp=document.getElementById('member-count-peer'); if(mcp) mcp.textContent=n;
+  var empty=document.getElementById('members-empty');
+  if(empty) empty.style.display=n===0?'':'none';
+  updateStats();
 }
 
 // ═══════════════════════════════════════════════════════
 //  CREATE ROOM (hub)
 // ═══════════════════════════════════════════════════════
 function createRoom(code) {
-  roomCode=code||randCode();
-  role='hub';
+  roomCode=code||randCode(); isHub=true;
   if(myPeer&&!myPeer.destroyed) myPeer.destroy();
   myPeer=null;
   setStat('connecting','Creating room\u2026');
   document.getElementById('code-display').textContent=roomCode;
 
-  myPeer=new Peer(NS+roomCode,{debug:0,config:ICE});
+  myPeer=new Peer(NS+roomCode, {debug:0, config:ICE});
 
-  myPeer.on('open',function(){
+  myPeer.on('open', function() {
     setStat('ready','Room '+roomCode);
     generateQR(roomCode);
     document.getElementById('hub-panel').style.display='flex';
@@ -725,95 +607,41 @@ function createRoom(code) {
     goTo('page-room');
   });
 
-  myPeer.on('connection',function(conn){ acceptPeer(conn); });
+  myPeer.on('connection', function(conn) { wireConn(conn, false); });
 
-  myPeer.on('error',function(err){
+  myPeer.on('error', function(err) {
     if(err.type==='unavailable-id'){ toast('Code taken \u2014 trying another'); createRoom(randCode()); }
-    else { setStat('error','Error'); toast('Error: '+err.type,4000); }
+    else { setStat('error','Error'); toast('Error: '+err.type, 4000); }
   });
 
-  myPeer.on('disconnected',function(){
+  myPeer.on('disconnected', function() {
     if(myPeer&&!myPeer.destroyed) myPeer.reconnect();
   });
-}
-
-function acceptPeer(conn) {
-  var id=conn.peer;
-  conn.on('open',function(){
-    peerConns[id]=conn;
-    addMember(id);
-    updateMemberCount();
-    enableDrop(true);
-    document.getElementById('dz-hint').textContent='Sends to everyone in the room';
-    toast('Someone joined the room');
-    conn.send(enc({type:'WELCOME'}));
-    replayShelf(conn);   // send everything from shelf to the new joiner
-  });
-  conn.on('data',function(raw){
-    var msg=tryParse(raw);
-    if(msg) handleControl(msg,id);
-    else    handleChunk(raw,id);
-  });
-  conn.on('close',function(){ removeMember(id); });
-  conn.on('error',function(){ removeMember(id); });
-}
-
-function addMember(id) {
-  var empty=document.getElementById('members-empty');
-  if(empty) empty.style.display='none';
-  var list=document.getElementById('members-list');
-  var d=document.createElement('div');
-  d.className='member-item'; d.id='mi-'+id;
-  d.innerHTML=
-    '<div class="member-dot"></div>'+
-    '<div class="member-name">'+esc(id.slice(0,22))+'&hellip;</div>'+
-    '<button class="member-kick" onclick="kickMember(\''+esc(id)+'\')">&#10005;</button>';
-  list.appendChild(d);
-}
-
-function removeMember(id) {
-  delete peerConns[id];
-  var el=document.getElementById('mi-'+id);
-  if(el) el.remove();
-  updateMemberCount();
-  if(!Object.keys(peerConns).length) enableDrop(false);
-  toast('A member left');
-}
-
-function kickMember(id) {
-  if(peerConns[id]){ peerConns[id].close(); removeMember(id); }
-}
-
-function updateMemberCount() {
-  var n=Object.keys(peerConns).length;
-  document.getElementById('member-count').textContent=n;
-  var empty=document.getElementById('members-empty');
-  if(empty) empty.style.display=n===0?'':'none';
 }
 
 // ═══════════════════════════════════════════════════════
 //  JOIN ROOM (peer)
 // ═══════════════════════════════════════════════════════
 function joinRoom(code) {
-  roomCode=code; role='peer';
+  roomCode=code; isHub=false;
   if(myPeer&&!myPeer.destroyed) myPeer.destroy();
   myPeer=null;
 
   var joinBtn=document.getElementById('join-btn');
   var spinner=document.getElementById('join-spinner');
   var joinMsg=document.getElementById('join-msg');
-  joinBtn.disabled=true;
-  joinMsg.textContent=''; joinMsg.className='join-msg';
+  joinBtn.disabled=true; joinMsg.textContent=''; joinMsg.className='join-msg';
   spinner.classList.add('on');
   document.getElementById('join-spinner-sub').textContent='Reaching room '+code;
   setStat('connecting','Joining '+code+'\u2026');
 
-  myPeer=new Peer({debug:0,config:ICE});
+  myPeer=new Peer({debug:0, config:ICE});
 
-  myPeer.on('open',function(){
-    hubConn=myPeer.connect(NS+code,{reliable:true,serialization:'raw'});
+  myPeer.on('open', function() {
+    var hubConn=myPeer.connect(NS+code, {reliable:true, serialization:'raw'});
 
-    hubConn.on('open',function(){
+    hubConn.on('open', function() {
+      wireConn(hubConn, true);
       setStat('paired','Room '+code);
       document.getElementById('room-label').textContent='Room '+code;
       document.getElementById('hub-panel').style.display='none';
@@ -826,21 +654,14 @@ function joinRoom(code) {
       toast('Joined room '+code+'!');
     });
 
-    hubConn.on('data',function(raw){
-      var msg=tryParse(raw);
-      if(msg) handleControl(msg,'hub');
-      else    handleChunk(raw,'hub');
-    });
-
-    hubConn.on('close',function(){ onPeerDisc(); });
-    hubConn.on('error',function(){ onJoinFail({type:'network'}); });
-
-    setTimeout(function(){
-      if(!hubConn||!hubConn.open) onJoinFail({type:'peer-unavailable'});
-    },8000);
+    hubConn.on('error', function() { onJoinFail({type:'network'}); });
+    setTimeout(function(){ if(!hubConn||!hubConn.open) onJoinFail({type:'peer-unavailable'}); }, 8000);
   });
 
-  myPeer.on('error',function(err){
+  // Accept direct connections from other peers who mesh with us
+  myPeer.on('connection', function(conn) { wireConn(conn, false); });
+
+  myPeer.on('error', function(err) {
     if(err.type!=='peer-unavailable') onJoinFail(err);
   });
 }
@@ -849,8 +670,7 @@ function onJoinFail(err) {
   document.getElementById('join-spinner').classList.remove('on');
   document.getElementById('join-btn').disabled=false;
   var ci=document.getElementById('code-input');
-  ci.classList.add('err');
-  setTimeout(function(){ ci.classList.remove('err'); },600);
+  ci.classList.add('err'); setTimeout(function(){ ci.classList.remove('err'); }, 600);
   var m=(err&&err.type==='peer-unavailable')?'Room not found \u2014 check the code':'Could not connect \u2014 try again';
   document.getElementById('join-msg').textContent=m;
   document.getElementById('join-msg').className='join-msg err';
@@ -858,12 +678,68 @@ function onJoinFail(err) {
   if(myPeer&&!myPeer.destroyed){ myPeer.destroy(); myPeer=null; }
 }
 
-function onPeerDisc() {
-  hubConn=null;
-  setStat('ready','Disconnected');
-  enableDrop(false);
-  toast('Disconnected from room');
-  leaveRoom();
+// ═══════════════════════════════════════════════════════
+//  MESH — wire any DataConnection
+// ═══════════════════════════════════════════════════════
+function wireConn(conn, isOutbound) {
+  var id=conn.peer;
+  if(peers[id]) return;  // already wired
+  peers[id]={conn:conn, open:false};
+
+  conn.on('open', function() {
+    peers[id].open=true;
+    addMemberUI(id);
+    updatePeerUI();
+    if(!isOutbound) {
+      // Tell the new peer about all other peers so they can connect directly
+      var peerList=Object.keys(peers).filter(function(k){ return k!==id && peers[k]&&peers[k].open; });
+      conn.send(enc({type:'PEER_LIST', peers:peerList, roomCode:roomCode}));
+      // Send shelf history
+      replayShelf(conn);
+    }
+    toast('Someone joined the room');
+  });
+
+  conn.on('data', function(raw) {
+    var msg=tryParse(raw);
+    if(msg) handleControl(msg,id);
+    else    handleChunk(raw,id);
+  });
+  conn.on('close', function() { dropPeer(id); });
+  conn.on('error', function() { dropPeer(id); });
+}
+
+function addMemberUI(id) {
+  // Add to both hub-panel and peer-panel lists
+  ['members-list','members-list-peer'].forEach(function(listId){
+    var list=document.getElementById(listId); if(!list) return;
+    if(document.getElementById('mi-'+listId+'-'+id)) return;
+    var empty=list.querySelector('.members-empty');
+    if(empty) empty.style.display='none';
+    var d=document.createElement('div');
+    d.className='member-item'; d.id='mi-'+listId+'-'+id;
+    d.innerHTML=
+      '<div class="member-dot"></div>'+
+      '<div class="member-name">'+esc(id.slice(0,18))+'&hellip;</div>'+
+      '<button class="member-kick" onclick="kickPeer(\''+esc(id)+'\')">&#10005;</button>';
+    list.appendChild(d);
+  });
+}
+
+function dropPeer(id) {
+  if(peers[id]) peers[id].open=false;
+  delete peers[id];
+  ['members-list','members-list-peer'].forEach(function(listId){
+    var el=document.getElementById('mi-'+listId+'-'+id);
+    if(el) el.remove();
+  });
+  updatePeerUI();
+  toast('A member left');
+}
+
+function kickPeer(id) {
+  if(peers[id]&&peers[id].conn) peers[id].conn.close();
+  dropPeer(id);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -871,15 +747,14 @@ function onPeerDisc() {
 // ═══════════════════════════════════════════════════════
 function leaveRoom() {
   if(myPeer&&!myPeer.destroyed) myPeer.destroy();
-  myPeer=null; hubConn=null;
-  Object.keys(peerConns).forEach(function(k){
-    try{ peerConns[k].close(); }catch(e){}
-    delete peerConns[k];
-  });
-  roomCode=null; role=null;
+  myPeer=null;
+  Object.keys(peers).forEach(function(k){ try{ peers[k].conn.close(); }catch(e){} });
+  peers={};
+  roomCode=null; isHub=false;
   sSent=0; sRecv=0; sMbOut=0; sMbIn=0; updateStats();
   shelf=[];
   document.getElementById('members-list').innerHTML='<span class="members-empty" id="members-empty">No one connected yet</span>';
+  document.getElementById('members-list-peer').innerHTML='';
   document.getElementById('member-count').textContent='0';
   document.getElementById('tf-list').innerHTML='';
   document.getElementById('tf-wrap').style.display='none';
@@ -899,61 +774,51 @@ function generateQR(code) {
 }
 
 // ═══════════════════════════════════════════════════════
-//  SEND FILES
+//  SEND FILES — direct to all open peers
 // ═══════════════════════════════════════════════════════
 function sendFiles(files) {
-  var targets=role==='hub'
-    ? Object.values(peerConns).filter(function(c){ return c.open; })
-    : (hubConn&&hubConn.open?[hubConn]:[]);
-  // proceed even with no targets — store in shelf for later replay
-
-  Array.prototype.forEach.call(files,function(file){
-    var tfId=crypto.randomUUID();
-    var total=Math.ceil(file.size/CHUNK);
+  Array.prototype.forEach.call(files, function(file) {
+    var tfId=crypto.randomUUID(), total=Math.ceil(file.size/CHUNK);
     addTf({id:tfId,name:file.name,size:file.size,mime:file.type,dir:'send'});
-    var metaBytes=enc({type:'FILE_META',transferId:tfId,name:file.name,size:file.size,
-                       mime:file.type||'application/octet-stream',chunks:total});
-    targets.forEach(function(t){ try{ t.send(metaBytes); }catch(e){} });
+    broadcastData(enc({type:'FILE_META',transferId:tfId,name:file.name,size:file.size,
+                       mime:file.type||'application/octet-stream',chunks:total}));
 
     var reader=new FileReader();
     reader.onload=function(){
-      var buf=reader.result, i=0;
-      function next(){
-        if(!targets.some(function(t){return t.open;})){
-          // no live targets — finish progress bar anyway
-          updateTf(tfId,{pct:100});
-          finishFile();
+      var buf=reader.result;
+      var live=getOpenPeers();
+
+      if(!live.length) {
+        // No peers — store in shelf, mark done immediately
+        updateTf(tfId,{pct:100,done:true});
+        sSent++; sMbOut+=file.size/1048576; updateStats();
+        shelf.push({type:'file',tfId:tfId,name:file.name,size:file.size,
+                    mime:file.type||'application/octet-stream',buf:buf,total:total});
+        toast('Saved \u2014 will send when someone joins');
+        return;
+      }
+
+      var i=0;
+      function next() {
+        var live2=getOpenPeers();
+        if(i>=total) {
+          live2.forEach(function(p){ try{ p.conn.send(enc({type:'FILE_DONE',transferId:tfId})); }catch(e){} });
+          updateTf(tfId,{done:true});
+          sSent++; sMbOut+=file.size/1048576; updateStats();
+          shelf.push({type:'file',tfId:tfId,name:file.name,size:file.size,
+                      mime:file.type||'application/octet-stream',buf:buf,total:total});
+          toast('Sent: '+file.name);
           return;
         }
         var hdr=encHdr({type:'CHUNK',transferId:tfId,index:i});
         var slice=buf.slice(i*CHUNK,(i+1)*CHUNK);
         var msg=new Uint8Array(hdr.byteLength+slice.byteLength);
         msg.set(hdr); msg.set(new Uint8Array(slice),hdr.byteLength);
-        targets.forEach(function(t){ try{ t.send(msg.buffer); }catch(e){} });
+        live2.forEach(function(p){ try{ p.conn.send(msg.buffer); }catch(e){} });
         updateTf(tfId,{pct:Math.round(++i/total*100)});
-        if(i<total) setTimeout(next,0);
-        else{
-          var doneBytes=enc({type:'FILE_DONE',transferId:tfId});
-          targets.forEach(function(t){ try{ t.send(doneBytes); }catch(e){} });
-          finishFile();
-        }
+        if(i<total) setTimeout(next,0); else next();
       }
-      function finishFile(){
-        updateTf(tfId,{done:true});
-        sSent++; sMbOut+=file.size/1048576; updateStats();
-        // keep raw buffer in shelf so late-joiners can receive it
-        shelf.push({type:'file',tfId:tfId,name:file.name,size:file.size,
-                    mime:file.type||'application/octet-stream',buf:buf,total:total});
-        if(targets.length) toast('Sent: '+file.name);
-        else toast('Saved locally \u2014 will send when someone joins');
-      }
-      if(!targets.length){
-        // no peers right now — still finish for UI
-        updateTf(tfId,{pct:100});
-        finishFile();
-      } else {
-        next();
-      }
+      next();
     };
     reader.readAsArrayBuffer(file);
   });
@@ -964,26 +829,20 @@ function sendFiles(files) {
 // ═══════════════════════════════════════════════════════
 function sendText() {
   var ta=document.getElementById('text-input');
-  var txt=ta.value.trim();
-  if(!txt) return;
-  var targets=role==='hub'
-    ? Object.values(peerConns).filter(function(c){ return c.open; })
-    : (hubConn&&hubConn.open?[hubConn]:[]);
+  var txt=ta.value.trim(); if(!txt) return;
   var msgId=crypto.randomUUID();
-  var msgBytes=enc({type:'TEXT_MSG',msgId:msgId,text:txt});
-  targets.forEach(function(t){ try{ t.send(msgBytes); }catch(e){} });
+  broadcastData(enc({type:'TEXT_MSG',msgId:msgId,text:txt}));
   shelf.push({type:'text',msgId:msgId,text:txt});
   addTextItem(msgId,txt,true);
   ta.value=''; ta.style.height='';
-  if(targets.length) toast('Text sent');
-  else toast('Saved locally \u2014 will send when someone joins');
+  if(getOpenPeers().length) toast('Text sent');
+  else toast('Saved \u2014 will send when someone joins');
 }
 
-function handleTextMsg(msg,fromId) {
+function handleTextMsg(msg) {
   if(shelf.some(function(s){ return s.msgId===msg.msgId; })) return;
   shelf.push({type:'text',msgId:msg.msgId,text:msg.text});
   addTextItem(msg.msgId,msg.text,false);
-  if(role==='hub') relayExcept(enc(msg),fromId);
 }
 
 function addTextItem(id,text,isMine) {
@@ -993,9 +852,7 @@ function addTextItem(id,text,isMine) {
   div.innerHTML=
     '<div class="tf-ico">&#128172;</div>'+
     '<div class="tf-info">'+
-      '<div class="tf-name" style="font-size:11px;font-weight:500;color:var(--muted2);">'+
-        (isMine?'You':'Room')+
-      '</div>'+
+      '<div class="tf-name" style="font-size:11px;font-weight:500;color:var(--muted2);">'+(isMine?'You':'Room')+'</div>'+
       '<div class="tf-text-body">'+esc(text)+'</div>'+
     '</div>'+
     '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;">'+
@@ -1010,8 +867,7 @@ function copyText(btn,text) {
     btn.textContent='Copied!'; btn.classList.add('copied');
     setTimeout(function(){ btn.textContent='Copy'; btn.classList.remove('copied'); },2000);
   }).catch(function(){
-    var ta=document.createElement('textarea'); ta.value=text;
-    ta.style.cssText='position:fixed;opacity:0';
+    var ta=document.createElement('textarea'); ta.value=text; ta.style.cssText='position:fixed;opacity:0';
     document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
     btn.textContent='Copied!'; btn.classList.add('copied');
     setTimeout(function(){ btn.textContent='Copy'; btn.classList.remove('copied'); },2000);
@@ -1021,9 +877,9 @@ function copyText(btn,text) {
 // ═══════════════════════════════════════════════════════
 //  RECEIVE
 // ═══════════════════════════════════════════════════════
-function handleChunk(raw,fromId) {
+function handleChunk(raw, fromId) {
   var buf;
-  if(raw instanceof ArrayBuffer) buf=new Uint8Array(raw);
+  if(raw instanceof ArrayBuffer)     buf=new Uint8Array(raw);
   else if(raw instanceof Blob){ raw.arrayBuffer().then(function(ab){ handleChunk(ab,fromId); }); return; }
   else return;
   try {
@@ -1032,42 +888,47 @@ function handleChunk(raw,fromId) {
       var tf=incoming[hdr.transferId]; if(!tf) return;
       tf.chunks[hdr.index]=buf.slice(256); tf.received++;
       updateTf(hdr.transferId,{pct:Math.round(tf.received/tf.total*100)});
-      if(role==='hub') relayExcept(buf.buffer,fromId);
+      // No relay — mesh means sender sent directly to all
     }
   } catch(e){}
 }
 
-function handleControl(msg,fromId) {
+function handleControl(msg, fromId) {
   if(msg.type==='WELCOME') return;
-  if(msg.type==='TEXT_MSG'){ handleTextMsg(msg,fromId); return; }
+
+  // Mesh: connect to all other peers we don't know yet
+  if(msg.type==='PEER_LIST'){
+    msg.peers.forEach(function(peerId){
+      if(!peers[peerId]&&myPeer&&!myPeer.destroyed){
+        var c=myPeer.connect(peerId,{reliable:true,serialization:'raw'});
+        wireConn(c,true);
+      }
+    });
+    return;
+  }
+
+  if(msg.type==='TEXT_MSG'){ handleTextMsg(msg); return; }
+
   if(msg.type==='FILE_META'){
+    if(incoming[msg.transferId]) return;
     incoming[msg.transferId]={name:msg.name,size:msg.size,mime:msg.mime,
                                total:msg.chunks,chunks:new Array(msg.chunks),received:0};
     addTf({id:msg.transferId,name:msg.name,size:msg.size,mime:msg.mime,dir:'recv'});
-    if(role==='hub') relayExcept(enc(msg),fromId);
   }
+
   if(msg.type==='FILE_DONE'){
     var tf=incoming[msg.transferId]; if(!tf) return;
-    var blob=new Blob(tf.chunks.map(function(c){return new Uint8Array(c);}),
-                      {type:tf.mime||'application/octet-stream'});
+    var blob=new Blob(tf.chunks.map(function(c){return new Uint8Array(c);}),{type:tf.mime||'application/octet-stream'});
     var url=URL.createObjectURL(blob);
     updateTf(msg.transferId,{done:true,dlUrl:url,dlName:tf.name});
     delete incoming[msg.transferId];
     sRecv++; sMbIn+=tf.size/1048576; updateStats();
     toast('Received: '+tf.name);
-    if(role==='hub') relayExcept(enc(msg),fromId);
   }
 }
 
-function relayExcept(data,exceptId) {
-  Object.entries(peerConns).forEach(function(entry){
-    var id=entry[0],conn=entry[1];
-    if(id!==exceptId&&conn.open){ try{ conn.send(data); }catch(e){} }
-  });
-}
-
 // ═══════════════════════════════════════════════════════
-//  REPLAY SHELF to a newly joined peer
+//  REPLAY SHELF to late-joiner
 // ═══════════════════════════════════════════════════════
 function replayShelf(conn) {
   if(!shelf.length) return;
@@ -1075,15 +936,13 @@ function replayShelf(conn) {
     if(item.type==='text'){
       try{ conn.send(enc({type:'TEXT_MSG',msgId:item.msgId,text:item.text})); }catch(e){}
     } else if(item.type==='file'){
-      var total=item.total;
       try{ conn.send(enc({type:'FILE_META',transferId:item.tfId,
-                          name:item.name,size:item.size,mime:item.mime,chunks:total})); }
+                          name:item.name,size:item.size,mime:item.mime,chunks:item.total})); }
       catch(e){ return; }
-      // send all chunks, then FILE_DONE
       var buf=item.buf, i=0;
       (function sendNext(){
         if(!conn.open) return;
-        if(i>=total){
+        if(i>=item.total){
           try{ conn.send(enc({type:'FILE_DONE',transferId:item.tfId})); }catch(e){}
           return;
         }
@@ -1092,8 +951,7 @@ function replayShelf(conn) {
         var msg=new Uint8Array(hdr.byteLength+slice.byteLength);
         msg.set(hdr); msg.set(new Uint8Array(slice),hdr.byteLength);
         try{ conn.send(msg.buffer); }catch(e){ return; }
-        i++;
-        setTimeout(sendNext,0);
+        i++; setTimeout(sendNext,0);
       })();
     }
   });
@@ -1113,15 +971,12 @@ function fileIcon(m) {
   return '\uD83D\uDCC4';
 }
 function fmtSize(b) {
-  if(b<1024) return b+' B';
-  if(b<1048576) return (b/1024).toFixed(1)+' KB';
-  return (b/1048576).toFixed(1)+' MB';
+  if(b<1024) return b+' B'; if(b<1048576) return (b/1024).toFixed(1)+' KB'; return (b/1048576).toFixed(1)+' MB';
 }
 
 function addTf(tf) {
   document.getElementById('tf-wrap').style.display='block';
-  var div=document.createElement('div');
-  div.className='tf-item'; div.id='tf-'+tf.id;
+  var div=document.createElement('div'); div.className='tf-item'; div.id='tf-'+tf.id;
   div.innerHTML=
     '<div class="tf-ico">'+fileIcon(tf.mime)+'</div>'+
     '<div class="tf-info">'+
@@ -1137,8 +992,7 @@ function updateTf(id,ch) {
   var el=document.getElementById('tf-'+id); if(!el) return;
   if(ch.pct!==undefined){
     var b=document.getElementById('tb-'+id), p=document.getElementById('tp-'+id);
-    if(b) b.style.width=ch.pct+'%';
-    if(p) p.textContent=ch.pct+'%';
+    if(b) b.style.width=ch.pct+'%'; if(p) p.textContent=ch.pct+'%';
   }
   if(ch.done){
     var tag=document.getElementById('tt-'+id), wrap=el.querySelector('.tf-bar-wrap');
@@ -1147,17 +1001,13 @@ function updateTf(id,ch) {
     if(ch.dlUrl){
       var a=document.createElement('a'); a.href=ch.dlUrl; a.download=ch.dlName||'file';
       a.className='dl-btn'; a.textContent='Save'; el.appendChild(a);
-      // no auto-download — user taps Save
     }
   }
 }
 
 function clearDone() {
-  document.querySelectorAll('.tf-item').forEach(function(el){
-    if(el.querySelector('.tt-d')) el.remove();
-  });
-  if(!document.getElementById('tf-list').children.length)
-    document.getElementById('tf-wrap').style.display='none';
+  document.querySelectorAll('.tf-item').forEach(function(el){ if(el.querySelector('.tt-d')) el.remove(); });
+  if(!document.getElementById('tf-list').children.length) document.getElementById('tf-wrap').style.display='none';
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1168,26 +1018,15 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('btn-create').addEventListener('click',function(){ createRoom(); });
   document.getElementById('btn-join').addEventListener('click',function(){ goTo('page-join'); });
 
-  var ci=document.getElementById('code-input');
-  var jb=document.getElementById('join-btn');
-
+  var ci=document.getElementById('code-input'), jb=document.getElementById('join-btn');
   ci.addEventListener('input',function(){
     ci.classList.remove('err','ok');
     document.getElementById('join-msg').textContent='';
-    var v=ci.value.replace(/\D/g,'');
-    ci.value=v;
-    jb.disabled=v.length!==4;
-    if(v.length===4) ci.classList.add('ok');
+    var v=ci.value.replace(/\D/g,''); ci.value=v;
+    jb.disabled=v.length!==4; if(v.length===4) ci.classList.add('ok');
   });
-
-  ci.addEventListener('keydown',function(e){
-    if(e.key==='Enter'&&!jb.disabled) jb.click();
-  });
-
-  jb.addEventListener('click',function(){
-    var code=ci.value.trim();
-    if(code.length===4) joinRoom(code);
-  });
+  ci.addEventListener('keydown',function(e){ if(e.key==='Enter'&&!jb.disabled) jb.click(); });
+  jb.addEventListener('click',function(){ var code=ci.value.trim(); if(code.length===4) joinRoom(code); });
 
   document.getElementById('join-back').addEventListener('click',function(){
     document.getElementById('join-spinner').classList.remove('on');
@@ -1202,43 +1041,23 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('clear-btn').addEventListener('click',clearDone);
 
   document.getElementById('regen-btn').addEventListener('click',function(){
-    Object.values(peerConns).forEach(function(c){try{c.close();}catch(e){}});
-    Object.keys(peerConns).forEach(function(k){delete peerConns[k];});
+    Object.values(peers).forEach(function(p){try{p.conn.close();}catch(e){}});
+    peers={};
     document.getElementById('members-list').innerHTML='<span class="members-empty" id="members-empty">No one connected yet</span>';
     document.getElementById('member-count').textContent='0';
     createRoom(randCode());
   });
 
   var dz=document.getElementById('drop-zone');
-  dz.addEventListener('dragover',function(e){
-    e.preventDefault();
-    if(!dz.classList.contains('off')) dz.classList.add('over');
-  });
+  dz.addEventListener('dragover',function(e){ e.preventDefault(); if(!dz.classList.contains('off')) dz.classList.add('over'); });
   dz.addEventListener('dragleave',function(){ dz.classList.remove('over'); });
-  dz.addEventListener('drop',function(e){
-    e.preventDefault(); dz.classList.remove('over');
-    if(!dz.classList.contains('off')) sendFiles(e.dataTransfer.files);
-  });
-  dz.addEventListener('click',function(){
-    if(!dz.classList.contains('off')) document.getElementById('file-input').click();
-  });
-  document.getElementById('file-input').addEventListener('change',function(e){
-    if(e.target.files.length) sendFiles(e.target.files);
-    e.target.value='';
-  });
+  dz.addEventListener('drop',function(e){ e.preventDefault(); dz.classList.remove('over'); if(!dz.classList.contains('off')) sendFiles(e.dataTransfer.files); });
+  dz.addEventListener('click',function(){ if(!dz.classList.contains('off')) document.getElementById('file-input').click(); });
+  document.getElementById('file-input').addEventListener('change',function(e){ if(e.target.files.length) sendFiles(e.target.files); e.target.value=''; });
 
-  var txtArea=document.getElementById('text-input');
-  var sendBtn=document.getElementById('send-txt-btn');
-  txtArea.addEventListener('input',function(){
-    txtArea.style.height='';
-    txtArea.style.height=Math.min(txtArea.scrollHeight,100)+'px';
-  });
-  txtArea.addEventListener('keydown',function(e){
-    if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){
-      e.preventDefault();
-      if(!sendBtn.disabled) sendText();
-    }
-  });
+  var txtArea=document.getElementById('text-input'), sendBtn=document.getElementById('send-txt-btn');
+  txtArea.addEventListener('input',function(){ txtArea.style.height=''; txtArea.style.height=Math.min(txtArea.scrollHeight,100)+'px'; });
+  txtArea.addEventListener('keydown',function(e){ if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); if(!sendBtn.disabled) sendText(); } });
   sendBtn.addEventListener('click',sendText);
 
   var code=new URLSearchParams(location.search).get('code');
@@ -1247,7 +1066,6 @@ document.addEventListener('DOMContentLoaded',function(){
     goTo('page-join');
     setTimeout(function(){ joinRoom(code); },350);
   }
-
 });
 </script>
 </body>
