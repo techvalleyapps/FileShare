@@ -550,8 +550,37 @@ function getOpenPeers() {
   return Object.values(peers).filter(function(p){ return p.open&&p.conn&&p.conn.open; });
 }
 
+function getOpenPeerIds() {
+  return Object.keys(peers).filter(function(id){
+    return peers[id]&&peers[id].open&&peers[id].conn&&peers[id].conn.open;
+  });
+}
+
 function broadcastData(data) {
   getOpenPeers().forEach(function(p){ try{ p.conn.send(data); }catch(e){} });
+}
+
+function connectToPeer(peerId) {
+  if(!peerId||!myPeer||myPeer.destroyed) return;
+  if(peerId===myPeer.id) return;
+  if(peers[peerId]&&peers[peerId].conn&&peers[peerId].conn.open) return;
+  var c=myPeer.connect(peerId,{reliable:true,serialization:'raw'});
+  wireConn(c,true);
+}
+
+function announcePeers() {
+  var openIds=getOpenPeerIds();
+  openIds.forEach(function(id){
+    var peer=peers[id];
+    if(!peer||!peer.conn||!peer.conn.open) return;
+    try{
+      peer.conn.send(enc({
+        type:'PEER_LIST',
+        peers:openIds.filter(function(otherId){ return otherId!==id; }),
+        roomCode:roomCode
+      }));
+    }catch(e){}
+  });
 }
 
 function enableDrop(hasPeers) {
@@ -703,6 +732,7 @@ function wireConn(conn, isOutbound) {
       // Send shelf history
       replayShelf(conn);
     }
+    announcePeers();
     toast('Someone joined the room');
   }
 
@@ -713,8 +743,8 @@ function wireConn(conn, isOutbound) {
     if(msg) handleControl(msg,id);
     else    handleChunk(raw,id);
   });
-  conn.on('close', function() { dropPeer(id); });
-  conn.on('error', function() { dropPeer(id); });
+  conn.on('close', function() { dropPeer(id, conn); });
+  conn.on('error', function() { dropPeer(id, conn); });
 
   if(conn.open) markConnOpen();
 }
@@ -736,7 +766,8 @@ function addMemberUI(id) {
   });
 }
 
-function dropPeer(id) {
+function dropPeer(id, conn) {
+  if(conn&&peers[id]&&peers[id].conn!==conn) return;
   if(peers[id]) peers[id].open=false;
   delete peers[id];
   ['members-list','members-list-peer'].forEach(function(listId){
@@ -744,6 +775,7 @@ function dropPeer(id) {
     if(el) el.remove();
   });
   updatePeerUI();
+  announcePeers();
   toast('A member left');
 }
 
@@ -909,10 +941,7 @@ function handleControl(msg, fromId) {
   // Mesh: connect to all other peers we don't know yet
   if(msg.type==='PEER_LIST'){
     msg.peers.forEach(function(peerId){
-      if(!peers[peerId]&&myPeer&&!myPeer.destroyed){
-        var c=myPeer.connect(peerId,{reliable:true,serialization:'raw'});
-        wireConn(c,true);
-      }
+      connectToPeer(peerId);
     });
     return;
   }
