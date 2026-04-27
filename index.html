@@ -84,7 +84,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex
 /* ── Room layout (chat + sidebar) ── */
 .room-layout{flex:1;display:flex;overflow:hidden;min-height:0}
 .room-sidebar{display:none;flex-direction:column;align-items:center;gap:14px;
-  width:210px;flex-shrink:0;border-left:1px solid var(--border);
+  width:210px;flex-shrink:0;border-right:1px solid var(--border);
   padding:22px 16px;overflow-y:auto;background:var(--bg2)}
 @media(min-width:700px){.room-sidebar{display:flex}}
 .sb-lbl{font-size:10px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.1em;text-align:center}
@@ -169,7 +169,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex
 .send-btn{width:40px;height:40px;border-radius:50%;background:var(--accent);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0}
 .send-btn:hover{background:#6ee79b}
 .send-btn:active{transform:scale(.92)}
-.send-btn:disabled{background:var(--bg4);cursor:default;transform:none}
+.send-btn:disabled{background:var(--bg3);border:1px solid var(--border2);cursor:default;transform:none;opacity:.45}
 
 /* ── Modal (room info) ── */
 .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:flex-end;justify-content:center;z-index:100;padding:16px}
@@ -270,24 +270,24 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex
   </header>
 
   <div class="room-layout">
-    <div class="chat-wrap">
-      <div class="chat-area" id="chat-area">
-        <div class="empty-state" id="empty-state">
-          <div class="empty-icon">📡</div>
-          <div class="empty-label">Share the code with your team</div>
-          <div class="empty-code" id="empty-code">----</div>
-          <div class="empty-label" style="font-size:11px">Tap the code above to show QR · or see sidebar →</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Desktop sidebar — always visible on wide screens -->
+    <!-- Desktop sidebar — left side, always visible on wide screens -->
     <div class="room-sidebar">
       <div class="sb-lbl">Room code</div>
       <div class="sb-code" id="sidebar-code" onclick="copyCode()" title="Click to copy">----</div>
       <canvas id="qr-canvas-side"></canvas>
       <div class="sb-note">Share with anyone<br>on the same network</div>
       <button class="sb-copy" onclick="copyCode()">Copy code</button>
+    </div>
+
+    <div class="chat-wrap">
+      <div class="chat-area" id="chat-area">
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon">📡</div>
+          <div class="empty-label">Share the code with your team</div>
+          <div class="empty-code" id="empty-code">----</div>
+          <div class="empty-label" style="font-size:11px">Tap the code above to show QR</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -300,7 +300,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex
     <input type="file" id="file-input" class="file-input" multiple>
     <textarea class="text-input" id="text-input" placeholder="Message…" rows="1" aria-label="Type a message"></textarea>
     <button class="send-btn" id="send-btn" disabled aria-label="Send">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#052e16" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="color:#052e16">
         <path d="M12 19V5M5 12l7-7 7 7"/>
       </svg>
     </button>
@@ -333,7 +333,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex
 /* ─────────────────────────────────────────────
    Config & state
 ───────────────────────────────────────────── */
-var NS='fshr2-', CHUNK=262144, HB_MS=8000, HB_TO=25000;
+var NS='fshr2-', CHUNK=16384, HB_MS=8000, HB_TO=25000;
 var ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:global.stun.twilio.com:3478'}]};
 
 var myPeer=null, hostPeer=null, roomCode=null, isHost=false, isCreator=false;
@@ -610,13 +610,18 @@ function _pump(){
   _send1(item.file,item.id);
 }
 
+function _getDC(conn){
+  try{return conn.dataChannel||conn._dc||null;}catch(e){return null;}
+}
+
 function _send1(file,id){
   var total=Math.ceil(file.size/CHUNK)||1;
+  var mime=file.type||'application/octet-stream';
   var reader=new FileReader();
   reader.onload=function(){
     var buf=reader.result;
     shelf.push({type:'file',tfId:id,name:file.name,size:file.size,
-      mime:file.type||'application/octet-stream',buf:buf,total:total});
+      mime:mime,buf:buf,total:total});
     trimShelf();
 
     var live=openPeers();
@@ -627,11 +632,24 @@ function _send1(file,id){
     }
 
     broadcast(enc({type:'FILE_META',transferId:id,name:file.name,
-      size:file.size,mime:file.type||'application/octet-stream',chunks:total}));
+      size:file.size,mime:mime,chunks:total}));
 
-    var i=0;
+    // Set bufferedAmountLowThreshold on all data channels so we can use the event
+    live.forEach(function(p){
+      var dc=_getDC(p.conn);
+      if(dc)try{dc.bufferedAmountLowThreshold=CHUNK*4;}catch(e){}
+    });
+
+    var i=0,yieldEvery=8,yieldCount=0;
     function next(){
       var live2=openPeers();
+
+      // Abort if everyone left mid-transfer
+      if(!live2.length){
+        markTransferError(id,'No peers connected');
+        _sb=false;_pump();return;
+      }
+
       if(i>=total){
         live2.forEach(function(p){
           try{p.conn.send(enc({type:'FILE_DONE',transferId:id}));}catch(e){}
@@ -640,11 +658,26 @@ function _send1(file,id){
         _sb=false;_pump();
         toast('Sent: '+file.name);return;
       }
-      // Backpressure: pause if any peer buffer is filling up
+
+      // Backpressure: wait if any connected peer's buffer is too full
       var backed=live2.some(function(p){
-        try{var dc=p.conn.dataChannel||p.conn._dc;return dc&&dc.bufferedAmount>CHUNK*4;}catch(e){return false;}
+        var dc=_getDC(p.conn);
+        return dc&&dc.bufferedAmount>CHUNK*8;
       });
-      if(backed){setTimeout(next,50);return;}
+      if(backed){
+        // Use bufferedamountlow event if available, else poll
+        var triggered=false;
+        live2.forEach(function(p){
+          var dc=_getDC(p.conn);
+          if(dc&&!triggered){
+            triggered=true;
+            var resume=function(){dc.removeEventListener('bufferedamountlow',resume);next();};
+            dc.addEventListener('bufferedamountlow',resume);
+          }
+        });
+        if(!triggered)setTimeout(next,50);
+        return;
+      }
 
       var hdr=encHdr({type:'CHUNK',transferId:id,index:i});
       var sl=buf.slice(i*CHUNK,(i+1)*CHUNK);
@@ -652,9 +685,12 @@ function _send1(file,id){
       msg.set(hdr);msg.set(new Uint8Array(sl),hdr.byteLength);
       live2.forEach(function(p){try{p.conn.send(msg.buffer);}catch(e){}});
       updateProgress(id,Math.round(++i/total*100),file.type);
-      setTimeout(next,0);
+
+      // Yield to event loop every yieldEvery chunks to keep UI responsive
+      if(++yieldCount%yieldEvery===0)setTimeout(next,0);
+      else next();
     }
-    next();
+    setTimeout(next,0); // start async so FILE_META lands first
   };
   reader.readAsArrayBuffer(file);
 }
@@ -789,7 +825,7 @@ function replayShelf(conn){
           try{conn.send(enc({type:'FILE_DONE',transferId:item.tfId}));}catch(e){}
           setTimeout(next,0);return;
         }
-        try{var dc2=conn.dataChannel||conn._dc;if(dc2&&dc2.bufferedAmount>CHUNK*4){setTimeout(chunk,50);return;}}catch(e){}
+        var dc2=_getDC(conn);if(dc2&&dc2.bufferedAmount>CHUNK*8){setTimeout(chunk,50);return;}
         var hdr=encHdr({type:'CHUNK',transferId:item.tfId,index:ci});
         var sl=buf.slice(ci*CHUNK,(ci+1)*CHUNK);
         var out=new Uint8Array(hdr.byteLength+sl.byteLength);
@@ -823,10 +859,7 @@ function relayFileToOthers(tfId,origFromId){
         try{conn.send(enc({type:'FILE_DONE',transferId:item.tfId}));}catch(e){}
         return;
       }
-      try{
-        var dc=conn.dataChannel||conn._dc;
-        if(dc&&dc.bufferedAmount>CHUNK*4){setTimeout(chunk,50);return;}
-      }catch(e){}
+      var dc=_getDC(conn);if(dc&&dc.bufferedAmount>CHUNK*8){setTimeout(chunk,50);return;}
       var hdr=encHdr({type:'CHUNK',transferId:item.tfId,index:ci});
       var sl=buf.slice(ci*CHUNK,(ci+1)*CHUNK);
       var out=new Uint8Array(hdr.byteLength+sl.byteLength);
