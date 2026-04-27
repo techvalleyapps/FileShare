@@ -567,40 +567,52 @@ function trimShelf(){
     shelf.splice(idx,1);
   }
 }
+var _sq=[],_sb=false;
 function sendFiles(files){
   Array.prototype.forEach.call(files,function(file){
-    var tfId=crypto.randomUUID(),total=Math.ceil(file.size/CHUNK)||1;
+    var tfId=crypto.randomUUID();
     addTf({id:tfId,name:file.name,size:file.size,mime:file.type,dir:'send'});
-    var reader=new FileReader();
-    reader.onload=function(){
-      var buf=reader.result;
-      shelf.push({type:'file',tfId:tfId,name:file.name,size:file.size,mime:file.type||'application/octet-stream',buf:buf,total:total});
-      trimShelf();
-      var live=openPeers();
-      if(!live.length){
-        updateTf(tfId,{pct:100,done:true});sSent++;sMbOut+=file.size/1048576;updateStats();
-        toast('Saved \u2014 will send when someone joins');return;
-      }
-      broadcast(enc({type:'FILE_META',transferId:tfId,name:file.name,size:file.size,mime:file.type||'application/octet-stream',chunks:total}));
-      var i=0;
-      function next(){
-        var live2=openPeers();
-        if(i>=total){
-          live2.forEach(function(p){try{p.conn.send(enc({type:'FILE_DONE',transferId:tfId}));}catch(e){}});
-          updateTf(tfId,{done:true});sSent++;sMbOut+=file.size/1048576;updateStats();
-          toast('Sent: '+file.name);return;
-        }
-        var hdr=encHdr({type:'CHUNK',transferId:tfId,index:i});
-        var sl=buf.slice(i*CHUNK,(i+1)*CHUNK);
-        var msg=new Uint8Array(hdr.byteLength+sl.byteLength);
-        msg.set(hdr);msg.set(new Uint8Array(sl),hdr.byteLength);
-        live2.forEach(function(p){try{p.conn.send(msg.buffer);}catch(e){}});
-        updateTf(tfId,{pct:Math.round(++i/total*100)});setTimeout(next,0);
-      }
-      next();
-    };
-    reader.readAsArrayBuffer(file);
+    _sq.push({file:file,tfId:tfId});
   });
+  _pump();
+}
+function _pump(){
+  if(_sb||!_sq.length)return;
+  _sb=true;var item=_sq.shift();_send1(item.file,item.tfId);
+}
+function _send1(file,tfId){
+  var total=Math.ceil(file.size/CHUNK)||1;
+  var reader=new FileReader();
+  reader.onload=function(){
+    var buf=reader.result;
+    shelf.push({type:'file',tfId:tfId,name:file.name,size:file.size,mime:file.type||'application/octet-stream',buf:buf,total:total});
+    trimShelf();
+    var live=openPeers();
+    if(!live.length){
+      updateTf(tfId,{pct:100,done:true});sSent++;sMbOut+=file.size/1048576;updateStats();
+      toast('Saved \u2014 will send when someone joins');_sb=false;_pump();return;
+    }
+    broadcast(enc({type:'FILE_META',transferId:tfId,name:file.name,size:file.size,mime:file.type||'application/octet-stream',chunks:total}));
+    var i=0;
+    function next(){
+      var live2=openPeers();
+      if(i>=total){
+        live2.forEach(function(p){try{p.conn.send(enc({type:'FILE_DONE',transferId:tfId}));}catch(e){}});
+        updateTf(tfId,{done:true});sSent++;sMbOut+=file.size/1048576;updateStats();
+        toast('Sent: '+file.name);_sb=false;_pump();return;
+      }
+      var backed=live2.some(function(p){return p.conn.dataChannel&&p.conn.dataChannel.bufferedAmount>CHUNK*4;});
+      if(backed){setTimeout(next,50);return;}
+      var hdr=encHdr({type:'CHUNK',transferId:tfId,index:i});
+      var sl=buf.slice(i*CHUNK,(i+1)*CHUNK);
+      var msg=new Uint8Array(hdr.byteLength+sl.byteLength);
+      msg.set(hdr);msg.set(new Uint8Array(sl),hdr.byteLength);
+      live2.forEach(function(p){try{p.conn.send(msg.buffer);}catch(e){}});
+      updateTf(tfId,{pct:Math.round(++i/total*100)});setTimeout(next,0);
+    }
+    next();
+  };
+  reader.readAsArrayBuffer(file);
 }
 function sendText(){
   var ta=document.getElementById('text-input');
