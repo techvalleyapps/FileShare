@@ -84,7 +84,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 }
 .code-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center}
 .code-card-lbl{font-size:10px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
-.code-big{font-size:48px;font-weight:800;letter-spacing:.2em;color:var(--accent);font-family:var(--mono);line-height:1;margin-bottom:6px}
+.code-big{font-size:48px;font-weight:800;letter-spacing:.2em;color:var(--accent);font-family:var(--mono);line-height:1;margin-bottom:6px;cursor:pointer;user-select:none}
+.code-big:hover{color:#9ef5b8}
 .code-note{font-size:11px;color:var(--muted2);font-family:var(--mono);line-height:1.6;margin-bottom:12px}
 .regen-btn{font-size:11px;font-family:var(--mono);color:var(--muted);background:none;border:1px solid var(--border2);border-radius:6px;padding:5px 10px;cursor:pointer;transition:color .2s,border-color .2s}
 .regen-btn:hover{color:var(--accent);border-color:var(--accent)}
@@ -303,7 +304,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 <div class="toast" id="toast"></div>
 
 <script>
-var NS='fshr2-',CHUNK=65536,HB_MS=8000,HB_TO=25000;
+var NS='fshr2-',CHUNK=262144,HB_MS=8000,HB_TO=25000;
 var ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:global.stun.twilio.com:3478'}]};
 var myPeer=null,hostPeer=null,roomCode=null,isHost=false,isCreator=false;
 var peers={},incoming={},seenTxt={},seenFile={},shelf=[];
@@ -548,6 +549,23 @@ function generateQR(code){
   QRCode.toCanvas(document.getElementById('qr-canvas'),url,{width:140,margin:1,color:{dark:'#07070d',light:'#ffffff'}});
 }
 
+function requestNotifPerm(){
+  if('Notification' in window&&Notification.permission==='default')Notification.requestPermission();
+}
+function notify(title,body){
+  if('Notification' in window&&Notification.permission==='granted'&&document.hidden)
+    new Notification(title,{body:body,silent:false});
+}
+function trimShelf(){
+  var MAX=150*1048576;
+  var total=shelf.reduce(function(s,i){return s+(i.buf?i.buf.byteLength:0);},0);
+  while(total>MAX){
+    var idx=shelf.findIndex(function(i){return i.type==='file';});
+    if(idx===-1)break;
+    total-=(shelf[idx].buf?shelf[idx].buf.byteLength:0);
+    shelf.splice(idx,1);
+  }
+}
 function sendFiles(files){
   Array.prototype.forEach.call(files,function(file){
     var tfId=crypto.randomUUID(),total=Math.ceil(file.size/CHUNK)||1;
@@ -556,6 +574,7 @@ function sendFiles(files){
     reader.onload=function(){
       var buf=reader.result;
       shelf.push({type:'file',tfId:tfId,name:file.name,size:file.size,mime:file.type||'application/octet-stream',buf:buf,total:total});
+      trimShelf();
       var live=openPeers();
       if(!live.length){
         updateTf(tfId,{pct:100,done:true});sSent++;sMbOut+=file.size/1048576;updateStats();
@@ -622,7 +641,8 @@ function handleControl(msg,fromId){
     seenTxt[msg.msgId]=true;
     shelf.push({type:'text',msgId:msg.msgId,text:msg.text});
     addTextItem(msg.msgId,msg.text,false);
-    sRecv++;updateStats();return;
+    sRecv++;updateStats();
+    notify('FileShare','New message from room '+roomCode);return;
   }
   if(msg.type==='FILE_META'){
     if(seenFile[msg.transferId]||incoming[msg.transferId])return;
@@ -637,12 +657,15 @@ function handleControl(msg,fromId){
     updateTf(msg.transferId,{done:true,dlUrl:url,dlName:tf.name});
     seenFile[msg.transferId]=true;
     blob.arrayBuffer().then(function(ab){
-      if(!shelf.some(function(s){return s.type==='file'&&s.tfId===msg.transferId;}))
+      if(!shelf.some(function(s){return s.type==='file'&&s.tfId===msg.transferId;})){
         shelf.push({type:'file',tfId:msg.transferId,name:tf.name,size:tf.size,mime:tf.mime||'application/octet-stream',buf:ab,total:tf.total});
+        trimShelf();
+      }
     });
     delete incoming[msg.transferId];
     sRecv++;sMbIn+=tf.size/1048576;updateStats();
-    toast('Received: '+tf.name);return;
+    toast('Received: '+tf.name);
+    notify('FileShare','Received: '+tf.name);return;
   }
 }
 
@@ -687,7 +710,7 @@ function updateTf(id,ch){
   if(ch.done){
     var tag=document.getElementById('tt-'+id),wrap=el.querySelector('.tf-bar-wrap');
     if(tag){tag.textContent='Done';tag.className='tf-tag tt-d';}if(wrap)wrap.style.display='none';
-    if(ch.dlUrl){var a=document.createElement('a');a.href=ch.dlUrl;a.download=ch.dlName||'file';a.className='dl-btn';a.textContent='Save';el.appendChild(a);}
+    if(ch.dlUrl){var a=document.createElement('a');a.href=ch.dlUrl;a.download=ch.dlName||'file';a.className='dl-btn';a.textContent='Save';a.addEventListener('click',function(){var u=this.href;setTimeout(function(){URL.revokeObjectURL(u);},10000);});el.appendChild(a);}
   }
   if(ch.error){var t2=document.getElementById('tt-'+id),w2=el.querySelector('.tf-bar-wrap');if(t2){t2.textContent=ch.error;t2.className='tf-tag tt-e';}if(w2)w2.style.display='none';}
 }
@@ -710,7 +733,7 @@ function copyText(btn,text){
 
 document.addEventListener('DOMContentLoaded',function(){
   startHB();
-  document.getElementById('btn-create').addEventListener('click',function(){createRoom();});
+  document.getElementById('btn-create').addEventListener('click',function(){requestNotifPerm();createRoom();});
   document.getElementById('btn-join').addEventListener('click',function(){goTo('page-join');});
   var ci=document.getElementById('code-input'),jb=document.getElementById('join-btn');
   ci.addEventListener('input',function(){
@@ -720,7 +743,7 @@ document.addEventListener('DOMContentLoaded',function(){
     jb.disabled=v.length!==4;if(v.length===4)ci.classList.add('ok');
   });
   ci.addEventListener('keydown',function(e){if(e.key==='Enter'&&!jb.disabled)jb.click();});
-  jb.addEventListener('click',function(){var c=ci.value.trim();if(c.length===4)joinRoom(c);});
+  jb.addEventListener('click',function(){var c=ci.value.trim();if(c.length===4){requestNotifPerm();joinRoom(c);}});
   document.getElementById('join-back').addEventListener('click',function(){
     document.getElementById('join-spinner').classList.remove('on');
     ci.value='';jb.disabled=true;document.getElementById('join-msg').textContent='';
@@ -730,6 +753,10 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('room-back').addEventListener('click',leaveRoom);
   document.getElementById('peer-leave').addEventListener('click',leaveRoom);
   document.getElementById('clear-btn').addEventListener('click',clearDone);
+  document.getElementById('code-display').addEventListener('click',function(){
+    if(!roomCode)return;
+    navigator.clipboard.writeText(roomCode).then(function(){toast('Code copied!');}).catch(function(){});
+  });
   document.getElementById('regen-btn').addEventListener('click',function(){
     if(!isHost)return;
     openPeers().forEach(function(p){try{p.conn.close();}catch(e){}});
