@@ -81,8 +81,22 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex
 .spinner{width:34px;height:34px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* ── Room layout (chat + sidebar) ── */
+.room-layout{flex:1;display:flex;overflow:hidden;min-height:0}
+.room-sidebar{display:none;flex-direction:column;align-items:center;gap:14px;
+  width:210px;flex-shrink:0;border-left:1px solid var(--border);
+  padding:22px 16px;overflow-y:auto;background:var(--bg2)}
+@media(min-width:700px){.room-sidebar{display:flex}}
+.sb-lbl{font-size:10px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.1em;text-align:center}
+.sb-code{font-size:38px;font-weight:800;letter-spacing:.2em;color:var(--accent);font-family:var(--mono);line-height:1;cursor:pointer;transition:color .18s;user-select:all;text-align:center}
+.sb-code:hover{color:#6ee79b}
+#qr-canvas-side{width:152px!important;height:152px!important;border-radius:9px;display:block;background:#fff;padding:6px;flex-shrink:0}
+.sb-note{font-size:11px;color:var(--muted2);font-family:var(--mono);line-height:1.65;text-align:center}
+.sb-copy{width:100%;padding:9px;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;font-size:12px;font-family:var(--mono);color:var(--muted2);cursor:pointer;transition:all .18s}
+.sb-copy:hover{color:var(--text);border-color:var(--accent);background:var(--bg4)}
+
 /* ── Chat ── */
-.chat-wrap{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.chat-wrap{flex:1;overflow:hidden;display:flex;flex-direction:column;min-width:0}
 .chat-area{flex:1;overflow-y:auto;padding:12px 12px 6px;display:flex;flex-direction:column;gap:2px;overscroll-behavior:contain}
 .chat-area::-webkit-scrollbar{width:3px}
 .chat-area::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
@@ -255,14 +269,25 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex
     </div>
   </header>
 
-  <div class="chat-wrap">
-    <div class="chat-area" id="chat-area">
-      <div class="empty-state" id="empty-state">
-        <div class="empty-icon">📡</div>
-        <div class="empty-label">Share the code with your team</div>
-        <div class="empty-code" id="empty-code">----</div>
-        <div class="empty-label" style="font-size:11px">Tap the code above to show QR</div>
+  <div class="room-layout">
+    <div class="chat-wrap">
+      <div class="chat-area" id="chat-area">
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon">📡</div>
+          <div class="empty-label">Share the code with your team</div>
+          <div class="empty-code" id="empty-code">----</div>
+          <div class="empty-label" style="font-size:11px">Tap the code above to show QR · or see sidebar →</div>
+        </div>
       </div>
+    </div>
+
+    <!-- Desktop sidebar — always visible on wide screens -->
+    <div class="room-sidebar">
+      <div class="sb-lbl">Room code</div>
+      <div class="sb-code" id="sidebar-code" onclick="copyCode()" title="Click to copy">----</div>
+      <canvas id="qr-canvas-side"></canvas>
+      <div class="sb-note">Share with anyone<br>on the same network</div>
+      <button class="sb-copy" onclick="copyCode()">Copy code</button>
     </div>
   </div>
 
@@ -617,7 +642,7 @@ function _send1(file,id){
       }
       // Backpressure: pause if any peer buffer is filling up
       var backed=live2.some(function(p){
-        return p.conn.dataChannel&&p.conn.dataChannel.bufferedAmount>CHUNK*4;
+        try{var dc=p.conn.dataChannel||p.conn._dc;return dc&&dc.bufferedAmount>CHUNK*4;}catch(e){return false;}
       });
       if(backed){setTimeout(next,50);return;}
 
@@ -658,8 +683,6 @@ function handleChunk(raw,fromId){
   if(raw instanceof ArrayBuffer)buf=new Uint8Array(raw);
   else if(raw instanceof Blob){raw.arrayBuffer().then(function(ab){handleChunk(ab,fromId);});return;}
   else return;
-  // Host relays raw chunk to everyone except sender
-  if(isHost)broadcastExcept(buf.buffer,fromId);
   try{
     var hdr=JSON.parse(new TextDecoder().decode(buf.slice(0,256)).trim());
     if(hdr.type==='CHUNK'){
@@ -702,7 +725,6 @@ function handleControl(msg,fromId){
 
   if(msg.type==='FILE_META'){
     if(seenFile[msg.transferId]||incoming[msg.transferId])return;
-    if(isHost)broadcastExcept(enc(msg),fromId);
     incoming[msg.transferId]={
       name:msg.name,size:msg.size,mime:msg.mime,
       total:msg.chunks,chunks:new Array(msg.chunks),
@@ -719,20 +741,22 @@ function handleControl(msg,fromId){
   if(msg.type==='FILE_DONE'){
     if(seenFile[msg.transferId])return;
     var tf=incoming[msg.transferId];if(!tf)return;
-    if(isHost)broadcastExcept(enc(msg),fromId);
+    seenFile[msg.transferId]=true;
 
     var blob=new Blob(tf.chunks.map(function(c){return new Uint8Array(c);}),
       {type:tf.mime||'application/octet-stream'});
     var url=URL.createObjectURL(blob);
     finalizeTransfer(msg.transferId,url,tf.name,tf.mime);
-    seenFile[msg.transferId]=true;
 
+    var tfId=msg.transferId,origFrom=fromId;
     blob.arrayBuffer().then(function(ab){
-      if(!shelf.some(function(s){return s.type==='file'&&s.tfId===msg.transferId;})){
-        shelf.push({type:'file',tfId:msg.transferId,name:tf.name,size:tf.size,
+      if(!shelf.some(function(s){return s.type==='file'&&s.tfId===tfId;})){
+        shelf.push({type:'file',tfId:tfId,name:tf.name,size:tf.size,
           mime:tf.mime||'application/octet-stream',buf:ab,total:tf.total});
         trimShelf();
       }
+      // Host: after fully receiving, relay the complete assembled file to other peers
+      if(isHost)relayFileToOthers(tfId,origFrom);
     });
     delete incoming[msg.transferId];
     notify('FileShare','Received: '+tf.name);
@@ -765,9 +789,7 @@ function replayShelf(conn){
           try{conn.send(enc({type:'FILE_DONE',transferId:item.tfId}));}catch(e){}
           setTimeout(next,0);return;
         }
-        if(conn.dataChannel&&conn.dataChannel.bufferedAmount>CHUNK*4){
-          setTimeout(chunk,50);return;
-        }
+        try{var dc2=conn.dataChannel||conn._dc;if(dc2&&dc2.bufferedAmount>CHUNK*4){setTimeout(chunk,50);return;}}catch(e){}
         var hdr=encHdr({type:'CHUNK',transferId:item.tfId,index:ci});
         var sl=buf.slice(ci*CHUNK,(ci+1)*CHUNK);
         var out=new Uint8Array(hdr.byteLength+sl.byteLength);
@@ -778,6 +800,41 @@ function replayShelf(conn){
     }else{setTimeout(next,0);}
   }
   next();
+}
+
+/* ─────────────────────────────────────────────
+   Host relay — send complete file to all peers except sender
+   Called after host has fully assembled a received file.
+───────────────────────────────────────────── */
+function relayFileToOthers(tfId,origFromId){
+  var item=shelf.find(function(s){return s.type==='file'&&s.tfId===tfId;});
+  if(!item||!item.buf)return;
+  openPeers().forEach(function(p){
+    if(p.conn.peer===origFromId)return;  // don't send back to original sender
+    var conn=p.conn;
+    try{
+      conn.send(enc({type:'FILE_META',transferId:item.tfId,name:item.name,
+        size:item.size,mime:item.mime,chunks:item.total}));
+    }catch(e){return;}
+    var buf=item.buf,ci=0;
+    (function chunk(){
+      if(!conn.open)return;
+      if(ci>=item.total){
+        try{conn.send(enc({type:'FILE_DONE',transferId:item.tfId}));}catch(e){}
+        return;
+      }
+      try{
+        var dc=conn.dataChannel||conn._dc;
+        if(dc&&dc.bufferedAmount>CHUNK*4){setTimeout(chunk,50);return;}
+      }catch(e){}
+      var hdr=encHdr({type:'CHUNK',transferId:item.tfId,index:ci});
+      var sl=buf.slice(ci*CHUNK,(ci+1)*CHUNK);
+      var out=new Uint8Array(hdr.byteLength+sl.byteLength);
+      out.set(hdr);out.set(new Uint8Array(sl),hdr.byteLength);
+      try{conn.send(out.buffer);}catch(e){return;}
+      ci++;setTimeout(chunk,0);
+    })();
+  });
 }
 
 /* ─────────────────────────────────────────────
@@ -903,12 +960,15 @@ function applyRoomCode(code){
   document.getElementById('rp-code').textContent=code;
   document.getElementById('modal-code').textContent=code;
   var ec=document.getElementById('empty-code');if(ec)ec.textContent=code;
+  var sc=document.getElementById('sidebar-code');if(sc)sc.textContent=code;
   generateQR(code);
 }
 function generateQR(code){
   var url=location.href.split('?')[0]+'?code='+code;
-  QRCode.toCanvas(document.getElementById('qr-canvas'),url,
-    {width:164,margin:1,color:{dark:'#0d0d14',light:'#ffffff'}});
+  var opts={width:164,margin:1,color:{dark:'#0d0d14',light:'#ffffff'}};
+  QRCode.toCanvas(document.getElementById('qr-canvas'),url,opts,function(){});
+  var side=document.getElementById('qr-canvas-side');
+  if(side)QRCode.toCanvas(side,url,{width:152,margin:1,color:{dark:'#0d0d14',light:'#ffffff'}},function(){});
 }
 
 function createRoom(code){
