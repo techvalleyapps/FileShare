@@ -327,6 +327,7 @@ function tryParse(raw){
 function openPeers(){return Object.values(peers).filter(function(p){return p.open&&p.conn&&p.conn.open;});}
 function openIds(){return Object.keys(peers).filter(function(id){return peers[id]&&peers[id].open&&peers[id].conn&&peers[id].conn.open;});}
 function broadcast(data){openPeers().forEach(function(p){try{p.conn.send(data);}catch(e){}});}
+function broadcastExcept(data,excludeId){openPeers().forEach(function(p){if(p.conn.peer!==excludeId)try{p.conn.send(data);}catch(e){}});}
 function goTo(id){document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});var t=document.getElementById(id);if(t){t.classList.add('active');window.scrollTo(0,0);}}
 function setStat(cls,txt){var d=document.getElementById('sdot'),t=document.getElementById('stext');if(d)d.className='sdot '+cls;if(t)t.textContent=txt;}
 function toast(msg,dur){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(function(){el.classList.remove('on');},dur||2500);}
@@ -617,11 +618,12 @@ function handleChunk(raw,fromId){
   if(raw instanceof ArrayBuffer)buf=new Uint8Array(raw);
   else if(raw instanceof Blob){raw.arrayBuffer().then(function(ab){handleChunk(ab,fromId);});return;}
   else return;
+  if(isHost)broadcastExcept(buf.buffer,fromId);
   try{
     var hdr=JSON.parse(new TextDecoder().decode(buf.slice(0,256)).trim());
     if(hdr.type==='CHUNK'){
       var tf=incoming[hdr.transferId];if(!tf)return;
-      tf.chunks[hdr.index]=buf.slice(256);tf.received++;
+      if(!tf.seen.has(hdr.index)){tf.seen.add(hdr.index);tf.chunks[hdr.index]=buf.slice(256);tf.received++;}
       updateTf(hdr.transferId,{pct:Math.round(tf.received/tf.total*100)});
     }
   }catch(e){}
@@ -639,6 +641,7 @@ function handleControl(msg,fromId){
   if(msg.type==='TEXT_MSG'){
     if(seenTxt[msg.msgId])return;
     seenTxt[msg.msgId]=true;
+    if(isHost)broadcastExcept(enc(msg),fromId);
     shelf.push({type:'text',msgId:msg.msgId,text:msg.text});
     addTextItem(msg.msgId,msg.text,false);
     sRecv++;updateStats();
@@ -646,12 +649,14 @@ function handleControl(msg,fromId){
   }
   if(msg.type==='FILE_META'){
     if(seenFile[msg.transferId]||incoming[msg.transferId])return;
-    incoming[msg.transferId]={name:msg.name,size:msg.size,mime:msg.mime,total:msg.chunks,chunks:new Array(msg.chunks),received:0,fromId:fromId};
+    if(isHost)broadcastExcept(enc(msg),fromId);
+    incoming[msg.transferId]={name:msg.name,size:msg.size,mime:msg.mime,total:msg.chunks,chunks:new Array(msg.chunks),received:0,fromId:fromId,seen:new Set()};
     addTf({id:msg.transferId,name:msg.name,size:msg.size,mime:msg.mime,dir:'recv'});return;
   }
   if(msg.type==='FILE_DONE'){
     if(seenFile[msg.transferId])return;
     var tf=incoming[msg.transferId];if(!tf)return;
+    if(isHost)broadcastExcept(enc(msg),fromId);
     var blob=new Blob(tf.chunks.map(function(c){return new Uint8Array(c);}),{type:tf.mime||'application/octet-stream'});
     var url=URL.createObjectURL(blob);
     updateTf(msg.transferId,{done:true,dlUrl:url,dlName:tf.name});
