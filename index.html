@@ -356,13 +356,36 @@ function encHdr(o){return new TextEncoder().encode(JSON.stringify(o).padEnd(256,
 function fmtSize(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB';}
 function fmtTime(){var d=new Date();return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');}
 function isImage(mime){return mime&&mime.startsWith('image/');}
-/* Turn URLs into clickable links while keeping everything else HTML-escaped */
+/* Turn URLs into clickable links while keeping everything else HTML-escaped.
+   Handles: https://..., http://..., and bare domains like google.com, google.co.uk */
 function linkify(text){
-  var parts=text.split(/(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/gi);
-  return parts.map(function(p){
-    return /^https?:\/\//i.test(p)
-      ?'<a href="'+esc(p)+'" target="_blank" rel="noopener noreferrer" class="msg-link">'+esc(p)+'</a>'
-      :esc(p);
+  // Process token-by-token (split on whitespace, preserve it for pre-wrap)
+  return text.split(/(\s+)/).map(function(token){
+    if(!token||/^\s+$/.test(token))return esc(token);
+
+    // Peel leading brackets/quotes that aren't part of the URL
+    var lead='',trail='';
+    var lm=token.match(/^([([\['"]+)/);if(lm){lead=lm[1];token=token.slice(lead.length);}
+    // Peel trailing punctuation unlikely to be part of URL
+    var tm=token.match(/([\])'",;:!?]+)$/);if(tm){trail=tm[1];token=token.slice(0,-trail.length);}
+    if(!token)return esc(lead+trail);
+
+    var href=null,display=token;
+    if(/^https?:\/\//i.test(token)){
+      // Already has scheme
+      href=token;
+    }else if(/^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?:[/?#].*)?$/i.test(token)
+             &&token.indexOf('.')!==-1){
+      // Bare domain: google.com, google.co.uk, example.com/path?q=1 etc.
+      href='https://'+token;
+    }
+
+    if(href){
+      return esc(lead)
+        +'<a href="'+esc(href)+'" target="_blank" rel="noopener noreferrer" class="msg-link">'+esc(display)+'</a>'
+        +esc(trail);
+    }
+    return esc(lead+token+trail);
   }).join('');
 }
 function fileIcon(m){
