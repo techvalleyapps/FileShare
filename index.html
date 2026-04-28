@@ -136,6 +136,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex
 .sent .msg-img{border-bottom-right-radius:4px}
 .recv .msg-img{border-bottom-left-radius:4px}
 .img-time{position:absolute;bottom:6px;right:10px;font-size:10px;font-family:var(--mono);color:#fff;background:rgba(0,0,0,.45);padding:2px 6px;border-radius:6px;pointer-events:none}
+.img-dl{position:absolute;bottom:6px;left:8px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.52);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:13px;text-decoration:none;transition:background .15s;z-index:2}
+.img-dl:hover{background:rgba(0,0,0,.8)}
 .img-placeholder{display:flex;align-items:center;justify-content:center;min-width:180px;min-height:120px;background:var(--bg4);color:var(--muted);font-size:12px;font-family:var(--mono)}
 
 /* file card */
@@ -166,10 +168,11 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex
 .text-input{flex:1;min-height:40px;max-height:120px;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:10px 16px;font-family:var(--sans);font-size:15px;color:var(--text);resize:none;outline:none;line-height:1.4;transition:border-color .18s;overflow-y:auto}
 .text-input:focus{border-color:var(--accent)}
 .text-input::placeholder{color:var(--muted)}
-.send-btn{width:40px;height:40px;border-radius:50%;background:var(--accent);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0}
+.send-btn{width:40px;height:40px;border-radius:50%;background:var(--accent);border:2px solid transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0}
 .send-btn:hover{background:#6ee79b}
 .send-btn:active{transform:scale(.92)}
-.send-btn:disabled{background:var(--bg3);border:1px solid var(--border2);cursor:default;transform:none;opacity:.45}
+.send-btn:disabled{background:transparent;border-color:var(--muted);cursor:default;transform:none}
+.send-btn:disabled .send-icon{stroke:var(--muted)}
 
 /* ── Modal (room info) ── */
 .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:flex-end;justify-content:center;z-index:100;padding:16px}
@@ -300,7 +303,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex
     <input type="file" id="file-input" class="file-input" multiple>
     <textarea class="text-input" id="text-input" placeholder="Message…" rows="1" aria-label="Type a message"></textarea>
     <button class="send-btn" id="send-btn" disabled aria-label="Send">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="color:#052e16">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#052e16" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="send-icon">
         <path d="M12 19V5M5 12l7-7 7 7"/>
       </svg>
     </button>
@@ -494,8 +497,8 @@ function addImageBubble(id,size,isMine,withProg){
   return row;
 }
 
-/* Swap placeholder with real image */
-function showImage(id,src){
+/* Swap placeholder with real image, add download button */
+function showImage(id,src,dlName){
   var ph=document.getElementById('imgph-'+id);
   if(!ph)return;
   var img=document.createElement('img');
@@ -504,6 +507,18 @@ function showImage(id,src){
   img.alt='Shared image';
   img.onclick=function(){openLightbox(src);};
   ph.replaceWith(img);
+  // Overlay download button (bottom-left of image)
+  var wrap=document.getElementById('imgwrap-'+id);
+  if(wrap&&!wrap.querySelector('.img-dl')){
+    var a=document.createElement('a');
+    a.className='img-dl';
+    a.href=src;
+    a.download=dlName||'image';
+    a.title='Download';
+    a.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 15l7 7 7-7"/></svg>';
+    a.addEventListener('click',function(e){e.stopPropagation();setTimeout(function(){URL.revokeObjectURL(src);},15000);});
+    wrap.appendChild(a);
+  }
 }
 
 /* Add file card bubble */
@@ -549,7 +564,7 @@ function finalizeTransfer(id,dlUrl,dlName,mime){
   if(prog)prog.style.display='none';
 
   if(isImage(mime)){
-    if(dlUrl)showImage(id,dlUrl);
+    if(dlUrl)showImage(id,dlUrl,dlName);
   }else{
     var meta=document.getElementById('filemeta-'+id);
     if(meta){var base=meta.textContent.split(' · ')[0];meta.textContent=base;}
@@ -594,7 +609,7 @@ function sendFiles(files){
       addImageBubble(id,file.size,true,true);
       // Show local preview immediately
       var objUrl=URL.createObjectURL(file);
-      showImage(id,objUrl);
+      showImage(id,objUrl,file.name);
     }else{
       addFileBubble(id,file.name,file.size,file.type,true,true);
     }
@@ -1009,6 +1024,8 @@ function createRoom(code){
   if(myPeer&&!myPeer.destroyed){myPeer.destroy();myPeer=null;}
   if(hostPeer&&!hostPeer.destroyed){hostPeer.destroy();hostPeer=null;}
   resetRoom();setDot('connecting');applyRoomCode(roomCode);
+  // Put code in URL so refresh auto-rejoins
+  history.replaceState(null,'',location.pathname+'?code='+roomCode);
   myPeer=new Peer(NS+roomCode,{debug:0,config:ICE});
   myPeer.on('open',function(){setDot('ready');goTo('page-room');});
   myPeer.on('connection',function(conn){wireConn(conn,false);});
@@ -1019,7 +1036,10 @@ function createRoom(code){
   myPeer.on('disconnected',function(){if(myPeer&&!myPeer.destroyed)myPeer.reconnect();});
 }
 
-function joinRoom(code){
+var _joinFallbackCreate=false;
+
+function joinRoom(code,fallbackCreate){
+  _joinFallbackCreate=!!fallbackCreate;
   roomCode=code;isHost=false;isCreator=false;
   if(myPeer&&!myPeer.destroyed){myPeer.destroy();myPeer=null;}
   if(hostPeer&&!hostPeer.destroyed){hostPeer.destroy();hostPeer=null;}
@@ -1045,6 +1065,16 @@ function joinRoom(code){
 }
 
 function onJoinFail(err){
+  // If auto-joining from URL and room doesn't exist, recreate it
+  if(_joinFallbackCreate&&err&&err.type==='peer-unavailable'){
+    _joinFallbackCreate=false;
+    document.getElementById('join-spinner').classList.remove('on');
+    if(myPeer&&!myPeer.destroyed){myPeer.destroy();myPeer=null;}
+    toast('Room gone — recreating…',2000);
+    createRoom(roomCode);
+    return;
+  }
+  _joinFallbackCreate=false;
   document.getElementById('join-spinner').classList.remove('on');
   document.getElementById('join-btn').disabled=false;
   var ci=document.getElementById('code-input');
@@ -1061,6 +1091,7 @@ function leaveRoom(){
   Object.keys(peers).forEach(function(k){try{peers[k].conn.close();}catch(e){}});
   if(hbTimer){clearInterval(hbTimer);hbTimer=null;}
   roomCode=null;isHost=false;isCreator=false;
+  history.replaceState(null,'',location.pathname);
   resetRoom();setDot('');goTo('page-welcome');
 }
 
@@ -1140,12 +1171,12 @@ document.addEventListener('DOMContentLoaded',function(){
   });
   sb.addEventListener('click',sendText);
 
-  // QR param
+  // QR / URL param — auto-connect; if room gone, recreate it (host refresh)
   var urlCode=new URLSearchParams(location.search).get('code');
   if(urlCode&&/^\d{4}$/.test(urlCode)){
     ci.value=urlCode;ci.classList.add('ok');jb.disabled=false;
     goTo('page-join');
-    setTimeout(function(){requestNotifPerm();joinRoom(urlCode);},350);
+    setTimeout(function(){requestNotifPerm();joinRoom(urlCode,true);},350);
   }
 });
 </script>
